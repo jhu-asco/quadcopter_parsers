@@ -1,0 +1,7 @@
+<library path="lib/librqt_quadcopter_parsers">
+  <class name="rqt_quadcopter_parsers/ArdroneParser" type="rqt_quadcopter_parsers::ArdroneParser" base_class_type="rqt_quadcoptergui::Parser">
+    <description>
+			Parser Libraries for the Quadcopter Gui
+    </description>
+  </class>
+</library>

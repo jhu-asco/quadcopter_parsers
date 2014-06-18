@@ -1,0 +1,7 @@
+lib*
+bin*
+build*
+*.bak
+msg_gen*
+Makefile
+*.log
