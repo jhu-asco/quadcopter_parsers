@@ -1,0 +1,28 @@
+<package>
+  <description brief="pixhawk_parser">
+
+     pixhawk_parser
+
+  </description>
+  <author>gowtham</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pixhaw_parser</url>
+  <depend package="roscpp"/>
+  <depend package="dynamic_reconfigure"/>
+  <depend package="rqt_quadcoptergui"/>
+	<depend package="pluginlib"/>
+  <depend package="geometry_msgs"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="std_srvs"/>
+	<depend package="mavlink_ros"/>
+	<depend package="tf"/>
+  <export>
+    <cpp lflags="-L${prefix}/lib -l${prefix}" cflags="-I${prefix}/include"/>
+    <rqt_quadcoptergui plugin="${prefix}/plugin.xml"/>
+  </export>
+
+</package>
+
+

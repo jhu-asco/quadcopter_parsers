@@ -1,0 +1,7 @@
+<library path="lib/libpixhawk_parser">
+  <class name="pixhawk_parser/PixhawkParser" type="pixhawk_parser::PixhawkParser" base_class_type="rqt_quadcoptergui::Parser">
+    <description>
+			Parser Library for Pixhawk chip
+    </description>
+  </class>
+</library>

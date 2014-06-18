@@ -1,0 +1,9 @@
+lib*
+bin*
+build*
+*.bak
+msg_gen*
+Makefile
+*.log
+*.vim
+src/pixhawk_parser/
