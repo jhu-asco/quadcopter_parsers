@@ -23,6 +23,33 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 #include <ardupilotmega/mavlink.h>//Mavlink messages
 #include "common_definitions.h"
 
+// Copied from mavlink_ros:
+
+#include <sys/time.h>
+#include <time.h>
+
+// Standard includes
+#include <iostream>
+#include <cstdlib>
+#include <unistd.h>
+#include <cmath>
+#include <string.h>
+#include <inttypes.h>
+#include <fstream>
+
+// Serial includes
+#include <stdio.h>   /* Standard input/output definitions */
+#include <string.h>  /* String function definitions */
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
+#ifdef __linux
+#include <sys/ioctl.h>
+#endif
+
+#include <boost/thread.hpp>
+
 #define THROTCHAN 2
 #define SERVONUM 4
 #define NOFJOINTS 2
@@ -57,30 +84,54 @@ class PixhawkParser: public parsernode::Parser
 		  float *goalpwm;
 			float *temparm_pwm;
 			float kparm;
+			/* Members from Mavlink_ros*/
+			// Settings
+			struct timeval tv;		  ///< System time
+			int baud;
+			int sysid;             ///< The unique system id of this MAV, 0-127. Has to be consistent across the system
+			int compid;
+			int serial_compid;
+			std::string port;              ///< The serial port name, e.g. /dev/ttyUSB0
+			bool silent;              ///< Wether console output should be enabled
+			bool verbose;             ///< Enable verbose output
+			bool debug;               ///< Enable debug functions and output
+			bool pc2serial;			  ///< Enable PC to serial push mode (send more stuff from pc over serial)
+			int fd;
+			std::string frame_id;
+			//ros::Timer serialtimer;
+			boost::thread* serial_recvthread;
+
+
 		protected:
 			//Publishers:
-			ros::Publisher mavlink_pub;
+			//ros::Publisher mavlink_pub;
 
 			bool heartbeatinit;
 			//Personal Callback functions:
 			void paramsetreqCallback(std_msgs::String datatype);
 			void modereqCallback(const std_msgs::String &datatype);
-			void mavlinkCallback(const mavlink_ros::Mavlink &mavlink_ros_msg);
 			void datareqCallback(const std_msgs::String &datatype);
 			void paramreqCallback(const std_msgs::Empty &emptymsg);
 			void rctimerCallback(const ros::TimerEvent &event);
 			void armtimerCallback(const ros::TimerEvent &event);
+			//Functions from mavlink_ros for serial control:
+			int open_port(std::string& port);
+			bool setup_port(int , int , int , int , bool , bool );
+			void close_port(int fd);
+			void serialtimerCallback();
+			void mavlinkPublish(const mavlink_message_t &msg);
+
 			//Subscribers:
-			ros::Subscriber mavlink_sub;
+			//ros::Subscriber mavlink_sub;
 			/*
-			ros::Subscriber paramenq_sub;
-			ros::Subscriber datareq_sub;
-			ros::Subscriber commandreq_sub;
-			ros::Subscriber rcoverridereq_sub;
-			ros::Subscriber modereq_sub;
-			ros::Subscriber paramsetreq_sub;
-			ros::Subscriber armsetreq_sub;
-			*/
+				 ros::Subscriber paramenq_sub;
+				 ros::Subscriber datareq_sub;
+				 ros::Subscriber commandreq_sub;
+				 ros::Subscriber rcoverridereq_sub;
+				 ros::Subscriber modereq_sub;
+				 ros::Subscriber paramsetreq_sub;
+				 ros::Subscriber armsetreq_sub;
+			 */
 
 		public:
 			PixhawkParser();
@@ -94,13 +145,15 @@ class PixhawkParser: public parsernode::Parser
 				PixhawkParser::datareqCallback(dataparseval);
 				dataparseval.data = "RADIO START 0";
 				PixhawkParser::datareqCallback(dataparseval);
-				usleep(10000);
+  			close_port(fd);//Shutdown the serial port
+				//usleep(10000);
 				//First stop the data
-				mavlink_pub.shutdown();
-				mavlink_sub.shutdown();
+				//mavlink_pub.shutdown();
+				//mavlink_sub.shutdown();
 				cmdfile.close();
 				servofile.close();
 				imufile.close();
+				//serial_recvthread->join();
 			}
 			void initialize(ros::NodeHandle &nh_);
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
@@ -108,7 +161,7 @@ class PixhawkParser: public parsernode::Parser
 			void foldarm();
 			void setarmpwm(double *armpwm);
 			//void setarmpwm(std::vector<float> &armpwm);
-      //For gripper the angle is either -ve or +ve (does not care abt  values) Also
+			//For gripper the angle is either -ve or +ve (does not care abt  values) Also
 			// the angles are set about the trim value of 180 degrees. The angles should not exceed +/-90 for now
 			//Angle input is in degrees
 			//void setarmangles(std::vector<float> &armangles);
@@ -118,7 +171,7 @@ class PixhawkParser: public parsernode::Parser
 			bool takeoff();
 			bool disarm();
 			bool calibrateimubias();
-		  void getquaddata(parsernode::common::quaddata &d1);
+			void getquaddata(parsernode::common::quaddata &d1);
 			void estimatethrustbias();
 			void setlogdir(string logdir)
 			{
