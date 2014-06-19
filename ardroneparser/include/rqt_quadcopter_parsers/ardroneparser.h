@@ -6,7 +6,7 @@ The commands for roll pitch and yaw are in units of radians. The thrust is norma
 
 This class uses internal locking to ensure the quaddata is available to Qt thread without bumping into ros serial. This is enough since the order of working is not important to us. Read internal vs external locking: http://www.boost.org/doc/libs/1_55_0/doc/html/thread/synchronization.html
 */
-#include "rqt_quadcoptergui/parser.h"
+#include "parsernode/parser.h"
 #include <ardrone_autonomy/Navdata.h>
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
@@ -14,11 +14,11 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 using namespace std;
 namespace rqt_quadcopter_parsers{
-class ArdroneParser: public rqt_quadcoptergui::Parser
+class ArdroneParser: public parsernode::Parser
 	{
 
 		private://Members depicting the state of the quadcopter
-			rqt_quadcoptergui::common::quaddata data;
+			parsernode::common::quaddata data;
 			boost::mutex spin_mutex;
 			
 		protected:
@@ -52,7 +52,7 @@ class ArdroneParser: public rqt_quadcoptergui::Parser
 			bool reset();
 			bool calibrateimubias();
 			void estimatethrustbias();
-		  void getquaddata(rqt_quadcoptergui::common::quaddata &d1);
+		  void getquaddata(parsernode::common::quaddata &d1);
 			void setlogdir(string logdir)
 			{
 				//TODO NOT IMPLEMENTED

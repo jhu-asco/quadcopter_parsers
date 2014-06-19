@@ -271,11 +271,11 @@ namespace pixhawk_parser{
 		//Controller should ensure that the commanded angles are between -pi to pi 
 		rpytmsg.y = -rpytmsg.y;//Converting NWU to NED for commanding
 
-		overridemsg.chan1_raw = (uint16_t)rqt_quadcoptergui::common::map(rpytmsg.x,-data.rpbound, data.rpbound, RC_MIN[0],RC_MAX[0]);//ROll
+		overridemsg.chan1_raw = (uint16_t)parsernode::common::map(rpytmsg.x,-data.rpbound, data.rpbound, RC_MIN[0],RC_MAX[0]);//ROll
 
-		overridemsg.chan2_raw = (uint16_t)rqt_quadcoptergui::common::map(rpytmsg.y,-data.rpbound, data.rpbound, RC_MIN[1],RC_MAX[1]);//PITCH
+		overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,-data.rpbound, data.rpbound, RC_MIN[1],RC_MAX[1]);//PITCH
 
-		overridemsg.chan3_raw = (uint16_t)rqt_quadcoptergui::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
+		overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
 
 		if(!sendyaw)
 		{
@@ -283,7 +283,7 @@ namespace pixhawk_parser{
 		}
 		else
 		{
-			overridemsg.chan4_raw = (uint16_t)rqt_quadcoptergui::common::map(-rpytmsg.z, -1,1,RC_MIN[3],RC_MAX[3]);//Yaw is normalized between -1 to 1 for now as it is the rate of change and not exactly an angle to command
+			overridemsg.chan4_raw = (uint16_t)parsernode::common::map(-rpytmsg.z, -1,1,RC_MIN[3],RC_MAX[3]);//Yaw is normalized between -1 to 1 for now as it is the rate of change and not exactly an angle to command
 		}
 		overridemsg.chan5_raw = 900;
 		overridemsg.chan6_raw = 900;
@@ -327,11 +327,11 @@ namespace pixhawk_parser{
 	//	assert(armpwm.size() >NOFJOINTS);//Needs to atleast three for the three arms
 		//construct arm pwm command
 		//	countstar = true;
-		//goalpwm[0] = rqt_quadcoptergui::common::map(armpwm[0],-1.0, 1.0, 1000,2000);//Map betn -1 to 1 to rcmin to rcmax
-		//goalpwm[1] = rqt_quadcoptergui::common::map(armpwm[1],-1.0, 1.0, 1000,2000);//Map betn -1 to 1 to rcmin to rcmax
+		//goalpwm[0] = parsernode::common::map(armpwm[0],-1.0, 1.0, 1000,2000);//Map betn -1 to 1 to rcmin to rcmax
+		//goalpwm[1] = parsernode::common::map(armpwm[1],-1.0, 1.0, 1000,2000);//Map betn -1 to 1 to rcmin to rcmax
 		//for(int count1 = 0;count1 < NOFJOINTS;count1++)
-		goalpwm[0] = rqt_quadcoptergui::common::map(armpwm[0],-1.0, 1.0,0.5*ARM_TRIM[1],1.5*ARM_TRIM[1]);//Map betn -1 to 1 to rcmin to rcmax
-		goalpwm[1] = rqt_quadcoptergui::common::map(armpwm[1],-1.0, 1.0,ARM_MIN[0],ARM_MAX[0]);//Map betn -1 to 1 to rcmin to rcmax
+		goalpwm[0] = parsernode::common::map(armpwm[0],-1.0, 1.0,0.5*ARM_TRIM[1],1.5*ARM_TRIM[1]);//Map betn -1 to 1 to rcmin to rcmax
+		goalpwm[1] = parsernode::common::map(armpwm[1],-1.0, 1.0,ARM_MIN[0],ARM_MAX[0]);//Map betn -1 to 1 to rcmin to rcmax
 		goalpwm[NOFJOINTS] = 500 +  1000*armpwm[NOFJOINTS];//Just copying the value input for gripper it is tristate with 500 neutral > 700 close and < 300 open
 		//////////Removing armtimer
 		//Sending arm pwm 
@@ -382,7 +382,7 @@ namespace pixhawk_parser{
 			mavlink_pub.publish(mavlink_ros_msg);
 
 	}
-	void PixhawkParser::getquaddata(rqt_quadcoptergui::common::quaddata &d1)
+	void PixhawkParser::getquaddata(parsernode::common::quaddata &d1)
 	{
 		spin_mutex.lock();
 		d1 = data;
@@ -523,9 +523,9 @@ namespace pixhawk_parser{
 					//qtr.setEulerZYX(0,0,M_PI);
 					//tf::Transform imutovrpn(qtr,tf::Vector3(0,0,0));//Pure rotation from NED to NWU
 					//tf::Vector3 imutransformed = imutovrpn
-					data.rpydata.x = rqt_quadcoptergui::common::map_angle(attitudemsg.roll);
-					data.rpydata.y = -rqt_quadcoptergui::common::map_angle(attitudemsg.pitch);//Transforming NED to NWU
-					data.rpydata.z = -rqt_quadcoptergui::common::map_angle(attitudemsg.yaw);//Transforming NED to NWU
+					data.rpydata.x = parsernode::common::map_angle(attitudemsg.roll);
+					data.rpydata.y = -parsernode::common::map_angle(attitudemsg.pitch);//Transforming NED to NWU
+					data.rpydata.z = -parsernode::common::map_angle(attitudemsg.yaw);//Transforming NED to NWU
 					//Transforming to NWU frame Convert pitch to pitch - PI (invert it)
 					//ensure the data is in between -Pi to Pi
 					spin_mutex.unlock();
@@ -738,5 +738,5 @@ namespace pixhawk_parser{
 	}
 
 };
-PLUGINLIB_DECLARE_CLASS(pixhawk_parser, PixhawkParser, pixhawk_parser::PixhawkParser, rqt_quadcoptergui::Parser)
+PLUGINLIB_DECLARE_CLASS(pixhawk_parser, PixhawkParser, pixhawk_parser::PixhawkParser, parsernode::Parser)
 	//TODO Done setting up all the callback functions although need to modify this to ensure they are uptodate with new mavlink protocol; Also given that a kalman filter based position controller is already running onboard I have to dig their code and see if we can implement our arm based position control by modifying their code. Also have to verify how accurate their posn controller is. If it is like 1-2cm then we can do nice manipulation. Then based on vision we have to get the same stuff.

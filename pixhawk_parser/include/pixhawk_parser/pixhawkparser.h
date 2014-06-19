@@ -7,7 +7,7 @@ The commands for roll pitch and yaw are in units of radians. The thrust is norma
 This class uses internal locking to ensure the quaddata is available to Qt thread without bumping into ros serial. This is enough since the order of working is not important to us. Read internal vs external locking: http://www.boost.org/doc/libs/1_55_0/doc/html/thread/synchronization.html
 */
 #include <tf/LinearMath/Transform.h>
-#include "rqt_quadcoptergui/parser.h"//main parser base class
+#include "parsernode/parser.h"//main parser base class
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/Twist.h>
@@ -30,11 +30,11 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 using namespace std;
 namespace pixhawk_parser{
-class PixhawkParser: public rqt_quadcoptergui::Parser
+class PixhawkParser: public parsernode::Parser
 	{
 
 		private://Members depicting the state of the quadcopter
-			rqt_quadcoptergui::common::quaddata data;
+			parsernode::common::quaddata data;
 			boost::mutex spin_mutex;
 			uint8_t targetsys_id;
 			uint8_t targetcomp_id;
@@ -118,7 +118,7 @@ class PixhawkParser: public rqt_quadcoptergui::Parser
 			bool takeoff();
 			bool disarm();
 			bool calibrateimubias();
-		  void getquaddata(rqt_quadcoptergui::common::quaddata &d1);
+		  void getquaddata(parsernode::common::quaddata &d1);
 			void estimatethrustbias();
 			void setlogdir(string logdir)
 			{

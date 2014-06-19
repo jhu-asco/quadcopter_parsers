@@ -1,0 +1,17 @@
+<package>
+  <description brief="parsernode">
+     parsernode
+  </description>
+  <author>gowtham</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/parsernode</url>
+  <depend package="roscpp"/>
+  <depend package="pluginlib"/>
+	<export>
+    <cpp lflags="-L${prefix}/lib " cflags="-I${prefix}/include"/>
+	</export>
+
+</package>
+
+

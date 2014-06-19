@@ -16,9 +16,9 @@
   <depend package="sensor_msgs"/>
   <depend package="ardrone_autonomy"/>
 	<depend package="pluginlib"/>
-	<depend package="rqt_quadcoptergui"/>
+	<depend package="parsernode"/>
   <export>
     <cpp lflags="-L${prefix}/lib -l${prefix}" cflags="-I${prefix}/include"/>
-    <rqt_quadcoptergui plugin="${prefix}/plugin.xml"/>
+    <parsernode plugin="${prefix}/plugin.xml"/>
   </export>
 </package>

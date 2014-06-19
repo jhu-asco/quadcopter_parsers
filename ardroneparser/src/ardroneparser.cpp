@@ -179,10 +179,10 @@ bool ArdroneParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
 {
 	geometry_msgs::Twist cmdmsg;
 
-	cmdmsg.linear.x = rqt_quadcoptergui::common::map(rpytmsg.y-data.rpydata.x,-data.rpbound, data.rpbound, -1,1);//Pitch moving forward/backward
-	cmdmsg.linear.y = rqt_quadcoptergui::common::map(-rpytmsg.x-data.rpydata.y,-data.rpbound, data.rpbound, -1,1);//Roll moving Left/Right
+	cmdmsg.linear.x = parsernode::common::map(rpytmsg.y-data.rpydata.x,-data.rpbound, data.rpbound, -1,1);//Pitch moving forward/backward
+	cmdmsg.linear.y = parsernode::common::map(-rpytmsg.x-data.rpydata.y,-data.rpbound, data.rpbound, -1,1);//Roll moving Left/Right
 	cmdmsg.angular.z  = rpytmsg.z;//rateYaw 
-	cmdmsg.linear.z = rqt_quadcoptergui::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,-1,1);//Thrust
+	cmdmsg.linear.z = parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,-1,1);//Thrust
 	cmdmsg.angular.x = 1;
 	cmdmsg.angular.y = 1;//Random values to make sure it does not go into autohover mode
 	ROS_INFO("Commandrpyt: %f\t%f\t%f\t%f\t",cmdmsg.linear.x,cmdmsg.linear.y
@@ -190,7 +190,7 @@ bool ArdroneParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
 	cmdrpyt_pub.publish(cmdmsg);
 	return true;
 }
-void ArdroneParser::getquaddata(rqt_quadcoptergui::common::quaddata &d1)
+void ArdroneParser::getquaddata(parsernode::common::quaddata &d1)
 {
 	spin_mutex.lock();
 	d1 = data;
@@ -204,4 +204,4 @@ void ArdroneParser::estimatethrustbias()
 }
 
 };
-PLUGINLIB_DECLARE_CLASS(rqt_quadcopter_parsers, ArdroneParser, rqt_quadcopter_parsers::ArdroneParser, rqt_quadcoptergui::Parser)
+PLUGINLIB_DECLARE_CLASS(rqt_quadcopter_parsers, ArdroneParser, rqt_quadcopter_parsers::ArdroneParser, parsernode::Parser)
