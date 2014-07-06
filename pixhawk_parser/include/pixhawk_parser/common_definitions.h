@@ -29,7 +29,7 @@ using namespace std;
 //casting function
 static uint8_t mavlink_crcs[] = MAVLINK_MESSAGE_CRCS;
 static uint8_t mavlink_msg_len[] = MAVLINK_MESSAGE_LENGTHS;
-static void castmavmsgtoros(mavlink_ros::Mavlink &mavlink_ros_msg, mavlink_message_t &mavmsg)
+/*static void castmavmsgtoros(mavlink_ros::Mavlink &mavlink_ros_msg, mavlink_message_t &mavmsg)
 {
   //mavlink_ros::Mavlink mavlink_ros_msg;
   //manually cast the mavlink_msg_t to mavlink_ros_msg
@@ -45,18 +45,21 @@ static void castmavmsgtoros(mavlink_ros::Mavlink &mavlink_ros_msg, mavlink_messa
       }
      //ROS_INFO("%u\t%u",((MAVLINK_MAX_PAYLOAD_LEN+MAVLINK_NUM_CHECKSUM_BYTES+7)/8),mavmsg.len );
 }
+*/
 
 
+  /**
 static void castrosmsgtomav(mavlink_ros::Mavlink mavlink_ros_msg,mavlink_message_t &msg)
 {
-  /**
+	*** PREVIOUS COMMENT START
    * Convert mavlink_ros::Mavlink to mavlink_message_t
-   */
+	 *** PREVIOUS COMMENT END
   msg.msgid = mavlink_ros_msg.msgid;
   copy(mavlink_ros_msg.payload64.begin(), mavlink_ros_msg.payload64.end(), msg.payload64);
   mavlink_finalize_message_chan(&msg, mavlink_ros_msg.sysid, mavlink_ros_msg.compid, MAVLINK_COMM_0,
                                 mavlink_ros_msg.len, mavlink_crcs[msg.msgid]);
 }
+   */
 
 static string base_mode_map(uint8_t base_mode)
 {

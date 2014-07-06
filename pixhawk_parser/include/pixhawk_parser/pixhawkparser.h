@@ -12,7 +12,7 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/Twist.h>
 //Messages:
-#include "mavlink_ros/Mavlink.h"
+//#include "mavlink/Mavlink.h"
 
 #include "std_msgs/String.h"
 #include "std_msgs/Float32.h"

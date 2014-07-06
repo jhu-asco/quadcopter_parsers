@@ -1,8 +1,8 @@
 /* This is the plugin which is dependent on Parser base class. 
 */
 #include <pluginlib/class_list_macros.h>
-#include <rqt_quadcopter_parsers/ardroneparser.h>
-namespace rqt_quadcopter_parsers{
+#include <ardroneparser/ardroneparser.h>
+namespace ardroneparser{
 
 
 ArdroneParser::ArdroneParser()
@@ -204,4 +204,4 @@ void ArdroneParser::estimatethrustbias()
 }
 
 };
-PLUGINLIB_DECLARE_CLASS(rqt_quadcopter_parsers, ArdroneParser, rqt_quadcopter_parsers::ArdroneParser, parsernode::Parser)
+PLUGINLIB_DECLARE_CLASS(ardroneparser, ArdroneParser, ardroneparser::ArdroneParser, parsernode::Parser)

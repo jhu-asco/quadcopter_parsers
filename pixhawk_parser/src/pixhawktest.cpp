@@ -9,10 +9,9 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh_;
 	pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
 	ROS_INFO("I am fine");
-	parsernode::Parser *ardrone_parser = NULL;
 	try
 	{
-		ardrone_parser = parser_loader.createClassInstance("pixhawk_parser/PixhawkParser");
+		boost::shared_ptr<parsernode::Parser> pixhawk_parser = parser_loader.createInstance("pixhawk_parser/PixhawkParser");
 		ardrone_parser->initialize(nh_);
 
 		ROS_INFO("Created Pixhawk Parser Successfully");
