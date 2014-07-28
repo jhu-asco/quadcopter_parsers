@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	try
 	{
 		boost::shared_ptr<parsernode::Parser> pixhawk_parser = parser_loader.createInstance("pixhawk_parser/PixhawkParser");
-		ardrone_parser->initialize(nh_);
+		pixhawk_parser->initialize(nh_);
 
 		ROS_INFO("Created Pixhawk Parser Successfully");
 	}
