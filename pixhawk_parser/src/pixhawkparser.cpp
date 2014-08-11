@@ -23,7 +23,7 @@ namespace pixhawk_parser{
 		RC_TRIM = new float[SERVONUM]{1515,1516,1109,1514};
 		RC_MIN = new float[SERVONUM]{1102,1103,1104,1101};
 		RC_MAX = new float[SERVONUM]{1927,1929,1926,1927};
-		ARM_ID = new uint16_t[NOFJOINTS]{1,2};
+		/*ARM_ID = new uint16_t[NOFJOINTS]{1,2};
 		ARM_MIN = new float[NOFJOINTS]{937,0};
 		ARM_MAX = new float[NOFJOINTS]{2337,3070};
 		ARM_TRIM = new float[NOFJOINTS]{2167,2047};//When arm is outstretched
@@ -32,6 +32,7 @@ namespace pixhawk_parser{
 		temparm_pwm = new float[NOFJOINTS]{ARM_TRIM[0],ARM_MIN[1]};//Dont need the last one which is just a gripper also use malloc
 		//kparm = 0.02;
 		kparm = 0.2;
+		*/
 		/*
 			 for(int count1 = 0;count1 < SERVONUM;count1++)
 			 {
@@ -370,6 +371,19 @@ namespace pixhawk_parser{
 		//ROS_INFO("Publishing done");
 		return true;
 	}
+	void PixhawkParser::grip(int state)//TriState Gripper
+	{ 
+		//Sending arm pwm 
+		mavlink_message_t mavmsg;
+		mavlink_arm_ctrl_pwm_t armpwm_msg;
+		armpwm_msg.pwm1 = 0;
+		armpwm_msg.pwm2 = 0;
+		armpwm_msg.pwm3 = 500 + 300*state;
+		mavlink_msg_arm_ctrl_pwm_encode(hostsysid,hostcompid,&mavmsg,&armpwm_msg);
+		if(ros::ok())
+			PixhawkParser::mavlinkPublish(mavmsg);
+	}
+	/*
 	void PixhawkParser::foldarm()//Folding the arm:
 	{
 		goalpwm[0] = ARM_TRIM[0];
@@ -417,12 +431,12 @@ namespace pixhawk_parser{
 		if(ros::ok())
 			PixhawkParser::mavlinkPublish(mavmsg);
 			//mavlink_pub.publish(mavlink_ros_msg);
-
-		/*if(armpwm[NOFJOINTS] > 0)
+/////////////PREV COMMENT BEGIN
+		if(armpwm[NOFJOINTS] > 0)
 			goalpwm[NOFJOINTS] = 1700;//Some Voltage This is for gripper not actual pwm in the new gripper case
 			else
 			goalpwm[NOFJOINTS] = 0;//No Voltage
-		 */
+/////////////PREV COMMENT END
 	}
 	//void PixhawkParser::setarmangles(std::vector<float> &armangles)//angles given from gcop IK notation
 	void PixhawkParser::setarmangles(double *armangles)//angles given from gcop IK notation angle in radians
@@ -452,6 +466,7 @@ namespace pixhawk_parser{
 			PixhawkParser::mavlinkPublish(mavmsg);
 		//	mavlink_pub.publish(mavlink_ros_msg);
 	}
+*/
 	void PixhawkParser::getquaddata(parsernode::common::quaddata &d1)
 	{
 		spin_mutex.lock();

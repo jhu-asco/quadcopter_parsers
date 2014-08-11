@@ -52,8 +52,8 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 #define THROTCHAN 2
 #define SERVONUM 4
-#define NOFJOINTS 2
-#define ANGRES 0.088 
+//#define NOFJOINTS 2
+//#define ANGRES 0.088 
 
 using namespace std;
 namespace pixhawk_parser{
@@ -68,8 +68,8 @@ class PixhawkParser: public parsernode::Parser
 			//float RC_TRIM[SERVONUM], RC_MIN[SERVONUM], RC_MAX[SERVONUM];
 			float *RC_TRIM; float *RC_MIN; float *RC_MAX;
 			uint16_t *RC_ID;
-			uint16_t *ARM_ID;
-			float* ARM_TRIM; float *ARM_MIN; float *ARM_MAX;
+			//uint16_t *ARM_ID;
+			//float* ARM_TRIM; float *ARM_MIN; float *ARM_MAX;
 			ros::Timer rctimer;
 			ros::Timer armtimer;
 			double basealtitude;
@@ -81,9 +81,9 @@ class PixhawkParser: public parsernode::Parser
 			ofstream imufile;//Imu data logging
 			bool enable_log;
 		  bool countstar;
-		  float *goalpwm;
-			float *temparm_pwm;
-			float kparm;
+		  //float *goalpwm;
+			//float *temparm_pwm;
+			//float kparm;
 			/* Members from Mavlink_ros*/
 			// Settings
 			struct timeval tv;		  ///< System time
@@ -158,14 +158,15 @@ class PixhawkParser: public parsernode::Parser
 			void initialize(ros::NodeHandle &nh_);
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
 			inline void sendradio(uint16_t r1,uint16_t r2,uint16_t r3,uint16_t r4);
-			void foldarm();
-			void setarmpwm(double *armpwm);
+			//void foldarm();
+			//void setarmpwm(double *armpwm);
 			//void setarmpwm(std::vector<float> &armpwm);
 			//For gripper the angle is either -ve or +ve (does not care abt  values) Also
 			// the angles are set about the trim value of 180 degrees. The angles should not exceed +/-90 for now
 			//Angle input is in degrees
 			//void setarmangles(std::vector<float> &armangles);
-			void setarmangles(double *armangles);
+			//void setarmangles(double *armangles);
+			void grip(int state);
 			bool land();
 			bool reset();
 			bool takeoff();
