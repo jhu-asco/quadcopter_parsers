@@ -58,19 +58,6 @@ class ArdroneParser: public parsernode::Parser
 				//TODO NOT IMPLEMENTED
 				return;
 			}
-			void foldarm()
-			{
-				//TODO NOT IMPLEMENTED
-				return;
-			}
-			void setarmpwm(double *armpwm)
-			{
-				//TODO NOT IMPLEMENTED
-			}
-			void setarmangles(double *armangles)
-			{
-				//TODO NOT IMPLEMENTED
-			}
 			void controllog(bool logswitch)
 			{
 				//TODO NOT IMPLEMENTED
@@ -81,6 +68,11 @@ class ArdroneParser: public parsernode::Parser
 				spin_mutex.lock();
 				data.altitude = altitude_;
 				spin_mutex.unlock();
+			}
+			void grip(int state)
+			{
+				//NOT Needed
+				return;
 			}
 	};
 };
