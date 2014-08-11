@@ -725,7 +725,7 @@ namespace pixhawk_parser{
 								std_msgs::String dataparseval;
 								//dataparseval.data = "ALL START 10";
 								//PixhawkParser::datareqCallback(dataparseval);
-								dataparseval.data = "ATTITUDE START 20";//30
+								dataparseval.data = "ATTITUDE START 40";//30
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "EXTENDED START 2";//For battery data etc 2 times a second should be more than enough 
