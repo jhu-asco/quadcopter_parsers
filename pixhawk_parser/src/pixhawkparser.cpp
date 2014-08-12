@@ -319,7 +319,7 @@ namespace pixhawk_parser{
 		mavlink_msg_rc_channels_override_encode(hostsysid,hostcompid,&mavmsg,&overridemsg);
 		//mavlink_ros::Mavlink mavlink_ros_msg;
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
-		ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
+		//ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
 		PixhawkParser::mavlinkPublish(mavmsg);
 		//mavlink_pub.publish(mavlink_ros_msg);
 	}
@@ -360,7 +360,7 @@ namespace pixhawk_parser{
 		mavlink_msg_rc_channels_override_encode(hostsysid,hostcompid,&mavmsg,&overridemsg);
 		//mavlink_ros::Mavlink mavlink_ros_msg;
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
-		ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
+		//ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
 		PixhawkParser::mavlinkPublish(mavmsg);
 		//	mavlink_pub.publish(mavlink_ros_msg);
 		if(enable_log)
@@ -378,7 +378,7 @@ namespace pixhawk_parser{
 		mavlink_arm_ctrl_pwm_t armpwm_msg;
 		armpwm_msg.pwm1 = 0;
 		armpwm_msg.pwm2 = 0;
-		armpwm_msg.pwm3 = 500 + 300*state;
+		armpwm_msg.pwm3 = (uint16_t)(500 + 300*state);
 		mavlink_msg_arm_ctrl_pwm_encode(hostsysid,hostcompid,&mavmsg,&armpwm_msg);
 		if(ros::ok())
 			PixhawkParser::mavlinkPublish(mavmsg);
