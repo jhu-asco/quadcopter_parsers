@@ -264,6 +264,24 @@ namespace pixhawk_parser{
 		rctimer.start();
 	}
 
+	void PixhawkParser::reset_attitude(double &roll, double &pitch, double &yaw)
+	{
+		//Convert into NED frame from vrpn frame
+		mavlink_message_t mavmsg;
+		//construct command
+		mavlink_attitude_t attitude_reset_req;
+		attitude_reset_req.roll =  parsernode::common::map_angle(roll);
+		attitude_reset_req.pitch =  -parsernode::common::map_angle(pitch);
+		attitude_reset_req.yaw =  -parsernode::common::map_angle(yaw);
+		//encode the mavlink_data_stream_t into mavlink_message_t
+		mavlink_msg_attitude_encode(hostsysid,hostcompid,&mavmsg,&attitude_reset_req);
+		//sysid and compid are write now just hardcoded.Later on will change
+		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
+		PixhawkParser::mavlinkPublish(mavmsg);
+		//mavlink_pub.publish(mavlink_ros_msg);
+		//ROS_INFO("Publishing Reset req done");[DEBUG]
+	}
+
 	bool PixhawkParser::disarm()
 	{
 		rctimer.stop();	//Stop the timer just in case

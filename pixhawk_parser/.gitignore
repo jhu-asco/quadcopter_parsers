@@ -6,3 +6,4 @@ msg_gen*
 *.log
 *.vim
 src/pixhawk_parser/
+logfiles

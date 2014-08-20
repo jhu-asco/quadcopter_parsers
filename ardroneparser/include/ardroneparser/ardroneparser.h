@@ -52,6 +52,10 @@ class ArdroneParser: public parsernode::Parser
 			bool reset();
 			bool calibrateimubias();
 			void estimatethrustbias();
+			void reset_attitude(double &roll, double &pitch, double &yaw)
+			{
+				//Not Implemented
+			}
 		  void getquaddata(parsernode::common::quaddata &d1);
 			void setlogdir(string logdir)
 			{
