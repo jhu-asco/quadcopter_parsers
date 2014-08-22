@@ -14,6 +14,8 @@ namespace pixhawk_parser{
 		enable_log = false;
 		targetcomp_id = MAV_COMP_ID_SYSTEM_CONTROL;
 		targetsys_id = 1;
+		gain_throttle = 81.6;//Throttle gain should be integrated forward to get the right value
+		intercept_throttle = 189.5;
 		//RC_TRIM = new float[SERVONUM]{1516,1516,1923,1514};
 		//RC_MIN = new float[SERVONUM]{1108,1103,1105,1101};
 		//RC_MAX = new float[SERVONUM]{1932,1929,1926,1926};
@@ -361,7 +363,9 @@ namespace pixhawk_parser{
 
 		overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,-data.rpbound, data.rpbound, RC_MIN[1],RC_MAX[1]);//PITCH
 
-		overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
+		//overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
+		uint16_t throttlepwm = (uint16_t)(rpytmsg.w * gain_throttle + intercept_throttle);
+		overridemsg.chan3_raw = (throttlepwm>RC_MAX[2])?RC_MAX[2]:(throttlepwm< RC_MIN[2])?RC_MIN[2]:throttlepwm;
 
 		if(!sendyaw)
 		{
