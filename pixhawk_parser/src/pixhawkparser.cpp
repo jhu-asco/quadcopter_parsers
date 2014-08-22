@@ -21,8 +21,8 @@ namespace pixhawk_parser{
 		RC_ID = new uint16_t[SERVONUM]{56,61,66,71};//Arducopter code 3.1.2
 		//RC_ID = new uint16_t[SERVONUM]{53,58,63,68}; Old code
 		RC_TRIM = new float[SERVONUM]{1515,1516,1109,1514};
-		RC_MIN = new float[SERVONUM]{1102,1103,1104,1101};
-		RC_MAX = new float[SERVONUM]{1927,1929,1926,1927};
+		RC_MIN = new float[SERVONUM]{1093,1090,1106,1097};
+		RC_MAX = new float[SERVONUM]{1916,1914,1936,1923};
 		/*ARM_ID = new uint16_t[NOFJOINTS]{1,2};
 		ARM_MIN = new float[NOFJOINTS]{937,0};
 		ARM_MAX = new float[NOFJOINTS]{2337,3070};
