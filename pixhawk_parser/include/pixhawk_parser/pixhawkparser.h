@@ -100,6 +100,8 @@ class PixhawkParser: public parsernode::Parser
 			std::string frame_id;
 			//ros::Timer serialtimer;
 			boost::thread* serial_recvthread;
+			double gain_throttle; //This is conversion factor from throttle cmd in Newtons to pwm
+			double intercept_throttle; //This is constant addition in the linear conversion (mx + c) this is c and above one is m
 
 
 		protected:
