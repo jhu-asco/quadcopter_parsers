@@ -287,10 +287,10 @@ namespace pixhawk_parser{
 	bool PixhawkParser::disarm()
 	{
 		rctimer.stop();	//Stop the timer just in case
-		for(int count = 0;count < 30;count++)//3Sec
+		for(int count = 0;count < 80;count++)//4Sec
 		{
 			PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_MIN[3]);
-			usleep(100000);
+			usleep(50000);
 		}
 		PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_TRIM[3]);
 		return true;
@@ -363,9 +363,9 @@ namespace pixhawk_parser{
 
 		overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,-data.rpbound, data.rpbound, RC_MIN[1],RC_MAX[1]);//PITCH
 
-		//overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
-		uint16_t throttlepwm = (uint16_t)(rpytmsg.w * gain_throttle + intercept_throttle);
-		overridemsg.chan3_raw = (throttlepwm>RC_MAX[2])?RC_MAX[2]:(throttlepwm< RC_MIN[2])?RC_MIN[2]:throttlepwm;
+		overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
+		//uint16_t throttlepwm = (uint16_t)(rpytmsg.w * gain_throttle + intercept_throttle);
+		//overridemsg.chan3_raw = (throttlepwm>RC_MAX[2])?RC_MAX[2]:(throttlepwm< RC_MIN[2])?RC_MIN[2]:throttlepwm;
 
 		if(!sendyaw)
 		{
@@ -601,7 +601,7 @@ namespace pixhawk_parser{
 			{
 				if (!silent)
 					fprintf(stderr, "ERROR: Could not read from port %s\n", port.c_str());
-					exit(EXIT_FAILURE);//Exit if we cannot read from the port
+					//exit(EXIT_FAILURE);//Exit if we cannot read from the port
 			}
 
 			// If a message could be decoded, handle it
