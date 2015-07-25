@@ -7,3 +7,4 @@ msg_gen*
 *.vim
 src/pixhawk_parser/
 logfiles
+include/mavlink_backup

@@ -397,13 +397,39 @@ namespace pixhawk_parser{
 	{ 
 		//Sending arm pwm 
 		mavlink_message_t mavmsg;
-		mavlink_arm_ctrl_pwm_t armpwm_msg;
-		armpwm_msg.pwm1 = 0;
-		armpwm_msg.pwm2 = 0;
-		armpwm_msg.pwm3 = (uint16_t)(500 + 300*state);
-		mavlink_msg_arm_ctrl_pwm_encode(hostsysid,hostcompid,&mavmsg,&armpwm_msg);
+    mavlink_command_long_t servo_msg;
+    servo_msg.command = MAV_CMD_DO_SET_SERVO;
+    servo_msg.target_system = targetsys_id;
+    servo_msg.param1 = 9;//http://rover.ardupilot.com/wiki/common-autopilots/common-pixhawk-overview/ : RC9 is Pin 50 AUX 1
+
+    mavlink_command_long_t relay_msg;
+    relay_msg.command = MAV_CMD_DO_SET_RELAY;
+    relay_msg.target_system = targetsys_id;
+    relay_msg.param1 = 0;//First pin which is 54. Pin2 is 55 Only two pins supported for virtual io in Pixhawk
+
+    if(state == 0)
+    {
+      servo_msg.param2 = float(0);//set 0 pwm
+      relay_msg.param2 = 0.f;//Switch off
+    }
+    else if (state == 1)
+    {
+      servo_msg.param2 = float(1000);//Run in one direction
+      relay_msg.param2 = 0.f;//Switch off
+    }
+    else if (state == -1)
+    {
+      servo_msg.param2 = float(1000);//Run in other direction
+      relay_msg.param2 = 1.f;//Switch On
+    }
 		if(ros::ok())
+    {
+      mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&servo_msg);
 			PixhawkParser::mavlinkPublish(mavmsg);
+
+      mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&relay_msg);
+			PixhawkParser::mavlinkPublish(mavmsg);
+    }
 	}
 	/*
 	void PixhawkParser::foldarm()//Folding the arm:

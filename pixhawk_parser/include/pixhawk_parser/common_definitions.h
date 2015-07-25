@@ -1,6 +1,6 @@
 #ifndef COMMONDEF
 #define COMMONDEF
-#include <pixhawk/mavlink.h>
+#include <ardupilotmega/mavlink.h>
 #include "string"
 
 // Auto Pilot modes Got from defines.h in ArduCopter code
