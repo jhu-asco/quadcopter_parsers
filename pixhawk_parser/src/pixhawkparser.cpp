@@ -414,12 +414,12 @@ namespace pixhawk_parser{
     }
     else if (state == 1)
     {
-      servo_msg.param2 = float(1000);//Run in one direction
+      servo_msg.param2 = float(10000);//Run in one direction
       relay_msg.param2 = 0.f;//Switch off
     }
     else if (state == -1)
     {
-      servo_msg.param2 = float(1000);//Run in other direction
+      servo_msg.param2 = float(10000);//Run in other direction
       relay_msg.param2 = 1.f;//Switch On
     }
 		if(ros::ok())
@@ -625,7 +625,7 @@ namespace pixhawk_parser{
 			}
 			else
 			{
-				if (!silent)
+				if (!verbose)
 					fprintf(stderr, "ERROR: Could not read from port %s\n", port.c_str());
 					//exit(EXIT_FAILURE);//Exit if we cannot read from the port
 			}
