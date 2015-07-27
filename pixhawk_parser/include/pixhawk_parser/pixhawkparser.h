@@ -110,7 +110,7 @@ class PixhawkParser: public parsernode::Parser
 
 			bool heartbeatinit;
 			//Personal Callback functions:
-			void paramsetreqCallback(std_msgs::String datatype);
+			//void paramsetreqCallback(std_msgs::String datatype);
 			void modereqCallback(const std_msgs::String &datatype);
 			void datareqCallback(const std_msgs::String &datatype);
 			void paramreqCallback(const std_msgs::Empty &emptymsg);
@@ -169,6 +169,7 @@ class PixhawkParser: public parsernode::Parser
 			//void setarmangles(std::vector<float> &armangles);
 			//void setarmangles(double *armangles);
 			void grip(int state);
+      inline void setParameter(std::string id, float parameter_value, MAV_PARAM_TYPE param_type = MAV_PARAM_TYPE_UINT8);
 			bool land();
 			bool reset();
 			bool takeoff();

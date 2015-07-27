@@ -431,6 +431,22 @@ namespace pixhawk_parser{
 			PixhawkParser::mavlinkPublish(mavmsg);
     }
 	}
+
+  inline void PixhawkParser::setParameter(std::string id, float parameter_value, MAV_PARAM_TYPE param_type)
+  {
+    mavlink_message_t mavlink_msg;
+    mavlink_param_set_t parameter_msg;
+    //construct command
+    parameter_msg.target_system = targetsys_id;
+    parameter_msg.target_component = targetcomp_id;
+    strcpy(parameter_msg.param_id, id.c_str());
+    parameter_msg.param_value = parameter_value;
+    parameter_msg.param_type = param_type;
+    mavlink_msg_param_set_encode(hostsysid, hostcompid,&mavlink_msg,&parameter_msg);
+		ROS_INFO("Publishing Parameter set");
+		//mavlink_pub.publish(mavlink_ros_msg);
+		PixhawkParser::mavlinkPublish(mavlink_msg);
+  }
 	/*
 	void PixhawkParser::foldarm()//Folding the arm:
 	{
@@ -524,7 +540,7 @@ namespace pixhawk_parser{
 	}
 
 	//Personal Callback functions:
-	void PixhawkParser::paramsetreqCallback(std_msgs::String datatype)
+	/*void PixhawkParser::paramsetreqCallback(std_msgs::String datatype)
 	{
 		mavlink_message_t mavmsg;
 		mavlink_param_set_t paramsetmsg; 
@@ -550,7 +566,7 @@ namespace pixhawk_parser{
 		//mavlink_pub.publish(mavlink_ros_msg);
 		PixhawkParser::mavlinkPublish(mavmsg);
 		ROS_INFO("Publishing done");
-	}
+	}*/ 
 
 	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
 	{
@@ -799,6 +815,9 @@ namespace pixhawk_parser{
 								usleep(50000);
 								dataparseval.data = "RAW START 0";//20 Not needed right now
 								PixhawkParser::datareqCallback(dataparseval);
+
+                //Set CH7 to 34:
+                PixhawkParser::setParameter("CH7_OPT", 34.0, MAV_PARAM_TYPE_INT8);
 							}
 							//fprintf(stdout,"Sys_status: %s MODE: %d\n",base_mode_map(heartbeat.base_mode).c_str(),heartbeat.custom_mode);
 							spin_mutex.lock();
