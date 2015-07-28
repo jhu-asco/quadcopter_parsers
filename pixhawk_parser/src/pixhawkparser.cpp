@@ -20,7 +20,7 @@ namespace pixhawk_parser{
 		//RC_MIN = new float[SERVONUM]{1108,1103,1105,1101};
 		//RC_MAX = new float[SERVONUM]{1932,1929,1926,1926};
 
-		RC_ID = new uint16_t[SERVONUM]{56,61,66,71};//Arducopter code 3.1.2
+		//RC_ID = new uint16_t[SERVONUM]{56,61,66,71};//Arducopter code 3.1.2
 		//RC_ID = new uint16_t[SERVONUM]{53,58,63,68}; Old code
 		RC_TRIM = new float[SERVONUM]{1515,1516,1109,1514};
 		RC_MIN = new float[SERVONUM]{1093,1090,1106,1097};
@@ -685,31 +685,40 @@ namespace pixhawk_parser{
 				switch(message.msgid)
 				{
 					case MAVLINK_MSG_ID_PARAM_VALUE:
-						{
-							//ROS_INFO("Param received");
-							mavlink_param_value_t paramvalue;
-							mavlink_msg_param_value_decode(&message,&paramvalue);
-							ROS_INFO("Param_index: %d\t Param_id: %s\t Param_value: %f",paramvalue.param_index, paramvalue.param_id, paramvalue.param_value);
-							//We only care about parameters we need like RC params. Others for now ignore
-							for (int i = 0;i < SERVONUM;i++)
-							{
-								if(paramvalue.param_index ==RC_ID[i])
-								{
-									RC_MIN[i] = paramvalue.param_value;
-									ROS_INFO("RC_MIN[%d]: %f",i,RC_MIN[i]);
-								}
-								else if(paramvalue.param_index == (RC_ID[i]+1))
-								{
-									RC_TRIM[i] = paramvalue.param_value;
-									ROS_INFO("RC_TRIM[%d]: %f",i,RC_TRIM[i]);
-								}
-								else if(paramvalue.param_index == (RC_ID[i]+2))
-								{
-									RC_MAX[i] = paramvalue.param_value;
-									ROS_INFO("RC_MAX[%d]: %f",i,RC_MAX[i]);
-								}
-							}
-						}
+            {
+              //ROS_INFO("Param received");
+              mavlink_param_value_t paramvalue;
+              mavlink_msg_param_value_decode(&message,&paramvalue);
+              ROS_INFO("Param_index: %d\t Param_id: %s\t Param_value: %f",paramvalue.param_index, paramvalue.param_id, paramvalue.param_value);
+              //We only care about parameters we need like RC params. Others for now ignore
+              char id[16];//ID
+              for (int i = 0;i < SERVONUM;i++)
+              {
+                sprintf(id,"RC%d_MIN",i+1);
+                if(!strcmp(paramvalue.param_id, id))
+                {
+                  RC_MIN[i] = paramvalue.param_value;
+                  printf("RC_MIN[%d]: %f\n",i,RC_MIN[i]);
+                  break;
+                }
+
+                sprintf(id,"RC%d_TRIM",i+1);
+                if(!strcmp(paramvalue.param_id, id))
+                {
+                  RC_TRIM[i] = paramvalue.param_value;
+                  printf("RC_TRIM[%d]: %f\n",i,RC_TRIM[i]);
+                  break;
+                }
+
+                sprintf(id,"RC%d_MAX",i+1);
+                if(!strcmp(paramvalue.param_id, id))
+                {
+                  RC_MAX[i] = paramvalue.param_value;
+                  printf("RC_MAX[%d]: %f\n",i,RC_MAX[i]);
+                  break;
+                }
+              }
+            }
 						break;
 					case MAVLINK_MSG_ID_RAW_IMU:
 						{

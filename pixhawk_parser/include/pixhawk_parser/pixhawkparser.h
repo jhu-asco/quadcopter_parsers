@@ -67,7 +67,7 @@ class PixhawkParser: public parsernode::Parser
 			uint8_t targetcomp_id;
 			//float RC_TRIM[SERVONUM], RC_MIN[SERVONUM], RC_MAX[SERVONUM];
 			float *RC_TRIM; float *RC_MIN; float *RC_MAX;
-			uint16_t *RC_ID;
+			//uint16_t *RC_ID;
 			//uint16_t *ARM_ID;
 			//float* ARM_TRIM; float *ARM_MIN; float *ARM_MAX;
 			ros::Timer rctimer;
