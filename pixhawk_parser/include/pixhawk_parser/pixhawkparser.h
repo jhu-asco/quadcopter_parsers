@@ -177,7 +177,7 @@ class PixhawkParser: public parsernode::Parser
 			bool calibrateimubias();
 			void getquaddata(parsernode::common::quaddata &d1);
 			void estimatethrustbias();
-			void reset_attitude(double &roll, double &pitch, double &yaw);
+			void reset_attitude(double roll, double pitch, double yaw);
 			void setlogdir(string logdir)
 			{
 				cmdfile.open((logdir+"/cmd.dat").c_str());
