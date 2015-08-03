@@ -358,6 +358,7 @@ namespace pixhawk_parser{
 
 		//Controller should ensure that the commanded angles are between -pi to pi 
 		rpytmsg.y = -rpytmsg.y;//Converting NWU to NED for commanding
+		rpytmsg.z = -rpytmsg.z;//Converting NWU to NED for commanding
 
     if(rpytmsg.x > 0)
     {
@@ -387,7 +388,14 @@ namespace pixhawk_parser{
 		}
 		else
 		{
-			overridemsg.chan4_raw = (uint16_t)parsernode::common::map(-rpytmsg.z, -1,1,RC_MIN[3],RC_MAX[3]);//Yaw is normalized between -1 to 1 for now as it is the rate of change and not exactly an angle to command
+      if(rpytmsg.z > 0)
+      {
+        overridemsg.chan4_raw = (uint16_t)parsernode::common::map(rpytmsg.z, 0,1,RC_TRIM[3]+1,RC_MAX[3]);//Yaw is normalized between -1 to 1 for now as it is the rate of change and not exactly an angle to command
+      }
+      else
+      {
+        overridemsg.chan4_raw = (uint16_t)parsernode::common::map(rpytmsg.z, -1,0,RC_MIN[3],RC_TRIM[3]-1);//Yaw is normalized between -1 to 1 for now as it is the rate of change and not exactly an angle to command
+      }
 		}
 		overridemsg.chan5_raw = 900;
 		overridemsg.chan6_raw = 900;
