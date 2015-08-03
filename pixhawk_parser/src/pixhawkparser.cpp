@@ -665,6 +665,8 @@ namespace pixhawk_parser{
 			{
 				if (!verbose)
 					fprintf(stderr, "ERROR: Could not read from port %s\n", port.c_str());
+					//Break from this thread since we cannot read from port most probably its closed
+			  break;
 					//exit(EXIT_FAILURE);//Exit if we cannot read from the port
 			}
 
@@ -848,7 +850,12 @@ namespace pixhawk_parser{
 								PixhawkParser::datareqCallback(dataparseval);
 
                 //Set CH7 to 34:
-                PixhawkParser::setParameter("CH7_OPT", 34.0, MAV_PARAM_TYPE_INT8);
+                /*PixhawkParser::setParameter("CH7_OPT", 34.0, MAV_PARAM_TYPE_INT8);
+                PixhawkParser::setParameter("RC1_DZ", 1.0, MAV_PARAM_TYPE_INT16);
+                PixhawkParser::setParameter("RC2_DZ", 1.0, MAV_PARAM_TYPE_INT16);
+                PixhawkParser::setParameter("RC3_DZ", 1.0, MAV_PARAM_TYPE_INT16);
+                PixhawkParser::setParameter("RC4_DZ", 1.0, MAV_PARAM_TYPE_INT16);
+								*/
 							}
 							//fprintf(stdout,"Sys_status: %s MODE: %d\n",base_mode_map(heartbeat.base_mode).c_str(),heartbeat.custom_mode);
 							spin_mutex.lock();
