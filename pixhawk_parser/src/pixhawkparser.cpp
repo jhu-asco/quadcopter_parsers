@@ -359,9 +359,23 @@ namespace pixhawk_parser{
 		//Controller should ensure that the commanded angles are between -pi to pi 
 		rpytmsg.y = -rpytmsg.y;//Converting NWU to NED for commanding
 
-		overridemsg.chan1_raw = (uint16_t)parsernode::common::map(rpytmsg.x,-data.rpbound, data.rpbound, RC_MIN[0],RC_MAX[0]);//ROll
+    if(rpytmsg.x > 0)
+    {
+      overridemsg.chan1_raw = (uint16_t)parsernode::common::map(rpytmsg.x,0, data.rpbound, RC_TRIM[0]+1,RC_MAX[0]);//ROll
+    }
+    else
+    {
+      overridemsg.chan1_raw = (uint16_t)parsernode::common::map(rpytmsg.x,-data.rpbound, 0, RC_MIN[0],RC_TRIM[0]-1);//ROll
+    }
 
-		overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,-data.rpbound, data.rpbound, RC_MIN[1],RC_MAX[1]);//PITCH
+    if(rpytmsg.y > 0)
+    {
+      overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,0, data.rpbound, RC_TRIM[1]+1,RC_MAX[1]);//PITCH
+    }
+    else
+    {
+      overridemsg.chan2_raw = (uint16_t)parsernode::common::map(rpytmsg.y,-data.rpbound, 0, RC_MIN[1],RC_TRIM[1]-1);//PITCH
+    }
 
 		overridemsg.chan3_raw = (uint16_t)parsernode::common::map(rpytmsg.w, data.thrustmin,data.thrustmax,RC_MIN[2],RC_MAX[2]);//Thrust
 		//uint16_t throttlepwm = (uint16_t)(rpytmsg.w * gain_throttle + intercept_throttle);
