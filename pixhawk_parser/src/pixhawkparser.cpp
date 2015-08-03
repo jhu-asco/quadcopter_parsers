@@ -266,7 +266,7 @@ namespace pixhawk_parser{
 		rctimer.start();
 	}
 
-	void PixhawkParser::reset_attitude(double &roll, double &pitch, double &yaw)
+	void PixhawkParser::reset_attitude(double roll, double pitch, double yaw)
 	{
 		//Convert into NED frame from vrpn frame
 		mavlink_message_t mavmsg;

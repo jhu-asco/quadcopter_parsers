@@ -52,7 +52,7 @@ class ArdroneParser: public parsernode::Parser
 			bool reset();
 			bool calibrateimubias();
 			void estimatethrustbias();
-			void reset_attitude(double &roll, double &pitch, double &yaw)
+			void reset_attitude(double roll, double pitch, double yaw)
 			{
 				//Not Implemented
 			}

@@ -67,7 +67,7 @@ class Parser
 //		virtual void setarmangles(double *armangles)=0;//Command Arm angles This is a bad way of doing it TODO change marin code and my code to make this consistent
 		virtual void grip(int state)=0;//Tri State Gripper
 		virtual void estimatethrustbias()=0;
-		virtual void reset_attitude(double &roll, double &pitch, double &yaw)=0;
+		virtual void reset_attitude(double roll, double pitch, double yaw)=0;
 /*		void setthrustbias(float thrustbias_)
 		{
 			data.thrustbias = thrustbias_;
