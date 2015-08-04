@@ -819,6 +819,17 @@ namespace pixhawk_parser{
 							}
 						}
 						break;
+          case MAVLINK_MSG_ID_EKF_STATUS_REPORT:
+            {
+              mavlink_ekf_status_report_t ekf_message;
+              mavlink_msg_ekf_status_report_decode(&message, &ekf_message);
+              ROS_INFO("EKF Status: Velocity_var: %f, pos_horiz_variance: %f, pos_vert_variance: %f, compass_variance: %f, terrain_alt_variance: %f", ekf_message.velocity_variance
+                                                                                                                                                     , ekf_message.pos_horiz_variance
+                                                                                                                                                     , ekf_message.pos_vert_variance
+                                                                                                                                                     , ekf_message.compass_variance
+                                                                                                                                                     , ekf_message.terrain_alt_variance);
+            }
+            break;
 					case MAVLINK_MSG_ID_HEARTBEAT:
 						{
 							mavlink_heartbeat_t heartbeat;
@@ -847,6 +858,9 @@ namespace pixhawk_parser{
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "RAW START 0";//20 Not needed right now
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								dataparseval.data = "EXTRA3 START 1";//Extra for getting ekf status
 								PixhawkParser::datareqCallback(dataparseval);
 
                 //Set CH7 to 34:
@@ -968,6 +982,10 @@ namespace pixhawk_parser{
 		{
 			mavdatastreamreq.req_stream_id = MAV_DATA_STREAM_EXTRA1;
 		} 
+    else  if(substr == "EXTRA3")
+		{
+			mavdatastreamreq.req_stream_id = MAV_DATA_STREAM_EXTRA3;
+		}
 		else  if(substr == "RAW")
 		{
 			mavdatastreamreq.req_stream_id = MAV_DATA_STREAM_RAW_SENSORS;
