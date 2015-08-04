@@ -828,7 +828,19 @@ namespace pixhawk_parser{
                                                                                                                                                      , ekf_message.pos_vert_variance
                                                                                                                                                      , ekf_message.compass_variance
                                                                                                                                                      , ekf_message.terrain_alt_variance);
-            }
+#define BYTETOBINARYPATTERN "%d%d%d%d%d%d%d%d"
+#define BYTETOBINARY(byte)  \
+							(byte & 0x80 ? 1 : 0), \
+							(byte & 0x40 ? 1 : 0), \
+							(byte & 0x20 ? 1 : 0), \
+							(byte & 0x10 ? 1 : 0), \
+							(byte & 0x08 ? 1 : 0), \
+							(byte & 0x04 ? 1 : 0), \
+							(byte & 0x02 ? 1 : 0), \
+							(byte & 0x01 ? 1 : 0) 
+
+							ROS_INFO("Flags: "BYTETOBINARYPATTERN, BYTETOBINARY(ekf_message.flags));
+						}
             break;
 					case MAVLINK_MSG_ID_HEARTBEAT:
 						{
