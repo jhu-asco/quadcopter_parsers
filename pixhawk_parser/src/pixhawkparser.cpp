@@ -804,6 +804,11 @@ namespace pixhawk_parser{
 						{
 							mavlink_rc_channels_raw_t rcmessage;
 							mavlink_msg_rc_channels_raw_decode(&message,&rcmessage);
+              if(enable_log)
+              {
+                //log the data
+                rcinputfile<<(ros::Time::now().toNSec())<<"\t"<<rcmessage.chan1_raw<<"\t"<<rcmessage.chan2_raw<<"\t"<<rcmessage.chan3_raw<<"\t"<<rcmessage.chan4_raw<<endl;
+              }
 							//printf("RAW RC input: \t R1: %u\t R2 %u \t R_3 %u\t R_4 %u\tR_5 %u\t R_6 %u \t R_7 %u\t R_8 %u \n", rcmessage.chan1_raw, rcmessage.chan2_raw, rcmessage.chan3_raw, rcmessage.chan4_raw, rcmessage.chan5_raw, rcmessage.chan6_raw, rcmessage.chan7_raw, rcmessage.chan8_raw);
 						}
 						break;
@@ -866,7 +871,7 @@ namespace pixhawk_parser{
 								dataparseval.data = "EXTENDED START 2";//For battery data etc 2 times a second should be more than enough 
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
-								dataparseval.data = "RADIO START 0";//30
+								dataparseval.data = "RADIO START 20";//30
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "RAW START 0";//20 Not needed right now

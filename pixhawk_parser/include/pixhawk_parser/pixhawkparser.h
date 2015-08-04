@@ -78,6 +78,7 @@ class PixhawkParser: public parsernode::Parser
 			int intmode;//Internal mode not intending to expose 
 			ofstream cmdfile;//Cmd logging
 			ofstream servofile;//Raw servo pwm logging
+			ofstream rcinputfile;//Raw rc input logging
 			ofstream imufile;//Imu data logging
 			bool enable_log;
 		  bool countstar;
@@ -154,6 +155,7 @@ class PixhawkParser: public parsernode::Parser
 				//mavlink_sub.shutdown();
 				cmdfile.close();
 				servofile.close();
+				rcinputfile.close();
 				imufile.close();
 				//serial_recvthread->join();
 			}
@@ -182,14 +184,17 @@ class PixhawkParser: public parsernode::Parser
 			{
 				cmdfile.open((logdir+"/cmd.dat").c_str());
 				servofile.open((logdir+"/servo.dat").c_str());
+				rcinputfile.open((logdir+"/rcinput.dat").c_str());
 				imufile.open((logdir+"/imu.dat").c_str());
 
 				cmdfile.precision(10);
 				servofile.precision(10);
+				rcinputfile.precision(10);
 				imufile.precision(10);
 
 				cmdfile<<"#Time\t Roll \t Pitch \t Yaw \t Thrust"<<endl;
 				servofile<<"#Time\t SERVO_1\t SERVO_2\t SERVO_3\t SERVO_4"<<endl;
+				rcinputfile<<"#Time\t RC_1\t RC_2\t RC_3\t RC_4"<<endl;
 				imufile<<"#Time\t Roll \t Pitch \t Yaw"<<endl;
 			}
 			void controllog(bool logswitch)
