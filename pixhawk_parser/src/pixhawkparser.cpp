@@ -590,6 +590,79 @@ namespace pixhawk_parser{
 		ROS_INFO("Publishing done");
 	}*/ 
 
+  void PixhawkParser::reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level)
+  {
+    if(level = 0xffffffff)
+    {
+      //Starting
+      tuning_params = current_params_.current_tuning_params_;
+      return;
+    }
+    else if(level == 1)
+    {
+      //kpr:
+      PixhawkParser::setParameter("STB_PIT_P", tuning_params.kpr, current_params_.param_type["kpr"]);
+      PixhawkParser::setParameter("STB_RLL_P", tuning_params.kpr, current_params_.param_type["kpr"]);
+    }
+    else if(level == 2)
+    {
+      //kprr:
+      PixhawkParser::setParameter("RATE_RLL_P", tuning_params.kprr, current_params_.param_type["kprr"]);
+      PixhawkParser::setParameter("RATE_PIT_P", tuning_params.kprr, current_params_.param_type["kprr"]);
+    }
+    else if(level == 3)
+    {
+      //kirr:
+      PixhawkParser::setParameter("RATE_RLL_I", tuning_params.kirr, current_params_.param_type["kirr"]);
+      PixhawkParser::setParameter("RATE_PIT_I", tuning_params.kirr, current_params_.param_type["kirr"]);
+    }
+    else if(level == 4)
+    {
+      //kdrr:
+      PixhawkParser::setParameter("RATE_RLL_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
+      PixhawkParser::setParameter("RATE_PIT_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
+    }
+    else if(level == 5)
+    {
+      //kpy:
+      PixhawkParser::setParameter("STB_YAW_P", tuning_params.kpy, current_params_.param_type["kpy"]);
+    }
+    else if(level == 6)
+    {
+      //kpyr:
+      PixhawkParser::setParameter("RATE_YAW_P", tuning_params.kpyr, current_params_.param_type["kpyr"]);
+    }
+    else if(level == 7)
+    {
+      //kiyr:
+      PixhawkParser::setParameter("RATE_YAW_I", tuning_params.kiyr, current_params_.param_type["kiyr"]);
+    }
+    else if(level == 8)
+    {
+      //kdyr:
+      PixhawkParser::setParameter("RATE_YAW_D", tuning_params.kdyr, current_params_.param_type["kdyr"]);
+    }
+    else if(level == 9)
+    {
+      //kpt:
+      PixhawkParser::setParameter("THR_ACCEL_P", tuning_params.kpt, current_params_.param_type["kpt"]);
+    }
+    else if(level == 10)
+    {
+      //kit:
+      PixhawkParser::setParameter("THR_ACCEL_I", tuning_params.kit, current_params_.param_type["kit"]);
+    }
+    else if(level == 11)
+    {
+      //kdt:
+      PixhawkParser::setParameter("THR_ACCEL_D", tuning_params.kdt, current_params_.param_type["kdt"]);
+    }
+    else if(level == 12)
+    {
+      //FeedForward:
+      PixhawkParser::setParameter("ATC_RATE_FF_ENAB", tuning_params.feedforward, current_params_.param_type["feedforward"]);
+    }
+  }
 	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
 	{
 		mavlink_message_t mavmsg;
@@ -741,6 +814,83 @@ namespace pixhawk_parser{
                   printf("RC_MAX[%d]: %f\n",i,RC_MAX[i]);
                   break;
                 }
+              }
+              //Check if parameter is one of tuning params:
+              {
+                if(!strcmp(paramvalue.param_id, "STB_PIT_P"))
+                {
+                  current_params_.current_tuning_params_.kpr = paramvalue.param_value;
+                  current_params_.param_type["kpr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_RLL_P"))
+                {
+                  current_params_.current_tuning_params_.kprr = paramvalue.param_value;
+                  current_params_.param_type["kprr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_RLL_I"))
+                {
+                  current_params_.current_tuning_params_.kirr = paramvalue.param_value;
+                  current_params_.param_type["kirr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_RLL_D"))
+                {
+                  current_params_.current_tuning_params_.kdrr = paramvalue.param_value;
+                  current_params_.param_type["kdrr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "STB_YAW_P"))
+                {
+                  current_params_.current_tuning_params_.kpy = paramvalue.param_value;
+                  current_params_.param_type["kpy"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_YAW_P"))
+                {
+                  current_params_.current_tuning_params_.kpyr = paramvalue.param_value;
+                  current_params_.param_type["kpyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_YAW_I"))
+                {
+                  current_params_.current_tuning_params_.kiyr = paramvalue.param_value;
+                  current_params_.param_type["kiyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "RATE_YAW_D"))
+                {
+                  current_params_.current_tuning_params_.kdyr = paramvalue.param_value;
+                  current_params_.param_type["kdyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_P"))
+                {
+                  current_params_.current_tuning_params_.kpt = paramvalue.param_value;
+                  current_params_.param_type["kpt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
+                {
+                  current_params_.current_tuning_params_.kit = paramvalue.param_value;
+                  current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_D"))
+                {
+                  current_params_.current_tuning_params_.kdt = paramvalue.param_value;
+                  current_params_.param_type["kdt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
+                {
+                  current_params_.current_tuning_params_.kit = paramvalue.param_value;
+                  current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+                else if(!strcmp(paramvalue.param_id, "ATC_RATE_FF_ENAB"))
+                {
+                  current_params_.current_tuning_params_.feedforward = paramvalue.param_value;
+                  current_params_.param_type["feedforward"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                }
+              }
+              //Start reconfigure if all params have been received:
+              if(paramvalue.param_index >= 492)
+              {
+                //Start the NodeHandle and reconfigure interface
+                private_nh_.reset(new ros::NodeHandle("pixhawk_tuning"));
+                reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
+                reconfigcallbacktype = boost::bind(&PixhawkParser::reconfigCallback, this, _1, _2);
+                reconfigserver->setCallback(reconfigcallbacktype);
               }
             }
 						break;

@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   tf
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -75,6 +76,11 @@ find_package(catkin REQUIRED COMPONENTS
 #   DEPENDENCIES
 #   geometry_msgs#   sensor_msgs#   std_msgs
 # )
+
+## Generate dynamic reconfig options:
+generate_dynamic_reconfigure_options(
+  cfg/PixhawkTuningInterface.cfg
+	  )
 
 ###################################
 ## catkin specific configuration ##

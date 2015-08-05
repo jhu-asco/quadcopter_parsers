@@ -50,6 +50,10 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 #include <boost/thread.hpp>
 
+//Reconfig includes:
+#include <dynamic_reconfigure/server.h>
+#include <pixhawk_parser/PixhawkTuningInterfaceConfig.h>
+
 #define THROTCHAN 2
 #define SERVONUM 4
 //#define NOFJOINTS 2
@@ -104,6 +108,15 @@ class PixhawkParser: public parsernode::Parser
 			double gain_throttle; //This is conversion factor from throttle cmd in Newtons to pwm
 			double intercept_throttle; //This is constant addition in the linear conversion (mx + c) this is c and above one is m
 
+    private:
+      boost::shared_ptr<ros::NodeHandle> private_nh_;///For Reconfigure
+      boost::shared_ptr<dynamic_reconfigure::Server<PixhawkTuningInterfaceConfig> > reconfigserver;
+      dynamic_reconfigure::Server<PixhawkTuningInterfaceConfig>::CallbackType reconfigcallbacktype;
+      void reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level);
+      struct Current_Params{
+        PixhawkTuningInterfaceConfig current_tuning_params_;
+        std::map<std::string, MAV_PARAM_TYPE> param_type;
+      }current_params_;
 
 		protected:
 			//Publishers:
