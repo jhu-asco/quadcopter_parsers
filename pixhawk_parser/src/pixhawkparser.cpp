@@ -817,70 +817,77 @@ namespace pixhawk_parser{
               }
               //Check if parameter is one of tuning params:
               {
-                if(!strcmp(paramvalue.param_id, "STB_PIT_P"))
+                if(!strcmp(paramvalue.param_id, "STB_RLL_P"))
                 {
                   current_params_.current_tuning_params_.kpr = paramvalue.param_value;
                   current_params_.param_type["kpr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found STB_RLL_P");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_P"))
                 {
                   current_params_.current_tuning_params_.kprr = paramvalue.param_value;
                   current_params_.param_type["kprr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_RLL_P");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_I"))
                 {
                   current_params_.current_tuning_params_.kirr = paramvalue.param_value;
                   current_params_.param_type["kirr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_RLL_I");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_D"))
                 {
                   current_params_.current_tuning_params_.kdrr = paramvalue.param_value;
                   current_params_.param_type["kdrr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_RLL_D");
                 }
                 else if(!strcmp(paramvalue.param_id, "STB_YAW_P"))
                 {
                   current_params_.current_tuning_params_.kpy = paramvalue.param_value;
                   current_params_.param_type["kpy"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("STB_YAW_P");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_P"))
                 {
                   current_params_.current_tuning_params_.kpyr = paramvalue.param_value;
                   current_params_.param_type["kpyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_YAW_P");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_I"))
                 {
                   current_params_.current_tuning_params_.kiyr = paramvalue.param_value;
                   current_params_.param_type["kiyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_YAW_I");
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_D"))
                 {
                   current_params_.current_tuning_params_.kdyr = paramvalue.param_value;
                   current_params_.param_type["kdyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found RATE_YAW_D");
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_P"))
                 {
                   current_params_.current_tuning_params_.kpt = paramvalue.param_value;
                   current_params_.param_type["kpt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found THR_ACCEL_P");
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
                 {
                   current_params_.current_tuning_params_.kit = paramvalue.param_value;
                   current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found THR_ACCEL_I");
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_D"))
                 {
                   current_params_.current_tuning_params_.kdt = paramvalue.param_value;
                   current_params_.param_type["kdt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                }
-                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
-                {
-                  current_params_.current_tuning_params_.kit = paramvalue.param_value;
-                  current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found THR_ACCEL_D");
                 }
                 else if(!strcmp(paramvalue.param_id, "ATC_RATE_FF_ENAB"))
                 {
                   current_params_.current_tuning_params_.feedforward = paramvalue.param_value;
                   current_params_.param_type["feedforward"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found ATC_RATE_FF_ENAB");
                 }
               }
               //Start reconfigure if all params have been received:
