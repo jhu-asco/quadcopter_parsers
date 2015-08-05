@@ -5,7 +5,8 @@
 namespace pixhawk_parser{
 
 	PixhawkParser::PixhawkParser()
-	{
+  {
+    this->initialized = false;
 	}
 	//PluginLib Initialization function
 	void PixhawkParser::initialize(ros::NodeHandle &nh_)
@@ -1054,7 +1055,9 @@ namespace pixhawk_parser{
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "EXTRA3 START 1";//Extra for getting ekf status
-								PixhawkParser::datareqCallback(dataparseval);
+                PixhawkParser::datareqCallback(dataparseval);
+                /////Initialize is set to true once we get a heartbeat!!
+                this->initialized = true;
 
                 //Set CH7 to 34:
                 /*PixhawkParser::setParameter("CH7_OPT", 34.0, MAV_PARAM_TYPE_INT8);

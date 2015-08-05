@@ -83,9 +83,11 @@ class Parser
 		virtual void setaltitude(double altitude_)=0;//Set the altitude value in the data
 		virtual void setlogdir(string logdir)=0;//Set whether to log data or not
 		virtual void controllog(bool logswitch)=0;
-		//const ros::NodeHandle &nh;
+    //const ros::NodeHandle &nh;
+  public:
+    bool initialized;
 	protected: 
-		Parser(){};
+    Parser():initialized(false){};
 	private:
 			common::quaddata data;
 };
