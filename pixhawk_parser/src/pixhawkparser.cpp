@@ -122,6 +122,9 @@ namespace pixhawk_parser{
 			if (!silent)
 				fprintf(stderr, "\nConnected to %s with %d baud, 8 data bits, no parity, 1 stop bit (8N1)\n", port.c_str(), baud);
 		}
+
+    //Initialize parameter find count:
+    parameter_find_count = 0;
 	}
 
 
@@ -822,82 +825,98 @@ namespace pixhawk_parser{
                   current_params_.current_tuning_params_.kpr = paramvalue.param_value;
                   current_params_.param_type["kpr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found STB_RLL_P");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_P"))
                 {
                   current_params_.current_tuning_params_.kprr = paramvalue.param_value;
                   current_params_.param_type["kprr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_P");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_I"))
                 {
                   current_params_.current_tuning_params_.kirr = paramvalue.param_value;
                   current_params_.param_type["kirr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_I");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_RLL_D"))
                 {
                   current_params_.current_tuning_params_.kdrr = paramvalue.param_value;
                   current_params_.param_type["kdrr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_D");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "STB_YAW_P"))
                 {
                   current_params_.current_tuning_params_.kpy = paramvalue.param_value;
                   current_params_.param_type["kpy"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("STB_YAW_P");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_P"))
                 {
                   current_params_.current_tuning_params_.kpyr = paramvalue.param_value;
                   current_params_.param_type["kpyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_P");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_I"))
                 {
                   current_params_.current_tuning_params_.kiyr = paramvalue.param_value;
                   current_params_.param_type["kiyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_I");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "RATE_YAW_D"))
                 {
                   current_params_.current_tuning_params_.kdyr = paramvalue.param_value;
                   current_params_.param_type["kdyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_D");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_P"))
                 {
                   current_params_.current_tuning_params_.kpt = paramvalue.param_value;
                   current_params_.param_type["kpt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found THR_ACCEL_P");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
                 {
                   current_params_.current_tuning_params_.kit = paramvalue.param_value;
                   current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found THR_ACCEL_I");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "THR_ACCEL_D"))
                 {
                   current_params_.current_tuning_params_.kdt = paramvalue.param_value;
                   current_params_.param_type["kdt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found THR_ACCEL_D");
+                  parameter_find_count++;
                 }
                 else if(!strcmp(paramvalue.param_id, "ATC_RATE_FF_ENAB"))
                 {
                   current_params_.current_tuning_params_.feedforward = paramvalue.param_value;
                   current_params_.param_type["feedforward"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found ATC_RATE_FF_ENAB");
+                  parameter_find_count++;
                 }
               }
               //Start reconfigure if all params have been received:
-              if(paramvalue.param_index >= 492)
+              if(parameter_find_count == 12)
               {
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("pixhawk_tuning"));
                 reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
                 reconfigcallbacktype = boost::bind(&PixhawkParser::reconfigCallback, this, _1, _2);
                 reconfigserver->setCallback(reconfigcallbacktype);
+              }
+              else
+              {
+                ROS_WARN("Could not find all parameters!: %d", parameter_find_count);
               }
             }
 						break;

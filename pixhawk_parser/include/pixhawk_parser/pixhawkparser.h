@@ -117,6 +117,7 @@ class PixhawkParser: public parsernode::Parser
         PixhawkTuningInterfaceConfig current_tuning_params_;
         std::map<std::string, MAV_PARAM_TYPE> param_type;
       }current_params_;
+      int parameter_find_count;
 
 		protected:
 			//Publishers:
