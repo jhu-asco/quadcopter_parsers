@@ -465,7 +465,7 @@ namespace pixhawk_parser{
     //construct command
     parameter_msg.target_system = targetsys_id;
     parameter_msg.target_component = targetcomp_id;
-    strcpy(parameter_msg.param_id, id.c_str());
+    strncpy(parameter_msg.param_id, id.c_str(),16);//Only copy upto 16 bits
     parameter_msg.param_value = parameter_value;
     parameter_msg.param_type = param_type;
     mavlink_msg_param_set_encode(hostsysid, hostcompid,&mavlink_msg,&parameter_msg);
@@ -596,7 +596,7 @@ namespace pixhawk_parser{
 
   void PixhawkParser::reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level)
   {
-    if(level = 0xffffffff)
+    if(level == 0xffffffff)
     {
       //Starting
       tuning_params = current_params_.current_tuning_params_;
@@ -605,64 +605,76 @@ namespace pixhawk_parser{
     else if(level == 1)
     {
       //kpr:
+			ROS_INFO("Setting Parameter: %d", level);
       PixhawkParser::setParameter("STB_PIT_P", tuning_params.kpr, current_params_.param_type["kpr"]);
       PixhawkParser::setParameter("STB_RLL_P", tuning_params.kpr, current_params_.param_type["kpr"]);
     }
     else if(level == 2)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kprr:
       PixhawkParser::setParameter("RATE_RLL_P", tuning_params.kprr, current_params_.param_type["kprr"]);
       PixhawkParser::setParameter("RATE_PIT_P", tuning_params.kprr, current_params_.param_type["kprr"]);
     }
     else if(level == 3)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kirr:
       PixhawkParser::setParameter("RATE_RLL_I", tuning_params.kirr, current_params_.param_type["kirr"]);
       PixhawkParser::setParameter("RATE_PIT_I", tuning_params.kirr, current_params_.param_type["kirr"]);
     }
     else if(level == 4)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kdrr:
       PixhawkParser::setParameter("RATE_RLL_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
       PixhawkParser::setParameter("RATE_PIT_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
     }
     else if(level == 5)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kpy:
       PixhawkParser::setParameter("STB_YAW_P", tuning_params.kpy, current_params_.param_type["kpy"]);
     }
     else if(level == 6)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kpyr:
       PixhawkParser::setParameter("RATE_YAW_P", tuning_params.kpyr, current_params_.param_type["kpyr"]);
     }
     else if(level == 7)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kiyr:
       PixhawkParser::setParameter("RATE_YAW_I", tuning_params.kiyr, current_params_.param_type["kiyr"]);
     }
     else if(level == 8)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kdyr:
       PixhawkParser::setParameter("RATE_YAW_D", tuning_params.kdyr, current_params_.param_type["kdyr"]);
     }
     else if(level == 9)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kpt:
-      PixhawkParser::setParameter("THR_ACCEL_P", tuning_params.kpt, current_params_.param_type["kpt"]);
+      PixhawkParser::setParameter("ACCEL_Z_P", tuning_params.kpt, current_params_.param_type["kpt"]);
     }
     else if(level == 10)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kit:
-      PixhawkParser::setParameter("THR_ACCEL_I", tuning_params.kit, current_params_.param_type["kit"]);
+      PixhawkParser::setParameter("ACCEL_Z_I", tuning_params.kit, current_params_.param_type["kit"]);
     }
     else if(level == 11)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //kdt:
-      PixhawkParser::setParameter("THR_ACCEL_D", tuning_params.kdt, current_params_.param_type["kdt"]);
+      PixhawkParser::setParameter("ACCEL_Z_D", tuning_params.kdt, current_params_.param_type["kdt"]);
     }
     else if(level == 12)
     {
+			ROS_INFO("Setting Parameter: %d", level);
       //FeedForward:
       PixhawkParser::setParameter("ATC_RATE_FF_ENAB", tuning_params.feedforward, current_params_.param_type["feedforward"]);
     }
@@ -705,6 +717,11 @@ namespace pixhawk_parser{
 		PixhawkParser::mavlinkPublish(mavmsg);
 		//mavlink_pub.publish(mavlink_ros_msg);
 		ROS_INFO("Publishing done");
+	}
+
+	static inline double double_round(double input, int decimals)
+	{
+		return double(round(input*pow(10.0,decimals)))/pow(10.0,decimals);
 	}
 
 	void PixhawkParser::serialtimerCallback()//This is a thread now
@@ -790,13 +807,13 @@ namespace pixhawk_parser{
               //ROS_INFO("Param received");
               mavlink_param_value_t paramvalue;
               mavlink_msg_param_value_decode(&message,&paramvalue);
-              ROS_INFO("Param_index: %d\t Param_id: %s\t Param_value: %f",paramvalue.param_index, paramvalue.param_id, paramvalue.param_value);
+              //ROS_INFO("Param_index: %d\t Param_id: %s\t Param_value: %f",paramvalue.param_index, paramvalue.param_id, paramvalue.param_value);
               //We only care about parameters we need like RC params. Others for now ignore
               char id[16];//ID
               for (int i = 0;i < SERVONUM;i++)
               {
                 sprintf(id,"RC%d_MIN",i+1);
-                if(!strcmp(paramvalue.param_id, id))
+                if(!strncmp(paramvalue.param_id, id,16))
                 {
                   RC_MIN[i] = paramvalue.param_value;
                   printf("RC_MIN[%d]: %f\n",i,RC_MIN[i]);
@@ -804,7 +821,7 @@ namespace pixhawk_parser{
                 }
 
                 sprintf(id,"RC%d_TRIM",i+1);
-                if(!strcmp(paramvalue.param_id, id))
+                if(!strncmp(paramvalue.param_id, id,16))
                 {
                   RC_TRIM[i] = paramvalue.param_value;
                   printf("RC_TRIM[%d]: %f\n",i,RC_TRIM[i]);
@@ -812,7 +829,7 @@ namespace pixhawk_parser{
                 }
 
                 sprintf(id,"RC%d_MAX",i+1);
-                if(!strcmp(paramvalue.param_id, id))
+                if(!strncmp(paramvalue.param_id, id,16))
                 {
                   RC_MAX[i] = paramvalue.param_value;
                   printf("RC_MAX[%d]: %f\n",i,RC_MAX[i]);
@@ -820,85 +837,86 @@ namespace pixhawk_parser{
                 }
               }
               //Check if parameter is one of tuning params:
+							if(!private_nh_)
               {
-                if(!strcmp(paramvalue.param_id, "STB_RLL_P"))
+                if(!strncmp(paramvalue.param_id, "STB_RLL_P",16))
                 {
-                  current_params_.current_tuning_params_.kpr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kpr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kpr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found STB_RLL_P");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_RLL_P"))
+                else if(!strncmp(paramvalue.param_id, "RATE_RLL_P",16))
                 {
-                  current_params_.current_tuning_params_.kprr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kprr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kprr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_P");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_RLL_I"))
+                else if(!strncmp(paramvalue.param_id, "RATE_RLL_I",16))
                 {
-                  current_params_.current_tuning_params_.kirr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kirr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kirr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_I");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_RLL_D"))
+                else if(!strncmp(paramvalue.param_id, "RATE_RLL_D",16))
                 {
-                  current_params_.current_tuning_params_.kdrr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kdrr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kdrr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_RLL_D");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "STB_YAW_P"))
+                else if(!strncmp(paramvalue.param_id, "STB_YAW_P",16))
                 {
-                  current_params_.current_tuning_params_.kpy = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kpy = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kpy"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("STB_YAW_P");
+                  ROS_INFO("Found STB_YAW_P");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_YAW_P"))
+                else if(!strncmp(paramvalue.param_id, "RATE_YAW_P",16))
                 {
-                  current_params_.current_tuning_params_.kpyr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kpyr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kpyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_P");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_YAW_I"))
+                else if(!strncmp(paramvalue.param_id, "RATE_YAW_I",16))
                 {
-                  current_params_.current_tuning_params_.kiyr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kiyr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kiyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_I");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "RATE_YAW_D"))
+                else if(!strncmp(paramvalue.param_id, "RATE_YAW_D",16))
                 {
-                  current_params_.current_tuning_params_.kdyr = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kdyr = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kdyr"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found RATE_YAW_D");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_P"))
+                else if(!strncmp(paramvalue.param_id, "ACCEL_Z_P",16))
                 {
-                  current_params_.current_tuning_params_.kpt = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kpt = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kpt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found THR_ACCEL_P");
+                  ROS_INFO("Found ACCEL_Z_P");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_I"))
+                else if(!strncmp(paramvalue.param_id, "ACCEL_Z_I",16))
                 {
-                  current_params_.current_tuning_params_.kit = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kit = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kit"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found THR_ACCEL_I");
+                  ROS_INFO("Found ACCEL_Z_I");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "THR_ACCEL_D"))
+                else if(!strncmp(paramvalue.param_id, "ACCEL_Z_D",16))
                 {
-                  current_params_.current_tuning_params_.kdt = paramvalue.param_value;
+                  current_params_.current_tuning_params_.kdt = double_round(paramvalue.param_value,3);
                   current_params_.param_type["kdt"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found THR_ACCEL_D");
+                  ROS_INFO("Found ACCEL_Z_D");
                   parameter_find_count++;
                 }
-                else if(!strcmp(paramvalue.param_id, "ATC_RATE_FF_ENAB"))
+                else if(!strncmp(paramvalue.param_id, "ATC_RATE_FF_ENAB",16))
                 {
                   current_params_.current_tuning_params_.feedforward = paramvalue.param_value;
                   current_params_.param_type["feedforward"] = (MAV_PARAM_TYPE)paramvalue.param_type;
@@ -906,19 +924,57 @@ namespace pixhawk_parser{
                   parameter_find_count++;
                 }
               }
+
+							if(this->initialized)
+							{
+								ROS_INFO("Param_index: %d\t Param_id: %s\t Param_value: %f",paramvalue.param_index, paramvalue.param_id, paramvalue.param_value);
+							}
+							/*if(paramvalue.param_index ==  288)
+							{
+								ROS_INFO("Match check: %d",strcmp(paramvalue.param_id, "ATC_RATE_FF_ENAB"));
+								ROS_INFO("Check ATC_RATE_FF_ENAB: '%s'", paramvalue.param_id);
+							}
+							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 12)
+              if(parameter_find_count == 12 && !private_nh_)
               {
                 //Start the NodeHandle and reconfigure interface
-                private_nh_.reset(new ros::NodeHandle("pixhawk_tuning"));
+                private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
                 reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
                 reconfigcallbacktype = boost::bind(&PixhawkParser::reconfigCallback, this, _1, _2);
                 reconfigserver->setCallback(reconfigcallbacktype);
+								ekf_status_pub = private_nh_->advertise<std_msgs::String>("ekf_status", 10);
               }
-              else
+              /*else
               {
                 ROS_WARN("Could not find all parameters!: %d", parameter_find_count);
               }
+							*/
+							if(paramvalue.param_index >= 492 && !this->initialized)
+							{
+                ROS_INFO("Number of Parameters found: %d", parameter_find_count);
+								//Setup the data to be requested:
+								std_msgs::String dataparseval;
+								//dataparseval.data = "ALL START 10";
+								//PixhawkParser::datareqCallback(dataparseval);
+								dataparseval.data = "ATTITUDE START 20";//30
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								dataparseval.data = "EXTENDED START 2";//For battery data etc 2 times a second should be more than enough 
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								dataparseval.data = "RADIO START 20";//30
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								dataparseval.data = "RAW START 0";//20 Not needed right now
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								dataparseval.data = "EXTRA3 START 1";//Extra for getting ekf status
+								PixhawkParser::datareqCallback(dataparseval);
+								usleep(50000);
+								/////Initialize is set to true once we get a heartbeat!!
+								this->initialized = true;
+							}
             }
 						break;
 					case MAVLINK_MSG_ID_RAW_IMU:
@@ -1005,11 +1061,6 @@ namespace pixhawk_parser{
             {
               mavlink_ekf_status_report_t ekf_message;
               mavlink_msg_ekf_status_report_decode(&message, &ekf_message);
-              ROS_INFO("EKF Status: Velocity_var: %f, pos_horiz_variance: %f, pos_vert_variance: %f, compass_variance: %f, terrain_alt_variance: %f", ekf_message.velocity_variance
-                                                                                                                                                     , ekf_message.pos_horiz_variance
-                                                                                                                                                     , ekf_message.pos_vert_variance
-                                                                                                                                                     , ekf_message.compass_variance
-                                                                                                                                                     , ekf_message.terrain_alt_variance);
 #define BYTETOBINARYPATTERN "%d%d%d%d%d%d%d%d"
 #define BYTETOBINARY(byte)  \
 							(byte & 0x80 ? 1 : 0), \
@@ -1021,7 +1072,21 @@ namespace pixhawk_parser{
 							(byte & 0x02 ? 1 : 0), \
 							(byte & 0x01 ? 1 : 0) 
 
-							ROS_INFO("Flags: "BYTETOBINARYPATTERN, BYTETOBINARY(ekf_message.flags));
+							if(initialized)
+							{
+								static char ekf_msg_buffer[500];
+
+								sprintf(ekf_msg_buffer, "EKF Status: Velocity_var: %f, pos_horiz_variance: %f\n pos_vert_variance: %f, compass_variance: %f\n terrain_alt_variance: %f Flags"BYTETOBINARYPATTERN
+																																																																							, ekf_message.velocity_variance
+																																																																							, ekf_message.pos_horiz_variance
+																																																																							, ekf_message.pos_vert_variance
+																																																																							, ekf_message.compass_variance
+																																																																							, ekf_message.terrain_alt_variance
+																																																																							, BYTETOBINARY(ekf_message.flags));
+								std_msgs::String ekf_status_msg;
+								ekf_status_msg.data = std::string(ekf_msg_buffer);
+								ekf_status_pub.publish(ekf_status_msg);
+							}
 						}
             break;
 					case MAVLINK_MSG_ID_HEARTBEAT:
@@ -1038,27 +1103,7 @@ namespace pixhawk_parser{
 								//Request Parameters:
 								std_msgs::Empty emptymsg;
 								PixhawkParser::paramreqCallback(emptymsg);
-								//Setup the data to be requested:
-								std_msgs::String dataparseval;
-								//dataparseval.data = "ALL START 10";
-								//PixhawkParser::datareqCallback(dataparseval);
-								dataparseval.data = "ATTITUDE START 20";//30
-								PixhawkParser::datareqCallback(dataparseval);
-								usleep(50000);
-								dataparseval.data = "EXTENDED START 2";//For battery data etc 2 times a second should be more than enough 
-								PixhawkParser::datareqCallback(dataparseval);
-								usleep(50000);
-								dataparseval.data = "RADIO START 20";//30
-								PixhawkParser::datareqCallback(dataparseval);
-								usleep(50000);
-								dataparseval.data = "RAW START 0";//20 Not needed right now
-								PixhawkParser::datareqCallback(dataparseval);
-								usleep(50000);
-								dataparseval.data = "EXTRA3 START 1";//Extra for getting ekf status
-                PixhawkParser::datareqCallback(dataparseval);
-                /////Initialize is set to true once we get a heartbeat!!
-                this->initialized = true;
-
+								
                 //Set CH7 to 34:
                 /*PixhawkParser::setParameter("CH7_OPT", 34.0, MAV_PARAM_TYPE_INT8);
                 PixhawkParser::setParameter("RC1_DZ", 1.0, MAV_PARAM_TYPE_INT16);

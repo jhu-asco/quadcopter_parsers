@@ -109,15 +109,23 @@ class PixhawkParser: public parsernode::Parser
 			double intercept_throttle; //This is constant addition in the linear conversion (mx + c) this is c and above one is m
 
     private:
-      boost::shared_ptr<ros::NodeHandle> private_nh_;///For Reconfigure
+      boost::shared_ptr<ros::NodeHandle> private_nh_;///For Reconfigure and personal publishing
+
       boost::shared_ptr<dynamic_reconfigure::Server<PixhawkTuningInterfaceConfig> > reconfigserver;
+
       dynamic_reconfigure::Server<PixhawkTuningInterfaceConfig>::CallbackType reconfigcallbacktype;
-      void reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level);
+
+			ros::Publisher ekf_status_pub;
+
       struct Current_Params{
         PixhawkTuningInterfaceConfig current_tuning_params_;
         std::map<std::string, MAV_PARAM_TYPE> param_type;
       }current_params_;
+
       int parameter_find_count;
+
+			///Reconfig Callback
+      void reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level);
 
 		protected:
 			//Publishers:
@@ -162,6 +170,11 @@ class PixhawkParser: public parsernode::Parser
 				PixhawkParser::datareqCallback(dataparseval);
 				dataparseval.data = "RADIO START 0";
 				PixhawkParser::datareqCallback(dataparseval);
+				dataparseval.data = "RAW START 0";
+				PixhawkParser::datareqCallback(dataparseval);
+				dataparseval.data = "EXTRA3 START 0";
+				PixhawkParser::datareqCallback(dataparseval);
+				tcflush(fd, TCIOFLUSH); 
   			close_port(fd);//Shutdown the serial port
 				//usleep(10000);
 				//First stop the data
