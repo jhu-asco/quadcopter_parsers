@@ -678,6 +678,18 @@ namespace pixhawk_parser{
       //FeedForward:
       PixhawkParser::setParameter("ATC_RATE_FF_ENAB", tuning_params.feedforward, current_params_.param_type["feedforward"]);
     }
+    else if(level == 13)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //prearmcheck:
+      PixhawkParser::setParameter("ARMING_CHECK", tuning_params.prearmcheck, current_params_.param_type["prearmcheck"]);
+    }
+    else if(level == 14)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //usecompass:
+      PixhawkParser::setParameter("COMPASS_USE", tuning_params.use_compass, current_params_.param_type["use_compass"]);
+    }
   }
 	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
 	{
@@ -923,6 +935,21 @@ namespace pixhawk_parser{
                   ROS_INFO("Found ATC_RATE_FF_ENAB");
                   parameter_find_count++;
                 }
+                else if(!strncmp(paramvalue.param_id, "ARMING_CHECK",16))
+                {
+                  current_params_.current_tuning_params_.prearmcheck = paramvalue.param_value;
+                  current_params_.param_type["prearmcheck"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found ARMING_CHECK");
+                  parameter_find_count++;
+                }
+                else if(!strncmp(paramvalue.param_id, "COMPASS_USE",16))
+                {
+                  current_params_.current_tuning_params_.use_compass = paramvalue.param_value;
+                  current_params_.param_type["use_compass"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found COMPASS_USE");
+                  parameter_find_count++;
+                }
+                
               }
 
 							if(this->initialized)
@@ -936,7 +963,7 @@ namespace pixhawk_parser{
 							}
 							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 12 && !private_nh_)
+              if(parameter_find_count == 14 && !private_nh_)
               {
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
