@@ -458,6 +458,34 @@ namespace pixhawk_parser{
     }
 	}
 
+  void PixhawkParser::prearmCalibrate()//Preflight Calibration
+  {
+    mavlink_message_t mavmsg;
+    mavlink_command_long_t calibrate_msg;
+    calibrate_msg.command = MAV_CMD_PREFLIGHT_CALIBRATION;
+    calibrate_msg.param1 = 1;//Gyro
+    if(ros::ok())
+    {
+      mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&calibrate_msg);
+			PixhawkParser::mavlinkPublish(mavmsg);
+      usleep(10000);
+      calibrate_msg.param1 = 0;
+    }
+    calibrate_msg.param2 = 0;//Mag Calib
+
+    calibrate_msg.param3 = 1;//Ground pressure
+    if(ros::ok())
+    {
+      mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&calibrate_msg);
+			PixhawkParser::mavlinkPublish(mavmsg);
+      usleep(10000);
+      calibrate_msg.param3 = 0;
+    }
+    calibrate_msg.param4 = 0;//Radio Calibration
+    calibrate_msg.param5 = 0;//Accel calibration
+    calibrate_msg.param6 = 0;//Compass/Motor Interference
+  }
+
   inline void PixhawkParser::setParameter(std::string id, float parameter_value, MAV_PARAM_TYPE param_type)
   {
     mavlink_message_t mavlink_msg;
@@ -690,6 +718,9 @@ namespace pixhawk_parser{
       //usecompass:
       PixhawkParser::setParameter("COMPASS_USE", tuning_params.use_compass, current_params_.param_type["use_compass"]);
     }
+
+    if(tuning_params.calibrate_pixhawk)
+      PixhawkParser::prearmCalibrate();
   }
 	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
 	{
@@ -999,7 +1030,9 @@ namespace pixhawk_parser{
 								dataparseval.data = "EXTRA3 START 1";//Extra for getting ekf status
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
-								/////Initialize is set to true once we get a heartbeat!!
+                //Send Preflight Calibration command:
+                PixhawkParser::prearmCalibrate();
+								/////Initialize is set to true once we are done completely initializing the Pixhawk
 								this->initialized = true;
 							}
             }

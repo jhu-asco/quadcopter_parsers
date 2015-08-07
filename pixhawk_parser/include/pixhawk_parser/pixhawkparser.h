@@ -198,6 +198,7 @@ class PixhawkParser: public parsernode::Parser
 			//void setarmangles(std::vector<float> &armangles);
 			//void setarmangles(double *armangles);
 			void grip(int state);
+      void prearmCalibrate();//Preflight Calibration
       inline void setParameter(std::string id, float parameter_value, MAV_PARAM_TYPE param_type = MAV_PARAM_TYPE_UINT8);
 			bool land();
 			bool reset();
