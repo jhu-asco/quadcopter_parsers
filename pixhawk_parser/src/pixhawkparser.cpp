@@ -466,9 +466,10 @@ namespace pixhawk_parser{
     calibrate_msg.param1 = 1;//Gyro
     if(ros::ok())
     {
+			ROS_INFO("Sending Calibration for Gyro");
       mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&calibrate_msg);
 			PixhawkParser::mavlinkPublish(mavmsg);
-      usleep(10000);
+      usleep(100000);
       calibrate_msg.param1 = 0;
     }
     calibrate_msg.param2 = 0;//Mag Calib
@@ -476,9 +477,10 @@ namespace pixhawk_parser{
     calibrate_msg.param3 = 1;//Ground pressure
     if(ros::ok())
     {
+			ROS_INFO("Sending Calibration for Ground Pressure");
       mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&calibrate_msg);
 			PixhawkParser::mavlinkPublish(mavmsg);
-      usleep(10000);
+      usleep(100000);
       calibrate_msg.param3 = 0;
     }
     calibrate_msg.param4 = 0;//Radio Calibration
@@ -720,7 +722,10 @@ namespace pixhawk_parser{
     }
 
     if(tuning_params.calibrate_pixhawk)
+		{
+			tuning_params.calibrate_pixhawk = false;
       PixhawkParser::prearmCalibrate();
+		}
   }
 	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
 	{
