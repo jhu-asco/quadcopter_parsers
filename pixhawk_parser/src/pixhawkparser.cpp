@@ -44,9 +44,14 @@ namespace pixhawk_parser{
 			 }
 		 */
 		//Re initialize the base members parameters as needed:
-		data.mass = 1.7;//Start with small  values
+		/*data.mass = 1.7;//Start with small  values
 		data.thrustbias = 1.5*9.81; //Reducing thrustbias
 		data.thrustmax =  data.mass*18.5;//Newtons
+		data.thrustmin = 0;
+		*/
+		data.mass = 0.25;//Start with small  values
+		data.thrustbias = data.mass*9.81; //We can estimate this later
+		data.thrustmax = data.thrustbias + 0.5*9.81;//Additional payload of 500gm
 		data.thrustmin = 0;
 		data.rpbound = M_PI/4;//This is the physical limit enforced by many drivers. This is not the same as the controller bound on angles
 		//Setup the subscribers and services needed
