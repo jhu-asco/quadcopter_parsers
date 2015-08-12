@@ -1000,7 +1000,7 @@ namespace pixhawk_parser{
                 {
                   current_params_.current_tuning_params_.ekf_quat_noise = paramvalue.param_value;
                   current_params_.param_type["ekf_quat_noise"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found COMPASS_USE");
+                  ROS_INFO("Found EKF_QUAT_NOISE");
                   parameter_find_count++;
                 }
                 
@@ -1019,6 +1019,8 @@ namespace pixhawk_parser{
               //Start reconfigure if all params have been received:
               if(parameter_find_count == 15 && !private_nh_)
               {
+								//Set Current tuning params bools to default:
+								current_params_.current_tuning_params_.calibrate_pixhawk = false;
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
                 reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
