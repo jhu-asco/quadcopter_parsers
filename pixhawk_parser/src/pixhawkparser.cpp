@@ -725,6 +725,12 @@ namespace pixhawk_parser{
       //usecompass:
       PixhawkParser::setParameter("COMPASS_USE", tuning_params.use_compass, current_params_.param_type["use_compass"]);
     }
+    else if(level == 15)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //usecompass:
+      PixhawkParser::setParameter("EKF_QUAT_NOISE", tuning_params.ekf_quat_noise, current_params_.param_type["ekf_quat_noise"]);
+    }
 
     if(tuning_params.calibrate_pixhawk)
 		{
@@ -990,6 +996,13 @@ namespace pixhawk_parser{
                   ROS_INFO("Found COMPASS_USE");
                   parameter_find_count++;
                 }
+                else if(!strncmp(paramvalue.param_id, "EKF_QUAT_NOISE",16))
+                {
+                  current_params_.current_tuning_params_.ekf_quat_noise = paramvalue.param_value;
+                  current_params_.param_type["ekf_quat_noise"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found COMPASS_USE");
+                  parameter_find_count++;
+                }
                 
               }
 
@@ -1004,7 +1017,7 @@ namespace pixhawk_parser{
 							}
 							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 14 && !private_nh_)
+              if(parameter_find_count == 15 && !private_nh_)
               {
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
@@ -1018,7 +1031,7 @@ namespace pixhawk_parser{
                 ROS_WARN("Could not find all parameters!: %d", parameter_find_count);
               }
 							*/
-							if(paramvalue.param_index >= 492 && !this->initialized)
+							if(paramvalue.param_index >= 493 && !this->initialized)
 							{
                 ROS_INFO("Number of Parameters found: %d", parameter_find_count);
 								//Setup the data to be requested:
