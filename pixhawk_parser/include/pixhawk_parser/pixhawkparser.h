@@ -56,6 +56,10 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 #define THROTCHAN 2
 #define SERVONUM 4
+
+#ifndef FILE_BUFFER_SIZE
+#define FILE_BUFFER_SIZE 1024
+#endif
 //#define NOFJOINTS 2
 //#define ANGRES 0.088 
 
@@ -84,6 +88,11 @@ class PixhawkParser: public parsernode::Parser
 			ofstream servofile;//Raw servo pwm logging
 			ofstream rcinputfile;//Raw rc input logging
 			ofstream imufile;//Imu data logging
+			//Create Buffers for each of these files:
+			char cmdfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+			char imufile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+			char servofile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+			char rcinputfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
 			bool enable_log;
 		  bool countstar;
 		  //float *goalpwm;
@@ -219,6 +228,13 @@ class PixhawkParser: public parsernode::Parser
 				servofile.precision(10);
 				rcinputfile.precision(10);
 				imufile.precision(10);
+				//Create Buffer:
+				imufile.rdbuf()->pubsetbuf(imufile_buffer, FILE_BUFFER_SIZE);
+				cmdfile.rdbuf()->pubsetbuf(cmdfile_buffer, FILE_BUFFER_SIZE);
+				servofile.rdbuf()->pubsetbuf(servofile_buffer, FILE_BUFFER_SIZE);
+				imufile.rdbuf()->pubsetbuf(imufile_buffer, FILE_BUFFER_SIZE);
+				//#DEBUG Print Buffer size:
+				std::cout<<"Imu file buffer size: "<<imufile.rdbuf()->in_avail();
 
 				cmdfile<<"#Time\t Roll \t Pitch \t Yaw \t Thrust"<<endl;
 				servofile<<"#Time\t SERVO_1\t SERVO_2\t SERVO_3\t SERVO_4"<<endl;
