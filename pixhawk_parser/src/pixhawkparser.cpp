@@ -731,6 +731,12 @@ namespace pixhawk_parser{
       //usecompass:
       PixhawkParser::setParameter("EKF_QUAT_NOISE", tuning_params.ekf_quat_noise, current_params_.param_type["ekf_quat_noise"]);
     }
+    else if(level == 16)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //usecompass:
+      PixhawkParser::setParameter("SERIAL0_BAUD", tuning_params.baudrate, current_params_.param_type["baudrate"]);
+    }
 
     if(tuning_params.calibrate_pixhawk)
 		{
@@ -1003,6 +1009,13 @@ namespace pixhawk_parser{
                   ROS_INFO("Found COMPASS_USE");
                   parameter_find_count++;
                 }
+                else if(!strncmp(paramvalue.param_id, "SERIAL0_BAUD",16))
+                {
+                  current_params_.current_tuning_params_.baudrate = paramvalue.param_value;
+                  current_params_.param_type["baudrate"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found SERIAL0_BAUD");
+                  parameter_find_count++;
+                }
                 
               }
 
@@ -1017,7 +1030,7 @@ namespace pixhawk_parser{
 							}
 							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 15 && !private_nh_)
+              if(parameter_find_count == 16 && !private_nh_)
               {
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
