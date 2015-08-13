@@ -7,6 +7,7 @@ namespace pixhawk_parser{
 	PixhawkParser::PixhawkParser()
   {
     this->initialized = false;
+    this->imu_reset = false;
 	}
 	//PluginLib Initialization function
 	void PixhawkParser::initialize(ros::NodeHandle &nh_)
@@ -1113,7 +1114,23 @@ namespace pixhawk_parser{
 							data.rpydata.z = -parsernode::common::map_angle(attitudemsg.yaw);//Transforming NED to NWU
 							//Transforming to NWU frame Convert pitch to pitch - PI (invert it)
 							//ensure the data is in between -Pi to Pi
+              //Check If Angles changed abruptly:
+              if(!initialized)
+              {
+                prev_imudata = data.rpydata;
+              }
+              //5 degrees in 1/20 sec is 100 degrees in 1 sec
+              if(abs(data.rpydata.x - prev_imudata.x) > (900/M_PI) ||abs(data.rpydata.y - prev_imudata.y) > (900/M_PI) || abs(data.rpydata.z - prev_imudata.z) > (900/M_PI))
+              {
+                this->imu_reset = true;
+              }
+              else
+              {
+                this->imu_reset = false;
+              }
+              prev_imudata = data.rpydata;
 							spin_mutex.unlock();
+
 							if(enable_log)
 							{
 								//log the data:

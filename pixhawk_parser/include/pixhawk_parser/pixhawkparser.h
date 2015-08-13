@@ -116,6 +116,7 @@ class PixhawkParser: public parsernode::Parser
 			boost::thread* serial_recvthread;
 			double gain_throttle; //This is conversion factor from throttle cmd in Newtons to pwm
 			double intercept_throttle; //This is constant addition in the linear conversion (mx + c) this is c and above one is m
+      geometry_msgs::Vector3 prev_imudata;
 
     private:
       boost::shared_ptr<ros::NodeHandle> private_nh_;///For Reconfigure and personal publishing
