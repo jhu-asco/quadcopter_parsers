@@ -86,6 +86,7 @@ class Parser
     //const ros::NodeHandle &nh;
   public:
     bool initialized;
+    bool imu_reset;///< If IMU Data changed abruptly due to reset, recalibration etc
 	protected: 
     Parser():initialized(false){};
 	private:
