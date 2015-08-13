@@ -1011,9 +1011,9 @@ namespace pixhawk_parser{
                 }
                 else if(!strncmp(paramvalue.param_id, "SERIAL0_BAUD",16))
                 {
-                  current_params_.current_tuning_params_.baudrate = paramvalue.param_value;
+                  current_params_.current_tuning_params_.baudrate = round(paramvalue.param_value);
                   current_params_.param_type["baudrate"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found SERIAL0_BAUD");
+                  ROS_INFO("Found SERIAL0_BAUD: %f", paramvalue.param_value);
                   parameter_find_count++;
                 }
                 
@@ -1516,6 +1516,13 @@ namespace pixhawk_parser{
 				break;
 			case 115200:
 				if (cfsetispeed(&config, B115200) < 0 || cfsetospeed(&config, B115200) < 0)
+				{
+					fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
+					return false;
+				}
+				break;
+			case 230400:
+				if (cfsetispeed(&config, B230400) < 0 || cfsetospeed(&config, B230400) < 0)
 				{
 					fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
 					return false;
