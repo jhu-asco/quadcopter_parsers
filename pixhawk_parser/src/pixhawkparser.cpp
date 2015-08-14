@@ -738,6 +738,14 @@ namespace pixhawk_parser{
       //usecompass:
       PixhawkParser::setParameter("SERIAL0_BAUD", tuning_params.baudrate, current_params_.param_type["baudrate"]);
     }
+    else if(level == 17)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //usecompass:
+      PixhawkParser::setParameter("AHRS_TRIM_X", tuning_params.trim_x, current_params_.param_type["trim_x"]);
+      usleep(4000);//4 millisec
+      PixhawkParser::setParameter("AHRS_TRIM_Y", tuning_params.trim_y, current_params_.param_type["trim_y"]);
+    }
 
     if(tuning_params.calibrate_pixhawk)
 		{
@@ -1017,7 +1025,20 @@ namespace pixhawk_parser{
                   ROS_INFO("Found SERIAL0_BAUD: %f", paramvalue.param_value);
                   parameter_find_count++;
                 }
-                
+                else if(!strncmp(paramvalue.param_id, "AHRS_TRIM_X",16))
+                {
+                  current_params_.current_tuning_params_.trim_x = paramvalue.param_value;
+                  current_params_.param_type["trim_x"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found AHRS_TRIM_X");
+                  parameter_find_count++;
+                }
+                else if(!strncmp(paramvalue.param_id, "AHRS_TRIM_Y",16))
+                {
+                  current_params_.current_tuning_params_.trim_y = paramvalue.param_value;
+                  current_params_.param_type["trim_y"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found AHRS_TRIM_Y");
+                  parameter_find_count++;
+                }
               }
 
 							if(this->initialized)
@@ -1031,7 +1052,7 @@ namespace pixhawk_parser{
 							}
 							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 16 && !private_nh_)
+              if(parameter_find_count == 18 && !private_nh_)
               {
 								//Set Current tuning params bools to default:
 								current_params_.current_tuning_params_.calibrate_pixhawk = false;
@@ -1047,7 +1068,7 @@ namespace pixhawk_parser{
                 ROS_WARN("Could not find all parameters!: %d", parameter_find_count);
               }
 							*/
-							if(paramvalue.param_index >= 493 && !this->initialized)
+							if(paramvalue.param_index >= 493 && !this->initialized && parameter_find_count == 18)
 							{
                 ROS_INFO("Number of Parameters found: %d", parameter_find_count);
 								//Setup the data to be requested:
