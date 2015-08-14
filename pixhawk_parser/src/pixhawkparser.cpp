@@ -285,6 +285,7 @@ namespace pixhawk_parser{
 		attitude_reset_req.roll =  parsernode::common::map_angle(roll);
 		attitude_reset_req.pitch =  -parsernode::common::map_angle(pitch);
 		attitude_reset_req.yaw =  -parsernode::common::map_angle(yaw);
+		//ROS_INFO("Reset Req: %f,%f,%f", attitude_reset_req.roll, attitude_reset_req.pitch, attitude_reset_req.yaw);
 		//encode the mavlink_data_stream_t into mavlink_message_t
 		mavlink_msg_attitude_encode(hostsysid,hostcompid,&mavmsg,&attitude_reset_req);
 		//sysid and compid are write now just hardcoded.Later on will change
@@ -738,6 +739,13 @@ namespace pixhawk_parser{
       //usecompass:
       PixhawkParser::setParameter("SERIAL0_BAUD", tuning_params.baudrate, current_params_.param_type["baudrate"]);
     }
+		else if(level == 17)
+    {
+			ROS_INFO("Setting Parameter: %d", level);
+      //usecompass:
+      PixhawkParser::setParameter("AHRS_EKF_USE", tuning_params.ahrs_ekf_use, current_params_.param_type["ahrs_ekf_use"]);
+    }
+		
 
     if(tuning_params.calibrate_pixhawk)
 		{
@@ -1010,6 +1018,13 @@ namespace pixhawk_parser{
                   ROS_INFO("Found EKF_QUAT_NOISE");
                   parameter_find_count++;
                 }
+								else if(!strncmp(paramvalue.param_id, "AHRS_EKF_USE",16))
+                {
+                  current_params_.current_tuning_params_.ahrs_ekf_use = round(paramvalue.param_value);
+                  current_params_.param_type["ahrs_ekf_use"] = (MAV_PARAM_TYPE)paramvalue.param_type;
+                  ROS_INFO("Found AHRS_EKF_USE");
+                  parameter_find_count++;
+                }
                 else if(!strncmp(paramvalue.param_id, "SERIAL0_BAUD",16))
                 {
                   current_params_.current_tuning_params_.baudrate = round(paramvalue.param_value);
@@ -1031,7 +1046,7 @@ namespace pixhawk_parser{
 							}
 							*/
               //Start reconfigure if all params have been received:
-              if(parameter_find_count == 16 && !private_nh_)
+              if(parameter_find_count == 17 && !private_nh_)
               {
 								//Set Current tuning params bools to default:
 								current_params_.current_tuning_params_.calibrate_pixhawk = false;
@@ -1120,7 +1135,7 @@ namespace pixhawk_parser{
                 prev_imudata = data.rpydata;
               }
               //5 degrees in 1/20 sec is 100 degrees in 1 sec
-              if(abs(data.rpydata.x - prev_imudata.x) > (900/M_PI) ||abs(data.rpydata.y - prev_imudata.y) > (900/M_PI) || abs(data.rpydata.z - prev_imudata.z) > (900/M_PI))
+              if(abs(data.rpydata.x - prev_imudata.x) > M_PI/36.0 ||abs(data.rpydata.y - prev_imudata.y) > M_PI/36.0 || abs(data.rpydata.z - prev_imudata.z) > M_PI/36.0)
               {
                 this->imu_reset = true;
               }
