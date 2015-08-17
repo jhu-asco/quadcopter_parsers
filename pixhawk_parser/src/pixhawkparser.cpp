@@ -693,7 +693,7 @@ namespace pixhawk_parser{
     else if(level == 9)
     {
 			ROS_INFO("Setting Parameter: %d", level);
-      //kpt:
+      //kpt (Not used have to remove frome here #TODO):
       PixhawkParser::setParameter("ACCEL_Z_P", tuning_params.kpt, current_params_.param_type["kpt"]);
     }
     else if(level == 10)
@@ -1038,6 +1038,16 @@ namespace pixhawk_parser{
                   current_params_.param_type["trim_y"] = (MAV_PARAM_TYPE)paramvalue.param_type;
                   ROS_INFO("Found AHRS_TRIM_Y");
                   parameter_find_count++;
+                }
+                else if(!strncmp(paramvalue.param_id, "THR_MID", 16))
+                {
+                  ROS_INFO("THR_MID: %f",paramvalue.param_value);
+                  //PixhawkParser::setParameter("THR_MID", 500.0, (MAV_PARAM_TYPE)paramvalue.param_type);
+                }
+                else if(!strncmp(paramvalue.param_id, "PILOT_THR_FILT", 16))
+                {
+                  ROS_INFO("PILOT_THR_FILT: %f",paramvalue.param_value);
+                  //PixhawkParser::setParameter("PILOT_THR_FILT", 0.0, (MAV_PARAM_TYPE)paramvalue.param_type);
                 }
               }
 
