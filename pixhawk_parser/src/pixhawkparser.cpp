@@ -644,6 +644,7 @@ namespace pixhawk_parser{
       //kpr:
 			ROS_INFO("Setting Parameter: %d", level);
       PixhawkParser::setParameter("STB_PIT_P", tuning_params.kpr, current_params_.param_type["kpr"]);
+      usleep(4000);//4 millisec
       PixhawkParser::setParameter("STB_RLL_P", tuning_params.kpr, current_params_.param_type["kpr"]);
     }
     else if(level == 2)
@@ -651,6 +652,7 @@ namespace pixhawk_parser{
 			ROS_INFO("Setting Parameter: %d", level);
       //kprr:
       PixhawkParser::setParameter("RATE_RLL_P", tuning_params.kprr, current_params_.param_type["kprr"]);
+      usleep(4000);//4 millisec
       PixhawkParser::setParameter("RATE_PIT_P", tuning_params.kprr, current_params_.param_type["kprr"]);
     }
     else if(level == 3)
@@ -658,6 +660,7 @@ namespace pixhawk_parser{
 			ROS_INFO("Setting Parameter: %d", level);
       //kirr:
       PixhawkParser::setParameter("RATE_RLL_I", tuning_params.kirr, current_params_.param_type["kirr"]);
+      usleep(4000);//4 millisec
       PixhawkParser::setParameter("RATE_PIT_I", tuning_params.kirr, current_params_.param_type["kirr"]);
     }
     else if(level == 4)
@@ -665,6 +668,7 @@ namespace pixhawk_parser{
 			ROS_INFO("Setting Parameter: %d", level);
       //kdrr:
       PixhawkParser::setParameter("RATE_RLL_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
+      usleep(4000);//4 millisec
       PixhawkParser::setParameter("RATE_PIT_D", tuning_params.kdrr, current_params_.param_type["kdrr"]);
     }
     else if(level == 5)
