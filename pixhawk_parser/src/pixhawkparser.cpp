@@ -1099,13 +1099,13 @@ namespace pixhawk_parser{
 								std_msgs::String dataparseval;
 								//dataparseval.data = "ALL START 10";
 								//PixhawkParser::datareqCallback(dataparseval);
-								dataparseval.data = "ATTITUDE START 20";//30
+								dataparseval.data = "ATTITUDE START 10";//30
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "EXTENDED START 2";//For battery data etc 2 times a second should be more than enough 
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
-								dataparseval.data = "RADIO START 20";//30
+								dataparseval.data = "RADIO START 50";//30
 								PixhawkParser::datareqCallback(dataparseval);
 								usleep(50000);
 								dataparseval.data = "RAW START 0";//20 Not needed right now
@@ -1213,7 +1213,7 @@ namespace pixhawk_parser{
 							if(enable_log)
 							{
 								//log the data:
-								servofile<<(ros::Time::now().toNSec())<<"\t"<<servooutmessage.servo1_raw<<"\t"<<servooutmessage.servo2_raw<<"\t"<<servooutmessage.servo3_raw<<"\t"<<servooutmessage.servo4_raw<<endl;
+								servofile<<(ros::Time::now().toNSec())<<"\t"<<servooutmessage.servo1_raw<<"\t"<<servooutmessage.servo2_raw<<"\t"<<servooutmessage.servo3_raw<<"\t"<<servooutmessage.servo4_raw<<"\t"<<servooutmessage.time_usec<<endl;
 							}
 						}
 						break;
