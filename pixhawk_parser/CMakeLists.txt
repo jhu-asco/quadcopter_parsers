@@ -8,13 +8,13 @@ add_definitions(-std=c++0x)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
+  dynamic_reconfigure
   parsernode
   pluginlib
   roscpp
   std_msgs
   std_srvs
   tf
-  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -121,11 +121,11 @@ include_directories(
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(pixhawk_parser_node pixhawk_parser_generate_messages_cpp)
+ add_dependencies(pixhawk_parser pixhawk_parser_gencfg)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(pixhawktest
-   pixhawk_parser ${catkin_LIBRARIES} 
+   ${catkin_LIBRARIES} 
  )
 
 #############

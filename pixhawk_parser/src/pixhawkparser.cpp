@@ -457,8 +457,10 @@ namespace pixhawk_parser{
     }
 		if(ros::ok())
     {
+      ROS_INFO("Publishing Servo Data");
       mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&servo_msg);
 			PixhawkParser::mavlinkPublish(mavmsg);
+      usleep(2000);
 
       mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&relay_msg);
 			PixhawkParser::mavlinkPublish(mavmsg);
@@ -1333,6 +1335,13 @@ namespace pixhawk_parser{
 							ROS_INFO("Status: %s",statusmsg.text);
 						}
 						break;
+          case MAVLINK_MSG_ID_COMMAND_ACK:
+            {
+              mavlink_command_ack_t acknowledgement_msg;
+              mavlink_msg_command_ack_decode(&message, &acknowledgement_msg);
+              ROS_INFO("COMMAND_ID: %d, RESULT: %d", acknowledgement_msg.command, acknowledgement_msg.result);
+            }
+            break;
 				}
 			}
 		}

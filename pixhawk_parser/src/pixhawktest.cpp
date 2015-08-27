@@ -13,28 +13,33 @@ void userFunction()
   std::cout<<"Menu: Grip; Quit"<<endl;
   while(ros::ok())
   {
-    std::cin>>input;
-    user_mutex_.lock();
-    if(!strcmp("Grip", input.c_str()))
+    if(std::cin>>input)
     {
-      std::cout<<"Open[O] Close[C] Relax[R]"<<std::endl;
-      char sub_input;
-      sub_input = getchar();
-      if(sub_input == 'O')
+      user_mutex_.lock();
+      if(!strcmp("Grip", input.c_str()))
       {
-        pixhawk_parser->grip(-1);
-      }
-      else if(sub_input == 'C')
-      {
-        pixhawk_parser->grip(1);
-      }
-      else if(sub_input == 'R')
-      {
-        pixhawk_parser->grip(0);
+        std::cout<<"Open[O] Close[C] Relax[R]"<<std::endl;
+        char sub_input;
+        if(!std::cin>>sub_input)
+          break;
+        std::cout<<"sub_input: "<<sub_input<<std::endl;
+        if(sub_input == 'O')
+        {
+          pixhawk_parser->grip(-1);
+        }
+        else if(sub_input == 'C')
+        {
+          pixhawk_parser->grip(1);
+        }
+        else if(sub_input == 'R')
+        {
+          pixhawk_parser->grip(0);
+        }
       }
     }
     else if(!strcmp("Quit", input.c_str()))
     {
+      pixhawk_parser.reset();
       ros::shutdown();
     }
     user_mutex_.unlock();
@@ -59,6 +64,7 @@ int main(int argc, char** argv)
 		ROS_ERROR("The plugin failed to load for some reason. Error: %s", ex.what());
 	}
   //Create Boost Thread
+  while(!pixhawk_parser->initialized);
   boost::thread user_thread(userFunction);
 	ros::Rate loop_rate(10);
 	while(ros::ok())
@@ -68,5 +74,6 @@ int main(int argc, char** argv)
     user_mutex_.unlock();
 		loop_rate.sleep();
 	}
+  user_thread.join();
 	return 0;
 }
