@@ -433,7 +433,7 @@ namespace pixhawk_parser{
     mavlink_command_long_t servo_msg;
     servo_msg.command = MAV_CMD_DO_SET_SERVO;
     servo_msg.target_system = targetsys_id;
-    servo_msg.param1 = 9;//http://rover.ardupilot.com/wiki/common-autopilots/common-pixhawk-overview/ : RC9 is Pin 50 AUX 1
+    servo_msg.param1 = 12;//http://rover.ardupilot.com/wiki/common-autopilots/common-pixhawk-overview/ : RC12 is Pin 53
 
     mavlink_command_long_t relay_msg;
     relay_msg.command = MAV_CMD_DO_SET_RELAY;
