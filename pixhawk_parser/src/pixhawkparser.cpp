@@ -1218,8 +1218,11 @@ namespace pixhawk_parser{
 							//ROS_INFO("RAW Servo Channels output: \n\t SERVO_1: %u \n\t SERVO_2 %u \n\t SERVO_3 %u\n\t SERVO_4 %u \n\t SERVO_5 %u \n\t SERVO_6 %u \n\t SERVO_7 %u \n\t SERVO_8 %u \n", servooutmessage.servo1_raw, servooutmessage.servo2_raw, servooutmessage.servo3_raw, servooutmessage.servo4_raw, servooutmessage.servo5_raw, servooutmessage.servo6_raw, servooutmessage.servo7_raw, servooutmessage.servo8_raw);
 							if(enable_log)
 							{
+								spin_mutex.lock();
+								float batteryvolts = data.batterypercent;
+								spin_mutex.unlock();
 								//log the data:
-								servofile<<(ros::Time::now().toNSec())<<"\t"<<servooutmessage.servo1_raw<<"\t"<<servooutmessage.servo2_raw<<"\t"<<servooutmessage.servo3_raw<<"\t"<<servooutmessage.servo4_raw<<"\t"<<servooutmessage.time_usec<<endl;
+								servofile<<(ros::Time::now().toNSec())<<"\t"<<servooutmessage.servo1_raw<<"\t"<<servooutmessage.servo2_raw<<"\t"<<servooutmessage.servo3_raw<<"\t"<<servooutmessage.servo4_raw<<"\t"<<servooutmessage.time_usec<<"\t"<<batteryvolts<<endl;
 							}
 						}
 						break;
