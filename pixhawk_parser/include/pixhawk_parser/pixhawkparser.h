@@ -238,7 +238,7 @@ class PixhawkParser: public parsernode::Parser
 				std::cout<<"Imu file buffer size: "<<imufile.rdbuf()->in_avail();
 
 				cmdfile<<"#Time\t Roll \t Pitch \t Yaw \t Thrust"<<endl;
-				servofile<<"#Time\t SERVO_1\t SERVO_2\t SERVO_3\t SERVO_4"<<endl;
+				servofile<<"#Time\t SERVO_1\t SERVO_2\t SERVO_3\t SERVO_4\t TIME_US\t BATT_VOLTS"<<endl;
 				rcinputfile<<"#Time\t RC_1\t RC_2\t RC_3\t RC_4"<<endl;
 				imufile<<"#Time\t Roll \t Pitch \t Yaw"<<endl;
 			}
