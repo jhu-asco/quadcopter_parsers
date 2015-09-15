@@ -1083,7 +1083,7 @@ namespace pixhawk_parser{
                   required_bitmask |= (1<<17);//MOTBATT
                   std::cout<<std::bitset<32>(required_bitmask)<<std::endl;
                   //Initial Value: 176126.000000
-                  PixhawkParser::setParameter("LOG_BITMASK", float(required_bitmask), (MAV_PARAM_TYPE)paramvalue.param_type);
+                  //PixhawkParser::setParameter("LOG_BITMASK", float(required_bitmask), (MAV_PARAM_TYPE)paramvalue.param_type);
                 }
               }
 
