@@ -27,6 +27,8 @@ This class uses internal locking to ensure the quaddata is available to Qt threa
 
 #include <sys/time.h>
 #include <time.h>
+#include <bitset>         // std::bitset
+
 
 // Standard includes
 #include <iostream>
