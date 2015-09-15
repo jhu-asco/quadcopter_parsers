@@ -13,28 +13,25 @@ void userFunction()
   std::cout<<"Menu: Grip; Quit"<<endl;
   while(ros::ok())
   {
-    if(std::cin>>input)
+    std::cin>>input;
+    user_mutex_.lock();
+    if(!strcmp("Grip", input.c_str()))
     {
-      user_mutex_.lock();
-      if(!strcmp("Grip", input.c_str()))
+      std::cout<<"Open[O] Close[C] Relax[R]"<<std::endl;
+      char sub_input;
+      std::cin>>sub_input;
+      std::cout<<"sub_input: "<<sub_input<<std::endl;
+      if(sub_input == 'O')
       {
-        std::cout<<"Open[O] Close[C] Relax[R]"<<std::endl;
-        char sub_input;
-        if(!std::cin>>sub_input)
-          break;
-        std::cout<<"sub_input: "<<sub_input<<std::endl;
-        if(sub_input == 'O')
-        {
-          pixhawk_parser->grip(-1);
-        }
-        else if(sub_input == 'C')
-        {
-          pixhawk_parser->grip(1);
-        }
-        else if(sub_input == 'R')
-        {
-          pixhawk_parser->grip(0);
-        }
+        pixhawk_parser->grip(-1);
+      }
+      else if(sub_input == 'C')
+      {
+        pixhawk_parser->grip(1);
+      }
+      else if(sub_input == 'R')
+      {
+        pixhawk_parser->grip(0);
       }
     }
     else if(!strcmp("Quit", input.c_str()))

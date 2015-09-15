@@ -447,12 +447,12 @@ namespace pixhawk_parser{
     }
     else if (state == 1)
     {
-      servo_msg.param2 = float(10000);//Run in one direction
+      servo_msg.param2 = float(2000);//Run in one direction
       relay_msg.param2 = 0.f;//Switch off
     }
     else if (state == -1)
     {
-      servo_msg.param2 = float(10000);//Run in other direction
+      servo_msg.param2 = float(18000);//Run in other direction
       relay_msg.param2 = 1.f;//Switch On
     }
 		if(ros::ok())
@@ -1068,6 +1068,22 @@ namespace pixhawk_parser{
                 {
                   ROS_INFO("PILOT_THR_FILT: %f",paramvalue.param_value);
                   //PixhawkParser::setParameter("PILOT_THR_FILT", 0.0, (MAV_PARAM_TYPE)paramvalue.param_type);
+                }
+                else if(!strncmp(paramvalue.param_id, "LOG_BITMASK", 16))
+                {
+                  ROS_INFO("LOG_BITMASK: %f",paramvalue.param_value);
+                  int bitmask = round(paramvalue.param_value);
+                  std::cout<<std::bitset<32>(bitmask)<<std::endl;
+                  int required_bitmask = 0;
+                  required_bitmask |= (1<<10);//RCOUT
+                  //required_bitmask |= (1<<6);//RCIN
+                  //required_bitmask |= (1<<18);//IMUFAST
+                  //required_bitmask |= (1<<19);//IMU_RAW
+                  required_bitmask |= (1<<7);//IMU ONLY
+                  required_bitmask |= (1<<17);//MOTBATT
+                  std::cout<<std::bitset<32>(required_bitmask)<<std::endl;
+                  //Initial Value: 176126.000000
+                  PixhawkParser::setParameter("LOG_BITMASK", float(required_bitmask), (MAV_PARAM_TYPE)paramvalue.param_type);
                 }
               }
 
