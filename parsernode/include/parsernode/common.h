@@ -72,14 +72,16 @@ namespace parsernode {
 			double mass, thrustbias;//Mass of the Quadcopter, the bias in thrust needed if the quadcopter does not compensate for gravity by itself.
 			double thrustmin, thrustmax;//Max and min values for thrust Not the output values
 			double rpbound; //Max and min values for roll and pitch
-			bool armed;//Whether the quadcopter is ready to fly or not
-			quaddata(): batterypercent(0)
+      bool armed;//Whether the quadcopter is ready to fly or not
+      uint16_t servo_in[4];//Input servo commands coming from quadcopter
+      quaddata(): batterypercent(0)
 									,quadstate("NONE")
 												,pressure(0), temperature(0), wind_speed(0), wind_angle(0)
 													 ,altitude(0),motorpwm(new double[4] {0,0,0,0}), timestamp(0)
 														 ,mass(0),thrustbias(0)
 														 ,thrustmin(0),thrustmax(0)
-														 ,armed(false)
+                            ,armed(false)
+                            ,servo_in()
 														 {
 															 rpydata.x = 0; rpydata.y = 0; rpydata.z = 0;
 															 magdata.x = 0; magdata.y = 0; magdata.z = 0;

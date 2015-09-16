@@ -1218,7 +1218,13 @@ namespace pixhawk_parser{
 					case MAVLINK_MSG_ID_RC_CHANNELS_RAW:
 						{
 							mavlink_rc_channels_raw_t rcmessage;
-							mavlink_msg_rc_channels_raw_decode(&message,&rcmessage);
+              mavlink_msg_rc_channels_raw_decode(&message,&rcmessage);
+              spin_mutex.lock();
+              data.servo_in[0] = rcmessage.chan1_raw;
+              data.servo_in[1] = rcmessage.chan2_raw;
+              data.servo_in[2] = rcmessage.chan3_raw;
+              data.servo_in[3] = rcmessage.chan4_raw;
+              spin_mutex.unlock();
               if(enable_log)
               {
                 //log the data
