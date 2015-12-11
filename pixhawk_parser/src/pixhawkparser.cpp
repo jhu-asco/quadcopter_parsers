@@ -208,7 +208,7 @@ namespace pixhawk_parser{
 
 	bool PixhawkParser::takeoff()//Virtual override function
 	{
-		geometry_msgs::Quaternion rpytmsg;
+		/*geometry_msgs::Quaternion rpytmsg;
 		for(int count = 0;count < 30;count++)//3Sec
 		{
 			PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_MAX[3]);
@@ -217,25 +217,21 @@ namespace pixhawk_parser{
 		PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_TRIM[3]);
 		basealtitude = data.altitude;//Storing the ground pressure for us to be able to land and estimate thrustbias
 		return true;
-		/*
-			 mavlink_message_t mavmsg;
+    */
+    mavlink_message_t mavmsg;
 		//construct command
 		mavlink_command_long_t mavcommandreq;
-		mavcommandreq.param1 = 10; //Hz
+		mavcommandreq.param1 = 1;
 		mavcommandreq.target_system = targetsys_id;
 		mavcommandreq.target_component = targetcomp_id;
 		mavcommandreq.command = MAV_CMD_COMPONENT_ARM_DISARM;
 		mavcommandreq.param1 = 1.0f;//for arming
 		//encode the mavlink_data_stream_t into mavlink_message_t
 		mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&mavcommandreq);
-		//sysid and compid are write now just hardcoded.Later on will change
-		mavlink_ros::Mavlink mavlink_ros_msg;
-		castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		ROS_INFO("Arming Quadcopter");
-		mavlink_pub.publish(mavlink_ros_msg);
+    PixhawkParser::mavlinkPublish(mavmsg);
 		ROS_INFO("Publishing done");
 		return true;
-		 */
 		//Trying another way to arm:
 	}
 
@@ -298,32 +294,27 @@ namespace pixhawk_parser{
 	bool PixhawkParser::disarm()
 	{
 		rctimer.stop();	//Stop the timer just in case
-		for(int count = 0;count < 80;count++)//4Sec
+		/*for(int count = 0;count < 80;count++)//4Sec
 		{
 			PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_MIN[3]);
 			usleep(50000);
 		}
 		PixhawkParser::sendradio(RC_TRIM[0],RC_TRIM[1],RC_MIN[2],RC_TRIM[3]);
 		return true;
-		/*
-			 mavlink_message_t mavmsg;
+    */
+    mavlink_message_t mavmsg;
 		//construct command
 		mavlink_command_long_t mavcommandreq;
-		mavcommandreq.param1 = 0; //Hz
 		mavcommandreq.target_system = targetsys_id;
 		mavcommandreq.target_component = targetcomp_id;
 		mavcommandreq.command = MAV_CMD_COMPONENT_ARM_DISARM;
 		mavcommandreq.param1 = 0.0f;
 		//encode the mavlink_data_stream_t into mavlink_message_t
 		mavlink_msg_command_long_encode(hostsysid,hostcompid,&mavmsg,&mavcommandreq);
-		//sysid and compid are write now just hardcoded.Later on will change
-		mavlink_ros::Mavlink mavlink_ros_msg;
-		castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		ROS_INFO("Disarming Quadcopter");
-		mavlink_pub.publish(mavlink_ros_msg);
+    PixhawkParser::mavlinkPublish(mavmsg);
 		ROS_INFO("Publishing done");
 		return true;
-		 */
 	}
 
 
@@ -352,7 +343,6 @@ namespace pixhawk_parser{
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		//ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
 		PixhawkParser::mavlinkPublish(mavmsg);
-		//mavlink_pub.publish(mavlink_ros_msg);
 	}
 
 	bool PixhawkParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
@@ -417,7 +407,6 @@ namespace pixhawk_parser{
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		//ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
 		PixhawkParser::mavlinkPublish(mavmsg);
-		//	mavlink_pub.publish(mavlink_ros_msg);
 		if(enable_log)
 		{
 			//log the data:
@@ -509,7 +498,6 @@ namespace pixhawk_parser{
     parameter_msg.param_type = param_type;
     mavlink_msg_param_set_encode(hostsysid, hostcompid,&mavlink_msg,&parameter_msg);
 		ROS_INFO("Publishing Parameter set");
-		//mavlink_pub.publish(mavlink_ros_msg);
 		PixhawkParser::mavlinkPublish(mavlink_msg);
   }
 	/*
@@ -532,7 +520,6 @@ namespace pixhawk_parser{
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		if(ros::ok())
 			PixhawkParser::mavlinkPublish(mavmsg);
-			//mavlink_pub.publish(mavlink_ros_msg);
 	}
 	void PixhawkParser::setarmpwm(double *armpwm)//Expecting the armpwm to be of length 3
 	{ 
@@ -1024,20 +1011,6 @@ namespace pixhawk_parser{
                   ROS_INFO("Found COMPASS_USE");
                   parameter_find_count++;
                 }
-                else if(!strncmp(paramvalue.param_id, "EKF_QUAT_NOISE",16))
-                {
-                  current_params_.current_tuning_params_.ekf_quat_noise = paramvalue.param_value;
-                  current_params_.param_type["ekf_quat_noise"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found EKF_QUAT_NOISE");
-                  parameter_find_count++;
-                }
-								else if(!strncmp(paramvalue.param_id, "AHRS_EKF_USE",16))
-                {
-                  current_params_.current_tuning_params_.ahrs_ekf_use = round(paramvalue.param_value);
-                  current_params_.param_type["ahrs_ekf_use"] = (MAV_PARAM_TYPE)paramvalue.param_type;
-                  ROS_INFO("Found AHRS_EKF_USE");
-                  parameter_find_count++;
-                }
                 else if(!strncmp(paramvalue.param_id, "SERIAL0_BAUD",16))
                 {
                   current_params_.current_tuning_params_.baudrate = round(paramvalue.param_value);
@@ -1104,9 +1077,11 @@ namespace pixhawk_parser{
 								current_params_.current_tuning_params_.calibrate_pixhawk = false;
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
+#ifdef RECONFIG_SERVER
                 reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
                 reconfigcallbacktype = boost::bind(&PixhawkParser::reconfigCallback, this, _1, _2);
                 reconfigserver->setCallback(reconfigcallbacktype);
+#endif
 								ekf_status_pub = private_nh_->advertise<std_msgs::String>("ekf_status", 10);
               }
               /*else
@@ -1114,7 +1089,7 @@ namespace pixhawk_parser{
                 ROS_WARN("Could not find all parameters!: %d", parameter_find_count);
               }
 							*/
-							if(paramvalue.param_index >= 493 && !this->initialized && parameter_find_count == 19)
+							if(paramvalue.param_index >= 502 && !this->initialized && parameter_find_count == 17)
 							{
                 ROS_INFO("Number of Parameters found: %d", parameter_find_count);
 								//Setup the data to be requested:
@@ -1263,7 +1238,7 @@ namespace pixhawk_parser{
 							(byte & 0x02 ? 1 : 0), \
 							(byte & 0x01 ? 1 : 0) 
 
-							if(initialized)
+							if(initialized && private_nh_)
 							{
 								static char ekf_msg_buffer[500];
 

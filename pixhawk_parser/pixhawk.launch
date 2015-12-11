@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <param name="/serial/port" type="string" value="/dev/ttyACM0"/>
+  <!--<param name="/serial/baudrate" type="int" value="230400"/>-->
+  <param name="/serial/baudrate" type="int" value="115200"/>
+  <node pkg="pixhawk_parser" name="pixhawktest" type="pixhawktest" output="screen"/>
+</launch>

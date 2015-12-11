@@ -34,6 +34,14 @@ void userFunction()
         pixhawk_parser->grip(0);
       }
     }
+    else if(!strcmp("Arm", input.c_str()))
+    {
+      pixhawk_parser->takeoff();
+    }
+    else if(!strcmp("Disarm", input.c_str()))
+    {
+      pixhawk_parser->land();
+    }
     else if(!strcmp("Quit", input.c_str()))
     {
       pixhawk_parser.reset();
@@ -61,7 +69,7 @@ int main(int argc, char** argv)
 		ROS_ERROR("The plugin failed to load for some reason. Error: %s", ex.what());
 	}
   //Create Boost Thread
-  while(!pixhawk_parser->initialized);
+  while(!pixhawk_parser->initialized && ros::ok());
   boost::thread user_thread(userFunction);
 	ros::Rate loop_rate(10);
 	while(ros::ok())
