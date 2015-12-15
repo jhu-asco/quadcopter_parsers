@@ -146,7 +146,7 @@ class PixhawkParser: public parsernode::Parser
 			bool heartbeatinit;
 			//Personal Callback functions:
 			//void paramsetreqCallback(std_msgs::String datatype);
-			void modereqCallback(const std_msgs::String &datatype);
+			void setmode(std::string mode);
 			void datareqCallback(const std_msgs::String &datatype);
 			void paramreqCallback(const std_msgs::Empty &emptymsg);
 			void rctimerCallback(const ros::TimerEvent &event);
@@ -200,6 +200,7 @@ class PixhawkParser: public parsernode::Parser
 			}
 			void initialize(ros::NodeHandle &nh_);
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
+			bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd);
 			inline void sendradio(uint16_t r1,uint16_t r2,uint16_t r3,uint16_t r4);
 			//void foldarm();
 			//void setarmpwm(double *armpwm);

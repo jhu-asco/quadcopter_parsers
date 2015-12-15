@@ -42,6 +42,21 @@ void userFunction()
     {
       pixhawk_parser->land();
     }
+    else if(!strcmp("Mode", input.c_str()))
+    {
+      std::cout<<"Available Modes: STABILIZE ALT_HOLD LAND POSHOLD"<<std::endl;
+      std::string sub_input;
+      std::cin>>sub_input;
+      std::cout<<"sub_input: "<<sub_input<<std::endl;
+      pixhawk_parser->setmode(sub_input);
+    }
+    else if(!strcmp("Status",input.c_str()))
+    {
+      parsernode::common::quaddata data;
+      pixhawk_parser->getquaddata(data);
+      //Print Status of Quadcopter
+      std::cout<<"data.quadstate: "<<data.quadstate<<std::endl;
+    }
     else if(!strcmp("Quit", input.c_str()))
     {
       pixhawk_parser.reset();

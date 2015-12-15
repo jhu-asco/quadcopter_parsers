@@ -243,9 +243,7 @@ namespace pixhawk_parser{
 
 	bool PixhawkParser::land()
 	{
-		std_msgs::String modeparse;
-		modeparse.data = "STABILIZE";
-		PixhawkParser::modereqCallback(modeparse);
+		PixhawkParser::setmode("STABILIZE");
 		//double diff = (data.thrustbias - data.thrustmin)/20.0;
 		rctimerrpytmsg.x = 0; rctimerrpytmsg.y = 0; rctimerrpytmsg.z = 0;rctimerrpytmsg.w = 0.9*data.thrustbias;//Some bias to go downwards
 		intmode = 0;//Land
@@ -403,7 +401,7 @@ namespace pixhawk_parser{
 		overridemsg.chan7_raw = 900;
 		overridemsg.chan8_raw = 900;
 		mavlink_msg_rc_channels_override_encode(hostsysid,hostcompid,&mavmsg,&overridemsg);
-		//mavlink_ros::Mavlink mavlink_ros_msg;
+		//mavlink_ros::Mavlink mavlink_oos_msg;
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
 		//ROS_INFO("Publishing rc_override %u\t%u\t%u\t%u",overridemsg.chan1_raw,overridemsg.chan2_raw,overridemsg.chan3_raw,overridemsg.chan4_raw);
 		PixhawkParser::mavlinkPublish(mavmsg);
@@ -415,6 +413,22 @@ namespace pixhawk_parser{
 		//ROS_INFO("Publishing done");
 		return true;
 	}
+
+  bool PixhawkParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd)
+  {
+    mavlink_message_t mavmsg;
+    mavlink_set_position_target_local_ned_t local_vel_cmd_msg;
+    local_vel_cmd_msg.vx = vel_cmd.x;
+    local_vel_cmd_msg.vy = vel_cmd.y;
+    local_vel_cmd_msg.vz = vel_cmd.z;
+    local_vel_cmd_msg.target_system = targetsys_id;
+    local_vel_cmd_msg.type_mask = ~((1<<3) | (1<<4) | (1<<5));//Do not ignore velocity (Ignore everything else) obtained from defines.h
+    local_vel_cmd_msg.coordinate_frame = MAV_FRAME_BODY_NED;//The velocity is given in body frame
+    //yaw rate is not supported local_vel_cmd_msg.yaw_rate
+    mavlink_msg_set_position_target_local_ned_encode(hostsysid,hostcompid,&mavmsg,&local_vel_cmd_msg);
+    PixhawkParser::mavlinkPublish(mavmsg);
+  }
+
 	void PixhawkParser::grip(int state)//TriState Gripper
 	{ 
 		//Sending arm pwm 
@@ -753,30 +767,38 @@ namespace pixhawk_parser{
       PixhawkParser::prearmCalibrate();
 		}
   }
-	void PixhawkParser::modereqCallback(const std_msgs::String &datatype)
+	void PixhawkParser::setmode(std::string mode)
 	{
 		mavlink_message_t mavmsg;
 		//construct command
 		mavlink_set_mode_t mavmodereq;
 		mavmodereq.base_mode = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;//This is the base mode to make sure we do not get kicked out. Then we add the custom mode which redefines the base mode
 		mavmodereq.target_system = targetsys_id;
-		string data = datatype.data;
-		istringstream iss(data);
-		string substr;
-		iss>>substr;
-		ROS_INFO("\n%s",substr.c_str());
-		if(substr == "STABILIZE")
+		ROS_INFO("\n%s",mode.c_str());
+		if(mode == "STABILIZE")
 		{
 			mavmodereq.custom_mode = STABILIZE;
 		} 
-		else  if(substr == "ALT_HOLD")
+		else  if(mode == "ALT_HOLD")
 		{
 			mavmodereq.custom_mode = ALT_HOLD;
 		} 
-		else  if(substr == "LAND")
+		else  if(mode == "LAND")
 		{
 			mavmodereq.custom_mode = LAND;
 		} 
+    else if(mode == "POSHOLD")
+    {
+      mavmodereq.custom_mode=POSHOLD;
+    }
+    else if(mode == "GUIDED")
+    {
+      mavmodereq.custom_mode=GUIDED;
+    }
+    else if(mode == "SPORT")
+    {
+      mavmodereq.custom_mode=SPORT;
+    }
 		else
 		{
 			ROS_INFO("Invalid Arguments");
@@ -787,7 +809,7 @@ namespace pixhawk_parser{
 		//sysid and compid are write now just hardcoded.Later on will change
 		//mavlink_ros::Mavlink mavlink_ros_msg;
 		//castmavmsgtoros(mavlink_ros_msg,mavmsg); 
-		ROS_INFO("Publishing mode %s", datatype.data.c_str());
+		ROS_INFO("Publishing mode %s", mode.c_str());
 		PixhawkParser::mavlinkPublish(mavmsg);
 		//mavlink_pub.publish(mavlink_ros_msg);
 		ROS_INFO("Publishing done");
@@ -1310,10 +1332,12 @@ namespace pixhawk_parser{
 									data.quadstate = "ENUM_END ";
 									break;
 							}
-							if(heartbeat.base_mode & MAV_MODE_FLAG_STABILIZE_ENABLED)
+              data.quadstate += custom_mode_map(heartbeat.custom_mode);
+							/*if(heartbeat.base_mode & MAV_MODE_FLAG_STABILIZE_ENABLED)
 							{
 								data.quadstate +=  " STABILIZE";
 							}
+              */
 							if(heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED)
 							{
 								data.quadstate +=  " ARMED";

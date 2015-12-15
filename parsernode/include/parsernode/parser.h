@@ -68,6 +68,7 @@ class Parser
 		virtual void grip(int state)=0;//Tri State Gripper
 		virtual void estimatethrustbias()=0;
 		virtual void reset_attitude(double roll, double pitch, double yaw)=0;
+    virtual void setmode(std::string mode)=0;
 /*		void setthrustbias(float thrustbias_)
 		{
 			data.thrustbias = thrustbias_;

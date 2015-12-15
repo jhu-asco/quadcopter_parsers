@@ -5,22 +5,24 @@
 
 // Auto Pilot modes Got from defines.h in ArduCopter code
 // ----------------
-#define STABILIZE 0                     // hold level position
-#define ACRO 1                          // rate control
-#define ALT_HOLD 2                      // AUTO control
-#define AUTO 3                          // AUTO control
-#define GUIDED 4                        // AUTO control
-#define LOITER 5                        // Hold a single location
-#define RTL 6                           // AUTO control
-#define CIRCLE 7                        // AUTO control
-#define LAND 9                          // AUTO control
-#define OF_LOITER 10                    // Hold a single location using optical flow sensor
-#define DRIFT 11                        // DRIFT mode (Note: 12 is no longer used)
-#define SPORT 13                        // earth frame rate control
-#define FLIP        14                  // flip the vehicle on the roll axis
-#define AUTOTUNE    15                  // autotune the vehicle's roll and pitch gains
-#define HYBRID      16                  // hybrid - position hold with manual override
-#define NUM_MODES   17
+enum autopilot_modes {
+  STABILIZE =     0,  // manual airframe angle with manual throttle
+  ACRO =          1,  // manual body-frame angular rate with manual throttle
+  ALT_HOLD =      2,  // manual airframe angle with automatic throttle
+  AUTO =          3,  // fully automatic waypoint control using mission commands
+  GUIDED =        4,  // fully automatic fly to coordinate or fly at velocity/direction using GCS immediate commands
+  LOITER =        5,  // automatic horizontal acceleration with automatic throttle
+  RTL =           6,  // automatic return to launching point
+  CIRCLE =        7,  // automatic circular flight with automatic throttle
+  LAND =          9,  // automatic landing with horizontal position control
+  OF_LOITER =    10,  // deprecated
+  DRIFT =        11,  // semi-automous position, yaw and throttle control
+  SPORT =        13,  // manual earth-frame angular rate control with manual throttle
+  FLIP =         14,  // automatically flip the vehicle on the roll axis
+  AUTOTUNE =     15,  // automatically tune the vehicle's roll and pitch gains
+  POSHOLD =      16,  // automatic position hold with manual override, with automatic throttle
+  BRAKE =        17   // full-brake using inertial/GPS system, no pilot input
+};
 
 #define hostsysid 255
 #define hostcompid 110
@@ -61,6 +63,30 @@ static void castrosmsgtomav(mavlink_ros::Mavlink mavlink_ros_msg,mavlink_message
 }
    */
 
+static string custom_mode_map(uint32_t custom_mode)
+{
+	string result = "";
+	
+  switch (custom_mode) {
+    case 0 : result = " STABILIZE"; break;
+    case 1 : result = " ACRO"; break;
+    case 2 : result = " ALT_HOLD"; break;
+    case 3 : result = " AUTO"; break;
+    case 4 : result = " GUIDED"; break;
+    case 5 : result = " LOITER"; break;
+    case 6 : result = " RTL"; break;
+    case 7 : result = " CIRCLE"; break;
+    case 8 : result = " POSITION"; break;
+    case 9 : result = " LAND"; break;
+    case 10 : result = " OF_LOITER"; break;
+    case 11 : result = " DRIFT"; break;
+    case 13 : result = " SPORT"; break;
+    case 14 : result = " FLIP"; break;
+    case 15 : result = " AUTOTUNE"; break;
+    case 16 : result = " POSHOLD"; break;
+  }
+return result;
+}
 static string base_mode_map(uint8_t base_mode)
 {
 	string result = "";
@@ -73,28 +99,28 @@ static string base_mode_map(uint8_t base_mode)
 									switch(i)
 									{
 													case 0:
-													result += "\tCUSTOM_MODE_ENABLED";
+													result += " CUSTOM_MODE_ENABLED";
 													break;
 													case 1:
-													result += "\tFLAG_TEST_ENABLED";
+													result += " FLAG_TEST_ENABLED";
 													break;
 													case 2:
-													result += "\tFLAG_AUTO_ENABLED";
+													result += " FLAG_AUTO_ENABLED";
 													break;
 													case 3:
-													result += "\tFLAG_GUIDED_ENABLED";
+													result += " FLAG_GUIDED_ENABLED";
 													break;
 													case 4:
-													result += "\tFLAG_STABILIZE_ENABLED";
+													result += " FLAG_STABILIZE_ENABLED";
 													break;
 													case 5:
-													result += "\tFLAG_HIL_ENABLED";
+													result += " FLAG_HIL_ENABLED";
 													break;
 													case 6:
-													result += "\tFLAG_MANUAL_INPUT_ENABLED";
+													result += " FLAG_MANUAL_INPUT_ENABLED";
 													break;
 													case 7:
-													result += "\tFLAG_SAFETY_ENABLED";
+													result += " FLAG_SAFETY_ENABLED";
 													break;
 									}
 					}
