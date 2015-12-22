@@ -73,7 +73,7 @@ namespace parsernode {
 			double thrustmin, thrustmax;//Max and min values for thrust Not the output values
 			double rpbound; //Max and min values for roll and pitch
       bool armed;//Whether the quadcopter is ready to fly or not
-      uint16_t servo_in[4];//Input servo commands coming from quadcopter
+      int16_t servo_in[4];//Input servo commands coming from quadcopter
       quaddata(): batterypercent(0)
 									,quadstate("NONE")
 												,pressure(0), temperature(0), wind_speed(0), wind_angle(0)
