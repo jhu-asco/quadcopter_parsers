@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find dji_sdk)/launch/sdk_manifold.launch"/>
+  <node pkg="dji_parser" name="dji_parser_node" type="dji_parser_node" output="screen"/>
+</launch>

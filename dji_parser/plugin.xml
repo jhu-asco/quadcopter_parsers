@@ -1,0 +1,7 @@
+<library path="lib/libdji_parser">
+  <class name="dji_parser/DjiParser" type="dji_parser::DjiParser" base_class_type="parsernode::Parser">
+    <description>
+			Parser Library for DJI Matrice 100
+    </description>
+  </class>
+</library>
