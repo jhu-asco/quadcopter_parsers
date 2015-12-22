@@ -1099,11 +1099,9 @@ namespace pixhawk_parser{
 								current_params_.current_tuning_params_.calibrate_pixhawk = false;
                 //Start the NodeHandle and reconfigure interface
                 private_nh_.reset(new ros::NodeHandle("~pixhawk_tuning"));
-#ifdef RECONFIG_SERVER
                 reconfigserver.reset(new dynamic_reconfigure::Server<pixhawk_parser::PixhawkTuningInterfaceConfig>(*private_nh_));
                 reconfigcallbacktype = boost::bind(&PixhawkParser::reconfigCallback, this, _1, _2);
                 reconfigserver->setCallback(reconfigcallbacktype);
-#endif
 								ekf_status_pub = private_nh_->advertise<std_msgs::String>("ekf_status", 10);
               }
               /*else
