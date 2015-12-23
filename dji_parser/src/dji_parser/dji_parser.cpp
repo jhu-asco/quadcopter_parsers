@@ -109,12 +109,12 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
     return;
 }
 
-bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd)
+bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
 {
   if(checksettings())
   {
     unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
-    return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, 0);
+    return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, yaw_rate);
   }
   return false;
 }
@@ -190,6 +190,8 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
   data.linvel.x = double(dji_core->velocity.vx); data.linvel.y = double(dji_core->velocity.vy); data.linvel.z = double(dji_core->velocity.vz);
   //rc data:
   data.servo_in[0] = (int16_t)dji_core->rc_channels.roll; data.servo_in[1] = (int16_t)dji_core->rc_channels.pitch; data.servo_in[2] = (int16_t)dji_core->rc_channels.yaw; data.servo_in[3] = (int16_t)dji_core->rc_channels.throttle;
+  //localpos:
+  data.localpos.x = dji_core->local_position.x;  data.localpos.y = dji_core->local_position.y; data.localpos.z = dji_core->local_position.z; 
   d1 = data;//Copy data
   return;
 }

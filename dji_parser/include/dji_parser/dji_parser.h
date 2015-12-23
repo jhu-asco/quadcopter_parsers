@@ -89,7 +89,7 @@ public:
     bool reset();
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd);
+    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
     void setmode(std::string mode);

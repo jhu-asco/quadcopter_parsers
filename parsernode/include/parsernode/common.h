@@ -68,6 +68,7 @@ namespace parsernode {
 			double *motorpwm;//motorpwm values
 			geometry_msgs::Vector3 linvel;//Linear velocity of quadcopter
 			geometry_msgs::Vector3 linacc;//Linear acceleration of quadcopter
+      geometry_msgs::Vector3 localpos;// Local pos based on home
 			double timestamp;//timestamp from drone
 			double mass, thrustbias;//Mass of the Quadcopter, the bias in thrust needed if the quadcopter does not compensate for gravity by itself.
 			double thrustmin, thrustmax;//Max and min values for thrust Not the output values
@@ -87,6 +88,7 @@ namespace parsernode {
 															 magdata.x = 0; magdata.y = 0; magdata.z = 0;
 															 linvel.x = 0; linvel.y = 0; linvel.z = 0;
 															 linacc.x = 0; linacc.y = 0; linacc.z = 0;
+                               localpos.x = 0;localpos.y = 0;localpos.z = 0;
 														 } 
 		};
 	};
