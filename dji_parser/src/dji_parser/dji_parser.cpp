@@ -114,7 +114,9 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
   if(checksettings())
   {
     unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
-    return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, yaw_rate);
+    //Convert velocity from NWU frame to NED frame
+    //Also velocity in z direction is set such that positive velocity means going up
+    return dji_core->attitude_control(control_mode, vel_cmd.x, -vel_cmd.y, vel_cmd.z, -yaw_rate);
   }
   return false;
 }
