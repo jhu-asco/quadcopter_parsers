@@ -214,9 +214,9 @@ class PixhawkParser: public parsernode::Parser
       void prearmCalibrate();//Preflight Calibration
       inline void setParameter(std::string id, float parameter_value, MAV_PARAM_TYPE param_type = MAV_PARAM_TYPE_UINT8);
 			bool land();
-			bool reset();
 			bool takeoff();
 			bool disarm();
+      bool flowControl(bool);
 			bool calibrateimubias();
 			void getquaddata(parsernode::common::quaddata &d1);
 			void estimatethrustbias();

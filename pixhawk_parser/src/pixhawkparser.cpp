@@ -235,7 +235,7 @@ namespace pixhawk_parser{
 		//Trying another way to arm:
 	}
 
-	bool PixhawkParser::reset()
+	bool PixhawkParser::flowControl(bool request)
 	{
 		//Not implemented for pixhawk
 		return false;
