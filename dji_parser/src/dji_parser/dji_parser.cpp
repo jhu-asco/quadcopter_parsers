@@ -116,12 +116,12 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
       if(sendyaw)
       {
         control_mode = control_mode | YAW_ANG | YAW_GND;
-        return dji_core->attitude_control(control_mode, rpytmsg.x, rpytmsg.y, rpytmsg.w, rpytmsg.z);
+        return dji_core->attitude_control(control_mode, rpytmsg.x*(180/M_PI), rpytmsg.y*(180/M_PI), rpytmsg.w, rpytmsg.z*(180/M_PI));
       }
       else
       {
         control_mode = control_mode | YAW_RATE | YAW_BODY;
-        return dji_core->attitude_control(control_mode, rpytmsg.x, rpytmsg.y, rpytmsg.w, 0);//0 yaw
+        return dji_core->attitude_control(control_mode, rpytmsg.x*(180/M_PI), rpytmsg.y*(180/M_PI), rpytmsg.w, 0);//0 yaw rate
       }
     }
   }
@@ -141,7 +141,9 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
     if(dji_core->sdk_permission_opened)
     {
       unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
-      return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, yaw_rate);
+      //Convert velocity from NWU frame to NED frame
+      //Also velocity in z direction is set such that positive velocity means going up
+      return dji_core->attitude_control(control_mode, vel_cmd.x, -vel_cmd.y, vel_cmd.z, -yaw_rate*(180/M_PI));
     }
   }
   return false;
