@@ -92,10 +92,20 @@ bool DjiParser::flowControl(bool request)
   if(!dji_core || !(this->initialized))
     return result;
 
-  if(request && !dji_core->sdk_permission_opened)//If already not open and asked to open
+  if(request)
+  {
+    if(!dji_core->sdk_permission_opened)
        result = dji_core->request_sdk_permission_control();
-  else if(!request && dji_core->sdk_permission_opened)// If already open and asked to close
-       result = dji_core->release_sdk_permission_control();
+     else
+       result = true;
+  }
+  else
+  {
+    if(dji_core->sdk_permission_opened)
+      result = dji_core->release_sdk_permission_control();
+    else
+      result = true;
+  }
   return result;
 }
 
@@ -169,6 +179,7 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
     break;
   case IN_AIR :
     data.quadstate = "IN_AIR";
+    data.armed = true;
     break;
   case LANDING :
     data.quadstate = "LANDING";
