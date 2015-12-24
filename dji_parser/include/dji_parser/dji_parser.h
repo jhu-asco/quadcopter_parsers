@@ -60,21 +60,6 @@ private:
     bool enable_log;
     int fd;
 
-private:
-   inline bool checksettings()
-   {
-     if(!dji_core || !(this->initialized))
-       return false;
-
-     bool result = false;
-     if(dji_core->sdk_permission_opened)
-       result = true;
-     else
-       result = dji_core->request_sdk_permission_control();
-
-     return result;
-   }
-
 public:
     DjiParser();
     ~DjiParser()
@@ -86,7 +71,7 @@ public:
     bool takeoff();
     bool land();
     bool disarm();
-    bool reset();
+    bool flowControl(bool);
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
     bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);

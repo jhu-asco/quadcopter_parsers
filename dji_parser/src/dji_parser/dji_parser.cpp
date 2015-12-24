@@ -46,35 +46,57 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
 bool DjiParser::takeoff()//Virtual override function
 {
     //First request sdk control:
-    bool result = false;
-    if(checksettings())
+    bool takeoff_result = false;
+    if(dji_core && (this->initialized))
     {
-        result =  dji_core->takeoff();
+      bool sdk_opened = false;
+      if(!dji_core->sdk_permission_opened)//If sdk is not opened try opening it
+        sdk_opened = flowControl(true);
+      else 
+        sdk_opened = true;//If sdk is already opened 
+
+      if(sdk_opened)//If sdk opened successfully then takeoff
+        takeoff_result =  dji_core->takeoff();
     }
-    if(result)
+
+    if(takeoff_result)
         data.armed = true;
-    return result;
+    return takeoff_result;
 }
 
 bool DjiParser::land()
 {
-    if(checksettings())
-        return dji_core->landing();
+  if(dji_core && (this->initialized))
+  {
+    bool sdk_opened = false;
+    if(!dji_core->sdk_permission_opened)//If sdk is not opened try opening it
+      sdk_opened = flowControl(true);
+    else 
+      sdk_opened = true;//If sdk is already opened 
 
-    return false;
+    if(sdk_opened)
+      return dji_core->landing();
+  }
+  return false;
 }
 
 bool DjiParser::disarm()
 {
-    if(checksettings())
-        return dji_core->release_sdk_permission_control();
-    return false;
+  return flowControl(false);
 }
 
-bool DjiParser::reset()
+bool DjiParser::flowControl(bool request)
 {
-  //Not implemented for pixhawk
-  return false;
+  bool result = false;
+
+  if(!dji_core || !(this->initialized))
+    return result;
+
+  if(request && !dji_core->sdk_permission_opened)//If already not open and asked to open
+       result = dji_core->request_sdk_permission_control();
+  else if(!request && dji_core->sdk_permission_opened)// If already open and asked to close
+       result = dji_core->release_sdk_permission_control();
+  return result;
 }
 
 bool DjiParser::calibrateimubias()
@@ -85,19 +107,22 @@ bool DjiParser::calibrateimubias()
 
 bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
 {
-  if(checksettings())
+  if(dji_core && (this->initialized))
   {
-    //Check if mode is matching:
-    unsigned char control_mode = HORIZ_ATT | VERT_TRU | HORIZ_GND;
-    if(sendyaw)
+    if(dji_core->sdk_permission_opened)
     {
+      //Check if mode is matching:
+      unsigned char control_mode = HORIZ_ATT | VERT_TRU | HORIZ_GND;
+      if(sendyaw)
+      {
         control_mode = control_mode | YAW_ANG | YAW_GND;
         return dji_core->attitude_control(control_mode, rpytmsg.x, rpytmsg.y, rpytmsg.w, rpytmsg.z);
-    }
-    else
-    {
+      }
+      else
+      {
         control_mode = control_mode | YAW_RATE | YAW_BODY;
         return dji_core->attitude_control(control_mode, rpytmsg.x, rpytmsg.y, rpytmsg.w, 0);//0 yaw
+      }
     }
   }
   return false;
@@ -111,10 +136,13 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
 
 bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
 {
-  if(checksettings())
+  if(dji_core && (this->initialized))
   {
-    unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
-    return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, yaw_rate);
+    if(dji_core->sdk_permission_opened)
+    {
+      unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
+      return dji_core->attitude_control(control_mode, vel_cmd.x, vel_cmd.y, vel_cmd.z, yaw_rate);
+    }
   }
   return false;
 }
