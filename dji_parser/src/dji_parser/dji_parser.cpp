@@ -7,7 +7,8 @@
 
 namespace dji_parser{
 
-DjiParser::DjiParser()
+DjiParser::DjiParser(): global_ref_lat(0), global_ref_long(0), sdk_opened(false)
+                        ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
 {
   this->initialized = false;
 }
@@ -17,27 +18,27 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
 {
   enable_log = false;
   //Set Data Properties
+  spin_mutex.lock();
   data.mass = 2.8;//Start with small  values
   data.thrustbias = data.mass*9.81; //We can estimate this later
   data.thrustmax = 3.4*9.81;//Additional payload of 1Kg
   data.thrustmin = 0;
   data.rpbound = M_PI/4;//This is the physical limit enforced by many drivers. This is not the same as the controller bound on angles
+  spin_mutex.unlock();
 
-  //Create a DJI Drone class to receive dji data:
-  dji_core.reset(new DJIDrone(nh_));
+  //Initialize DJI:
+  DJI_SDK::init_parameters_and_activate(nh_, user_act_data_, std::bind(&DjiParser::receiveDJIData, this));
   //Wait till dji is initialized properly:
   ros::Time current_time = ros::Time::now();
-  while(!dji_core->activation)
+  while(!this->initialized)
   {
       if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
           break;
-      ros::spinOnce();
       ros::Rate(10).sleep();//sleep for 0.1 secs
   }
-  if(dji_core->activation)
+  if(this->initialized)
   {
-      this->initialized = true;
-      ROS_INFO("Initialized");
+    ROS_INFO("Initialized dji");
   }
 }
 
@@ -47,64 +48,70 @@ bool DjiParser::takeoff()//Virtual override function
 {
     //First request sdk control:
     bool takeoff_result = false;
-    if(dji_core && (this->initialized))
+    if(this->initialized)
     {
-      bool sdk_opened = false;
-      if(!dji_core->sdk_permission_opened)//If sdk is not opened try opening it
-        sdk_opened = flowControl(true);
-      else 
-        sdk_opened = true;//If sdk is already opened 
+      if(!sdk_opened)//If sdk is not opened try opening it
+        flowControl(true);
 
       if(sdk_opened)//If sdk opened successfully then takeoff
-        takeoff_result =  dji_core->takeoff();
+      {
+        int res = DJI_Pro_Status_Ctrl(4, 0);
+        if(res == 0)
+          takeoff_result = true;
+      }
     }
 
-    if(takeoff_result)
-        data.armed = true;
     return takeoff_result;
 }
 
 bool DjiParser::land()
 {
-  if(dji_core && (this->initialized))
+  bool land_result = false;
+  if(this->initialized)
   {
-    bool sdk_opened = false;
-    if(!dji_core->sdk_permission_opened)//If sdk is not opened try opening it
-      sdk_opened = flowControl(true);
-    else 
-      sdk_opened = true;//If sdk is already opened 
+    if(!sdk_opened)//If sdk is not opened try opening it
+      flowControl(true);
 
     if(sdk_opened)
-      return dji_core->landing();
+    {
+      int res = DJI_Pro_Status_Ctrl(6, 0);
+      if(res == 0)
+        land_result = true;
+    }
   }
-  return false;
+  return land_result;
 }
 
 bool DjiParser::disarm()
 {
-  return flowControl(false);
+  flowControl(false);
 }
 
 bool DjiParser::flowControl(bool request)
 {
   bool result = false;
 
-  if(!dji_core || !(this->initialized))
+  if(!(this->initialized))
     return result;
-
-  if(request)
+  int sdk_req = request?1:0;
+  if((request && !sdk_opened)||(!request && sdk_opened))
+    DJI_Pro_Control_Management(sdk_req, NULL);
+  
+  //Wait for 0.5 secs until sdk is opened/closed
+  ros::Time current_time = ros::Time::now();
+  while(ros::ok())
   {
-    if(!dji_core->sdk_permission_opened)
-       result = dji_core->request_sdk_permission_control();
-     else
-       result = true;
-  }
-  else
-  {
-    if(dji_core->sdk_permission_opened)
-      result = dji_core->release_sdk_permission_control();
-    else
+    if((request && sdk_opened)||(!request && !sdk_opened))
+    {
       result = true;
+      break;
+    }
+    else if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
+    {
+      result = false;
+      break;
+    }
+    ros::Rate(10).sleep();//sleep for 0.1 secs
   }
   return result;
 }
@@ -117,25 +124,33 @@ bool DjiParser::calibrateimubias()
 
 bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
 {
-  if(dji_core && (this->initialized))
+  if(this->initialized)
   {
-    if(dji_core->sdk_permission_opened)
+    if(sdk_opened)
     {
-      //Check if mode is matching:
-      unsigned char control_mode = HORIZ_ATT | VERT_TRU | HORIZ_GND;
+      attitude_data_t user_ctrl_data;
+      user_ctrl_data.ctrl_flag = HORIZ_ATT | VERT_TRU | HORIZ_GND;
       if(sendyaw)
       {
-        control_mode = control_mode | YAW_ANG | YAW_GND;
-        return dji_core->attitude_control(control_mode, rpytmsg.x*(180/M_PI), rpytmsg.y*(180/M_PI), rpytmsg.w, rpytmsg.z*(180/M_PI));
+        user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_ANG | YAW_GND;
+        user_ctrl_data.roll_or_x = rpytmsg.x*(180/M_PI);
+        user_ctrl_data.pitch_or_y = rpytmsg.y*(180/M_PI);
+        user_ctrl_data.thr_z = rpytmsg.w;
+        user_ctrl_data.yaw = rpytmsg.z*(180/M_PI);
+        DJI_Pro_Attitude_Control(&user_ctrl_data);
       }
       else
       {
-        control_mode = control_mode | YAW_RATE | YAW_BODY;
-        return dji_core->attitude_control(control_mode, rpytmsg.x*(180/M_PI), rpytmsg.y*(180/M_PI), rpytmsg.w, 0);//0 yaw rate
+        user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_RATE | YAW_BODY;
+        user_ctrl_data.roll_or_x = rpytmsg.x*(180/M_PI);
+        user_ctrl_data.pitch_or_y = rpytmsg.y*(180/M_PI);
+        user_ctrl_data.thr_z = rpytmsg.w;
+        user_ctrl_data.yaw = 0;
+        DJI_Pro_Attitude_Control(&user_ctrl_data);
       }
     }
   }
-  return false;
+  return true;
 }
 
 void DjiParser::reset_attitude(double roll, double pitch, double yaw)
@@ -146,17 +161,22 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
 
 bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
 {
-  if(dji_core && (this->initialized))
+  if(this->initialized)
   {
-    if(dji_core->sdk_permission_opened)
+    if(sdk_opened)
     {
-      unsigned char control_mode = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
       //Convert velocity from NWU frame to NED frame
       //Also velocity in z direction is set such that positive velocity means going up
-      return dji_core->attitude_control(control_mode, vel_cmd.x, -vel_cmd.y, vel_cmd.z, -yaw_rate*(180/M_PI));
+      attitude_data_t user_ctrl_data;
+      user_ctrl_data.ctrl_flag = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
+      user_ctrl_data.roll_or_x = vel_cmd.x;
+      user_ctrl_data.pitch_or_y = -vel_cmd.y;
+      user_ctrl_data.thr_z = vel_cmd.z;
+      user_ctrl_data.yaw = -yaw_rate*(180/M_PI);
+      DJI_Pro_Attitude_Control(&user_ctrl_data);
     }
   }
-  return false;
+  return true;
 }
 
 void DjiParser::grip(int state)//TriState Gripper
@@ -167,79 +187,180 @@ void DjiParser::grip(int state)//TriState Gripper
 
 void DjiParser::getquaddata(parsernode::common::quaddata &d1)
 {
-  //this->initialized = dji_core->activation;
-  data.batterypercent = double(dji_core->power_status.percentage);
-  switch(dji_core->flight_status)
+  spin_mutex.lock();
+  //Create Quad State String based on existing status:
+  switch(quad_status)
   {
-  case STANDBY :
-    data.quadstate = "STANDBY";
-    break;
-  case TAKEOFF :
-    data.quadstate = "TAKEOFF";
-    break;
-  case IN_AIR :
-    data.quadstate = "IN_AIR";
-    data.armed = true;
-    break;
-  case LANDING :
-    data.quadstate = "LANDING";
-    break;
-  case FINISH_LANDING :
-    data.quadstate = "FINISH_LANDING";
-    data.armed = false;
-    break;
+    case STANDBY :
+      data.quadstate = "STANDBY";
+      break;
+    case TAKEOFF :
+      data.quadstate = "TAKEOFF";
+      break;
+    case IN_AIR :
+      data.quadstate = "IN_AIR";
+      break;
+    case LANDING :
+      data.quadstate = "LANDING";
+      break;
+    case FINISH_LANDING :
+      data.quadstate = "FINISH_LANDING";
+      break;
   }
-
-  /*Flight Control Info.cur_ctrl_dev_in_navi_mode:  0->rc  1->app  2->serial*/
-  switch(dji_core->flight_control_info.cur_ctrl_dev_in_navi_mode)
+  switch(ctrl_mode)
   {
-  case 0:
-    data.quadstate += " RC";
-    break;
-  case 1:
-    data.quadstate += " APP";
-    break;
-  case 2:
-    data.quadstate += " SER";
-    break;
+    case 0:
+      data.quadstate += " RC";
+      break;
+    case 1:
+      data.quadstate += " APP";
+      break;
+    case 2:
+      data.quadstate += " SER";
+      break;
   }
-  /*Flight Control Info.serial_req_status: 1->open  0->closed*/
-  switch(dji_core->flight_control_info.serial_req_status)
+  switch(sdk_status)
   {
-  case 0:
-    data.quadstate += " SCLOSE";
-    break;
-  case 1:
-    data.quadstate += " SOPEN";
-    break;
+    case 0:
+      data.quadstate += " SCLOSE";
+      sdk_opened = false;
+      break;
+    case 1:
+      data.quadstate += " SOPEN";
+      sdk_opened = true;
+      break;
   }
-  //TODO: What is local_posbase_use_height in dji_drone.h
-
-  //Add data from quadcopter
-  {
-    //RPY:
-    tf::Quaternion qt(dji_core->attitude_quaternion.q1, dji_core->attitude_quaternion.q2, dji_core->attitude_quaternion.q3, dji_core->attitude_quaternion.q0);
-    tf::Matrix3x3 mat;
-    mat.setRotation(qt);
-    mat.getEulerYPR(data.rpydata.z, data.rpydata.y, data.rpydata.x);
-  }
-  //Compass:
-  data.magdata.x = double(dji_core->compass.x); data.magdata.y = double(dji_core->compass.y); data.magdata.z = double(dji_core->compass.z);
-  //Altitude:
-  data.altitude = dji_core->global_position.height;
-  //linvel:
-  data.linvel.x = double(dji_core->velocity.vx); data.linvel.y = double(dji_core->velocity.vy); data.linvel.z = double(dji_core->velocity.vz);
-  //rc data:
-  data.servo_in[0] = (int16_t)dji_core->rc_channels.roll; data.servo_in[1] = (int16_t)dji_core->rc_channels.pitch; data.servo_in[2] = (int16_t)dji_core->rc_channels.yaw; data.servo_in[3] = (int16_t)dji_core->rc_channels.throttle;
-  //localpos:
-  data.localpos.x = dji_core->local_position.x;  data.localpos.y = dji_core->local_position.y; data.localpos.z = dji_core->local_position.z; 
+  data.quadstate += (std::string(" G") + std::to_string(gps_health));
   d1 = data;//Copy data
+  spin_mutex.unlock();
   return;
 }
 
 void DjiParser::setmode(std::string mode)
 {
   //Dont need to implement as the commands can change them easily
+}
+
+//Receive DJI Data:
+void DjiParser::receiveDJIData()
+{
+  //Uses DJI SDK In This Function Look in dji_sdk package/include/lib/DJI_LIB for further help
+  sdk_std_msg_t recv_sdk_std_msgs;
+  unsigned short msg_flags;
+  DJI_Pro_Get_Broadcast_Data(&recv_sdk_std_msgs, &msg_flags);
+
+  //static ros::Time starting_time = ros::Time::now();
+  //static uint64_t starting_timestamp =
+
+  spin_mutex.lock();
+  data.timestamp = (recv_sdk_std_msgs.time_stamp*(1.0/600.0));
+
+  //update attitude msg
+  if ((msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W)) {
+    tf::Quaternion qt(recv_sdk_std_msgs.q.q1, recv_sdk_std_msgs.q.q2,recv_sdk_std_msgs.q.q3,recv_sdk_std_msgs.q.q0);
+    tf::Matrix3x3 mat;
+    mat.setRotation(qt);
+    mat.getEulerYPR(data.rpydata.z, data.rpydata.y, data.rpydata.x);
+    if(enable_log)
+      imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<endl;
+  }
+
+  //update velocity msg
+  if ((msg_flags & ENABLE_MSG_V)) {
+    data.linvel.x = recv_sdk_std_msgs.v.x;
+    data.linvel.y = recv_sdk_std_msgs.v.y;
+    data.linvel.z = recv_sdk_std_msgs.v.z;
+  }
+
+  //update acceleration msg
+  if ((msg_flags & ENABLE_MSG_A)) {
+    data.linacc.x = recv_sdk_std_msgs.a.x;
+    data.linacc.y = recv_sdk_std_msgs.a.y;
+    data.linacc.z = recv_sdk_std_msgs.a.z;
+  }
+
+  //update rc_channel msg
+  if ((msg_flags & ENABLE_MSG_RC)) {
+    data.servo_in[0] = (int16_t)recv_sdk_std_msgs.rc.pitch;
+    data.servo_in[1] = (int16_t)recv_sdk_std_msgs.rc.roll;
+    data.servo_in[2] = (int16_t)recv_sdk_std_msgs.rc.throttle;
+    data.servo_in[3] = (int16_t)recv_sdk_std_msgs.rc.yaw;
+    if(enable_log)
+      rcinputfile<<data.timestamp<<"\t"<<data.servo_in[0]<<"\t"<<data.servo_in[1]<<"\t"<<data.servo_in[2]<<"\t"<<data.servo_in[3]<<endl;
+    /*rc_channels.mode = recv_sdk_std_msgs.rc.mode;
+    rc_channels.gear = recv_sdk_std_msgs.rc.gear;
+    rc_channels_publisher.publish(rc_channels);
+    */
+  }
+
+  //update compass msg
+  if ((msg_flags & ENABLE_MSG_MAG)) {
+    data.magdata.x = (double)recv_sdk_std_msgs.mag.x;
+    data.magdata.y = (double)recv_sdk_std_msgs.mag.y;
+    data.magdata.z = (double)recv_sdk_std_msgs.mag.z;
+  }
+
+   //Fix Bug with Data Status TODO
+
+  //update flight_status 
+  if ((msg_flags & ENABLE_MSG_STATUS)) {
+    quad_status = recv_sdk_std_msgs.status;
+    if(quad_status == IN_AIR)
+      data.armed = true;
+    else if(quad_status == FINISH_LANDING)
+      data.armed = false;
+  }
+
+  //update battery msg
+  if ((msg_flags & ENABLE_MSG_BATTERY)) {
+    data.batterypercent = (double)recv_sdk_std_msgs.battery_remaining_capacity;
+  }
+
+  //update flight control info
+  if ((msg_flags & ENABLE_MSG_DEVICE)) {
+    //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
+    ctrl_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode; 
+  }
+
+  //update obtaincontrol msg
+  if ((msg_flags & ENABLE_MSG_TIME)) {
+    //SDK Permission
+    sdk_status = recv_sdk_std_msgs.obtained_control; 
+
+    //update activation msg
+    if(recv_sdk_std_msgs.activation)
+    {
+      this->initialized = true;
+//      ROS_INFO("Initialized DJI");
+    }
+    else
+    {
+      this->initialized = false;
+    }
+  }
+
+  if ((msg_flags & ENABLE_MSG_POS)) {
+    //Initialize ref
+    if(global_ref_lat == 0 && global_ref_long == 0)
+    {
+      global_ref_lat = recv_sdk_std_msgs.pos.lati * 180.0 / C_PI;
+      global_ref_long = recv_sdk_std_msgs.pos.longti * 180.0 / C_PI;
+    }
+
+    //update local_position msg
+    DJI_SDK::gps_convert_ned(
+        data.localpos.x,
+        data.localpos.y,
+        recv_sdk_std_msgs.pos.longti * 180.0 / C_PI,
+        recv_sdk_std_msgs.pos.lati * 180.0 / C_PI,
+        global_ref_long,
+        global_ref_lat
+        );
+    data.localpos.z = recv_sdk_std_msgs.pos.height;
+    //Altitude is not used: recv_sdk_std_msgs.pos.alti
+    gps_health = (uint8_t)recv_sdk_std_msgs.pos.health_flag;
+  }
+  spin_mutex.unlock();
 }
 
 };

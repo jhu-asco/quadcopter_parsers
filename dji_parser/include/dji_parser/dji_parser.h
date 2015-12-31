@@ -10,20 +10,20 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cmath>
-#include <string.h>
+#include <string>
 #include <inttypes.h>
 #include <fstream>
 #include <sys/time.h>
 #include <time.h>
 #include <bitset>         // std::bitset
+#include <boost/thread.hpp>
 
 //Messages:
 #include <geometry_msgs/Quaternion.h>
 
-#include <boost/thread.hpp>
+//DJI SDK Helper:
+#include "dji_sdk_helper.h"
 
-//DJI Includes:
-#include <dji_sdk/dji_drone.h>
 
 #ifndef FILE_BUFFER_SIZE
 #define FILE_BUFFER_SIZE 1024
@@ -45,7 +45,6 @@ private:
 private:
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
-    boost::shared_ptr<DJIDrone> dji_core;
     uint8_t control_mode;///< Mode corresponding to dji
     //File Streams
     ofstream cmdfile;//Cmd logging
@@ -59,13 +58,24 @@ private:
     char rcinputfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     bool enable_log;
     int fd;
+    //DJI SDK Member Variables:
+    activate_data_t user_act_data_;///< App activation data dji
+    bool sdk_opened;
+    double global_ref_lat, global_ref_long;///<Lat and Long of Home
+    boost::mutex spin_mutex;
+    uint8_t quad_status;///< Quad status standby takeoff etc
+    uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
+    uint8_t sdk_status;///< Whether sdk is open or close
+    uint8_t gps_health;///< Health of GPS
 
+
+private:
+    void receiveDJIData();//receive dji data from its lib 
 public:
     DjiParser();
     ~DjiParser()
     {
         disarm();//release sdk control
-        dji_core.reset();
     }
     //Extend functions from Parser:
     bool takeoff();
