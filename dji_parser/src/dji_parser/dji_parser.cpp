@@ -55,7 +55,9 @@ bool DjiParser::takeoff()//Virtual override function
 
       if(sdk_opened)//If sdk opened successfully then takeoff
       {
+        ROS_INFO("Calling Takeoff");
         int res = DJI_Pro_Status_Ctrl(4, 0);
+        ROS_INFO("Takeoff Res: %d", res);
         if(res == 0)
           takeoff_result = true;
       }
