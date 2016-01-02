@@ -414,7 +414,7 @@ namespace pixhawk_parser{
 		return true;
 	}
 
-  bool PixhawkParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
+  bool PixhawkParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
   {
     mavlink_message_t mavmsg;
     mavlink_set_position_target_local_ned_t local_vel_cmd_msg;

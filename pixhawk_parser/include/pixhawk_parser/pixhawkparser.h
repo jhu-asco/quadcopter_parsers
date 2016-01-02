@@ -200,7 +200,7 @@ class PixhawkParser: public parsernode::Parser
 			}
 			void initialize(ros::NodeHandle &nh_);
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-			bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
+			bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
 			inline void sendradio(uint16_t r1,uint16_t r2,uint16_t r3,uint16_t r4);
 			//void foldarm();
 			//void setarmpwm(double *armpwm);

@@ -84,7 +84,7 @@ public:
     bool flowControl(bool);
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
+    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
     void setmode(std::string mode);

@@ -161,7 +161,7 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
     return;
 }
 
-bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
+bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
 {
   if(this->initialized)
   {
@@ -170,11 +170,11 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
       //Convert velocity from NWU frame to NED frame
       //Also velocity in z direction is set such that positive velocity means going up
       attitude_data_t user_ctrl_data;
-      user_ctrl_data.ctrl_flag = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_RATE | YAW_BODY;
+      user_ctrl_data.ctrl_flag = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_ANG | YAW_BODY;
       user_ctrl_data.roll_or_x = vel_cmd.x;
       user_ctrl_data.pitch_or_y = -vel_cmd.y;
       user_ctrl_data.thr_z = vel_cmd.z;
-      user_ctrl_data.yaw = -yaw_rate*(180/M_PI);
+      user_ctrl_data.yaw = -yaw_ang*(180/M_PI);
       DJI_Pro_Attitude_Control(&user_ctrl_data);
     }
   }
