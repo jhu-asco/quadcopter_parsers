@@ -30,11 +30,21 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   DJI_SDK::init_parameters_and_activate(nh_, user_act_data_, std::bind(&DjiParser::receiveDJIData, this));
   //Wait till dji is initialized properly:
   ros::Time current_time = ros::Time::now();
-  while(!this->initialized)
+  while(ros::ok())
   {
-      if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
-          break;
-      ros::Rate(10).sleep();//sleep for 0.1 secs
+    spin_mutex.lock();
+    if(this->initialized)
+    {
+      spin_mutex.unlock();
+      break;
+    }
+    spin_mutex.unlock();
+    if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
+    {
+      ROS_WARN("Timeout initializing");
+      break;
+    }
+    ros::Rate(10).sleep();//sleep for 0.1 secs
   }
   if(this->initialized)
   {
@@ -103,16 +113,22 @@ bool DjiParser::flowControl(bool request)
   ros::Time current_time = ros::Time::now();
   while(ros::ok())
   {
+    spin_mutex.lock();
+    sdk_opened = (sdk_status == 0)?false:(sdk_status == 1)?true:false;
     if((request && sdk_opened)||(!request && !sdk_opened))
     {
       result = true;
+      spin_mutex.unlock();
       break;
     }
     else if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
     {
+      ROS_INFO("Timeout");
       result = false;
+      spin_mutex.unlock();
       break;
     }
+    spin_mutex.unlock();
     ros::Rate(10).sleep();//sleep for 0.1 secs
   }
   return result;
