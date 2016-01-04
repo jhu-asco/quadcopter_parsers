@@ -287,8 +287,8 @@ void DjiParser::receiveDJIData()
 
   //update rc_channel msg
   if ((msg_flags & ENABLE_MSG_RC)) {
-    data.servo_in[0] = (int16_t)recv_sdk_std_msgs.rc.pitch;
-    data.servo_in[1] = (int16_t)recv_sdk_std_msgs.rc.roll;
+    data.servo_in[0] = (int16_t)recv_sdk_std_msgs.rc.roll;
+    data.servo_in[1] = (int16_t)recv_sdk_std_msgs.rc.pitch;
     data.servo_in[2] = (int16_t)recv_sdk_std_msgs.rc.throttle;
     data.servo_in[3] = (int16_t)recv_sdk_std_msgs.rc.yaw;
     if(enable_log)
