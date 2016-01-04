@@ -264,7 +264,7 @@ void DjiParser::receiveDJIData()
     mat.setRotation(qt);
     mat.getEulerYPR(data.rpydata.z, data.rpydata.y, data.rpydata.x);
     if(enable_log)
-      imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<endl;
+      imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<"\t"<<recv_sdk_std_msgs.w.x<<"\t"<<recv_sdk_std_msgs.w.y<<"\t"<<recv_sdk_std_msgs.w.z<<endl;
   }
 
   //update velocity msg
@@ -272,6 +272,8 @@ void DjiParser::receiveDJIData()
     data.linvel.x = recv_sdk_std_msgs.v.x;
     data.linvel.y = recv_sdk_std_msgs.v.y;
     data.linvel.z = recv_sdk_std_msgs.v.z;
+    if(enable_log)
+      velfile<<data.timestamp<<"\t"<<data.linvel.x<<"\t"<<data.linvel.y<<"\t"<<data.linvel.z<<endl;
   }
 
   //update acceleration msg
@@ -279,6 +281,8 @@ void DjiParser::receiveDJIData()
     data.linacc.x = recv_sdk_std_msgs.a.x;
     data.linacc.y = recv_sdk_std_msgs.a.y;
     data.linacc.z = recv_sdk_std_msgs.a.z;
+    if(enable_log)
+      accfile<<data.timestamp<<"\t"<<data.linacc.x<<"\t"<<data.linacc.y<<"\t"<<data.linacc.z<<endl;
   }
 
   //update rc_channel msg
@@ -300,6 +304,8 @@ void DjiParser::receiveDJIData()
     data.magdata.x = (double)recv_sdk_std_msgs.mag.x;
     data.magdata.y = (double)recv_sdk_std_msgs.mag.y;
     data.magdata.z = (double)recv_sdk_std_msgs.mag.z;
+    if(enable_log)
+      magfile<<data.timestamp<<"\t"<<data.magdata.x<<"\t"<<data.magdata.y<<"\t"<<data.magdata.z<<endl;
   }
 
    //Fix Bug with Data Status TODO
@@ -361,6 +367,8 @@ void DjiParser::receiveDJIData()
     data.localpos.z = recv_sdk_std_msgs.pos.height;
     //Altitude is not used: recv_sdk_std_msgs.pos.alti
     gps_health = (uint8_t)recv_sdk_std_msgs.pos.health_flag;
+    if(enable_log)
+      localposfile<<data.timestamp<<"\t"<<data.localpos.x<<"\t"<<data.localpos.y<<"\t"<<data.localpos.z<<"\t"<<gps_health<<endl;
   }
   spin_mutex.unlock();
 }

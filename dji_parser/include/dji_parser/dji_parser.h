@@ -51,10 +51,18 @@ private:
     ofstream servofile;//Raw servo pwm logging
     ofstream rcinputfile;//Raw rc input logging
     ofstream imufile;//Imu data logging
+    ofstream velfile;//Vel data logging
+    ofstream accfile;//Acc data logging
+    ofstream magfile;//Mag data logging
+    ofstream localposfile;//Local pos data logging
     //Create Buffers for each of these files:
     char cmdfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char imufile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+    char velfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+    char accfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+    char magfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char servofile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+    char localposfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char rcinputfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     bool enable_log;
     int fd;
@@ -101,23 +109,41 @@ public:
         servofile.open((logdir+"/servo.dat").c_str());
         rcinputfile.open((logdir+"/rcinput.dat").c_str());
         imufile.open((logdir+"/imu.dat").c_str());
+        velfile.open((logdir+"/vel.dat").c_str());
+        accfile.open((logdir+"/acc.dat").c_str());
+        magfile.open((logdir+"/mag.dat").c_str());
+        localposfile.open((logdir+"/localposfile.dat").c_str());
 
         cmdfile.precision(10);
         servofile.precision(10);
         rcinputfile.precision(10);
         imufile.precision(10);
+        velfile.precision(10);
+        accfile.precision(10);
+        magfile.precision(10);
+        localposfile.precision(10);
+
         //Create Buffer:
         imufile.rdbuf()->pubsetbuf(imufile_buffer, FILE_BUFFER_SIZE);
         cmdfile.rdbuf()->pubsetbuf(cmdfile_buffer, FILE_BUFFER_SIZE);
         servofile.rdbuf()->pubsetbuf(servofile_buffer, FILE_BUFFER_SIZE);
         imufile.rdbuf()->pubsetbuf(imufile_buffer, FILE_BUFFER_SIZE);
+        velfile.rdbuf()->pubsetbuf(velfile_buffer, FILE_BUFFER_SIZE);
+        accfile.rdbuf()->pubsetbuf(accfile_buffer, FILE_BUFFER_SIZE);
+        magfile.rdbuf()->pubsetbuf(magfile_buffer, FILE_BUFFER_SIZE);
+        localposfile.rdbuf()->pubsetbuf(localposfile_buffer, FILE_BUFFER_SIZE);
+
         //#DEBUG Print Buffer size:
         std::cout<<"Imu file buffer size: "<<imufile.rdbuf()->in_avail();
 
         cmdfile<<"#Time\t Roll \t Pitch \t Yaw \t Thrust"<<endl;
         servofile<<"#Time\t SERVO_1\t SERVO_2\t SERVO_3\t SERVO_4\t TIME_US\t BATT_VOLTS"<<endl;
         rcinputfile<<"#Time\t RC_1\t RC_2\t RC_3\t RC_4"<<endl;
-        imufile<<"#Time\t Roll \t Pitch \t Yaw"<<endl;
+        imufile<<"#Time\t Roll \t Pitch \t Yaw\t Wx\t Wy\t Wz"<<endl;
+        velfile<<"#Time\t Vx \t Vy \t Vz"<<endl;
+        accfile<<"#Time\t Ax \t Ay \t Az"<<endl;
+        magfile<<"#Time\t Mx \t My \t Mz"<<endl;
+        localposfile<<"#Time\t Posx \t Posy \t Posz\t Gps_Health"<<endl;
     }
     void controllog(bool logswitch)
     {
