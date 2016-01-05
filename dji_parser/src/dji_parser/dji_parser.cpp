@@ -189,9 +189,9 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
       //user_ctrl_data.ctrl_flag = HORIZ_VEL | VERT_VEL | HORIZ_BODY | YAW_ANG | YAW_BODY;
       user_ctrl_data.ctrl_flag = HORIZ_VEL | VERT_VEL | HORIZ_GND | YAW_ANG | YAW_GND;
       user_ctrl_data.roll_or_x = vel_cmd.x;
-      user_ctrl_data.pitch_or_y = -vel_cmd.y;
-      user_ctrl_data.thr_z = vel_cmd.z;
-      user_ctrl_data.yaw = -yaw_ang*(180/M_PI);
+      user_ctrl_data.pitch_or_y = vel_cmd.y;
+      user_ctrl_data.thr_z = -vel_cmd.z;
+      user_ctrl_data.yaw = yaw_ang*(180/M_PI);
       DJI_Pro_Attitude_Control(&user_ctrl_data);
     }
   }
