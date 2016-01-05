@@ -61,14 +61,14 @@ namespace parsernode {
 		struct quaddata{
 			double batterypercent;//Can be also battery volts in V
 			std::string quadstate;
-			geometry_msgs::Vector3 rpydata;//Roll pitch yaw data
+			geometry_msgs::Vector3 rpydata;//Roll pitch yaw data in NWU format
 			geometry_msgs::Vector3 magdata;//Magnetometer data;
 			double pressure, temperature, wind_speed, wind_angle; //Pressure from barometer; temperature from temp sensor; wind speed and wind angle
 			double altitude; //estimated altitude
 			double *motorpwm;//motorpwm values
 			geometry_msgs::Vector3 linvel;//Linear velocity of quadcopter
 			geometry_msgs::Vector3 linacc;//Linear acceleration of quadcopter
-      geometry_msgs::Vector3 localpos;// Local pos based on home
+      geometry_msgs::Vector3 localpos;// Local pos based on home NWU format
 			double timestamp;//timestamp from drone
 			double mass, thrustbias;//Mass of the Quadcopter, the bias in thrust needed if the quadcopter does not compensate for gravity by itself.
 			double thrustmin, thrustmax;//Max and min values for thrust Not the output values

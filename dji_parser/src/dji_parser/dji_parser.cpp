@@ -383,6 +383,7 @@ void DjiParser::receiveDJIData()
         global_ref_long,
         global_ref_lat
         );
+    data.localpos.y = - data.localpos.y;//NED to NWU format
     data.localpos.z = recv_sdk_std_msgs.pos.height;
     //Altitude is not used: recv_sdk_std_msgs.pos.alti
     gps_health = (uint8_t)recv_sdk_std_msgs.pos.health_flag;
