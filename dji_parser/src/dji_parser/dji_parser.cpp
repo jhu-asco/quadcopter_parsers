@@ -280,6 +280,8 @@ void DjiParser::receiveDJIData()
     tf::Matrix3x3 mat;
     mat.setRotation(qt);
     mat.getEulerYPR(data.rpydata.z, data.rpydata.y, data.rpydata.x);
+    data.rpydata.y = -data.rpydata.y;
+    data.rpydata.z = -data.rpydata.z;
     if(enable_log)
       imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<"\t"<<recv_sdk_std_msgs.w.x<<"\t"<<recv_sdk_std_msgs.w.y<<"\t"<<recv_sdk_std_msgs.w.z<<endl;
   }
