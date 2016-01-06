@@ -210,7 +210,7 @@ bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_
     spin_mutex.lock();
     user_ctrl_data.roll_or_x = desired_pos.x - data.localpos.x;
     user_ctrl_data.pitch_or_y = -(desired_pos.y - data.localpos.y);
-    user_ctrl_data.thr_z = -(desired_pos.z - data.localpos.z);
+    user_ctrl_data.thr_z = desired_pos.z;
     spin_mutex.unlock();
     user_ctrl_data.yaw = -desired_yaw*(180/M_PI);
     DJI_Pro_Attitude_Control(&user_ctrl_data);
