@@ -25,6 +25,8 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   data.thrustmin = 0;
   data.rpbound = M_PI/4;//This is the physical limit enforced by many drivers. This is not the same as the controller bound on angles
   spin_mutex.unlock();
+  //Initialize ros publishers:
+  global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
 
   //Initialize DJI:
   DJI_SDK::init_parameters_and_activate(nh_, user_act_data_, std::bind(&DjiParser::receiveDJIData, this));
@@ -196,6 +198,23 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
     }
   }
   return true;
+}
+
+bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw)
+{
+  if(sdk_opened)
+  {
+    //Convert position from NWU frame to NED frame
+    attitude_data_t user_ctrl_data;
+    user_ctrl_data.ctrl_flag = HORIZ_POS | VERT_POS | HORIZ_GND | YAW_ANG | YAW_GND;
+    spin_mutex.lock();
+    user_ctrl_data.roll_or_x = desired_pos.x - data.localpos.x;
+    user_ctrl_data.pitch_or_y = -(desired_pos.y - data.localpos.y);
+    user_ctrl_data.thr_z = -(desired_pos.z - data.localpos.z);
+    spin_mutex.unlock();
+    user_ctrl_data.yaw = -desired_yaw*(180/M_PI);
+    DJI_Pro_Attitude_Control(&user_ctrl_data);
+  }
 }
 
 void DjiParser::grip(int state)//TriState Gripper
@@ -372,6 +391,12 @@ void DjiParser::receiveDJIData()
     {
       global_ref_lat = recv_sdk_std_msgs.pos.lati * 180.0 / C_PI;
       global_ref_long = recv_sdk_std_msgs.pos.longti * 180.0 / C_PI;
+      sensor_msgs::NavSatFix nav_fix_msg;
+      nav_fix_msg.altitude = 0;
+      nav_fix_msg.latitude = global_ref_lat;
+      nav_fix_msg.longitude = global_ref_long;
+      nav_fix_msg.header.stamp = ros::Time::now();
+      global_ref_pub.publish(nav_fix_msg);
     }
 
     //update local_position msg

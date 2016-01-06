@@ -20,6 +20,7 @@
 
 //Messages:
 #include <geometry_msgs/Quaternion.h>
+#include <sensor_msgs/NavSatFix.h>
 
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
@@ -55,6 +56,8 @@ private:
     ofstream accfile;//Acc data logging
     ofstream magfile;//Mag data logging
     ofstream localposfile;//Local pos data logging
+    //Publishers ROS
+    ros::Publisher global_ref_pub;
     //Create Buffers for each of these files:
     char cmdfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char imufile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
@@ -93,6 +96,7 @@ public:
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
     bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
+    bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
     void setmode(std::string mode);

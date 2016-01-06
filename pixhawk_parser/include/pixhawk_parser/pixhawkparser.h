@@ -255,6 +255,11 @@ class PixhawkParser: public parsernode::Parser
 				data.altitude = altitude_;
 				spin_mutex.unlock();
 			}
+      bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0)
+      {
+        //[NOT IMPLEMENTED]
+        return false;
+      }
 	};
 };
 #endif // ARDRONE_PARSHER_H
