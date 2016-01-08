@@ -213,7 +213,12 @@ bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_
     user_ctrl_data.thr_z = desired_pos.z;
     spin_mutex.unlock();
     user_ctrl_data.yaw = -desired_yaw*(180/M_PI);
+    //ROS_INFO("Offset: %f,%f,%f,%f",user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y, user_ctrl_data.thr_z, user_ctrl_data.yaw);
     DJI_Pro_Attitude_Control(&user_ctrl_data);
+  }
+  else
+  {
+    ROS_WARN("SDK Not Open");
   }
 }
 
