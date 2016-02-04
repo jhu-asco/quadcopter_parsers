@@ -149,12 +149,12 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
     if(sdk_opened)
     {
       attitude_data_t user_ctrl_data;
-      user_ctrl_data.ctrl_flag = HORIZ_ATT | VERT_TRU | HORIZ_GND;
+      user_ctrl_data.ctrl_flag = HORIZ_ATT | VERT_TRU | HORIZ_BODY;
       if(sendyaw)
       {
-        user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_ANG | YAW_GND;
+        user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_RATE | YAW_BODY;
         user_ctrl_data.roll_or_x = rpytmsg.x*(180/M_PI);
-        user_ctrl_data.pitch_or_y = rpytmsg.y*(180/M_PI);
+        user_ctrl_data.pitch_or_y = -rpytmsg.y*(180/M_PI);
         user_ctrl_data.thr_z = rpytmsg.w;
         user_ctrl_data.yaw = rpytmsg.z*(180/M_PI);
         DJI_Pro_Attitude_Control(&user_ctrl_data);
@@ -163,7 +163,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
       {
         user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_RATE | YAW_BODY;
         user_ctrl_data.roll_or_x = rpytmsg.x*(180/M_PI);
-        user_ctrl_data.pitch_or_y = rpytmsg.y*(180/M_PI);
+        user_ctrl_data.pitch_or_y = -rpytmsg.y*(180/M_PI);
         user_ctrl_data.thr_z = rpytmsg.w;
         user_ctrl_data.yaw = 0;
         DJI_Pro_Attitude_Control(&user_ctrl_data);
