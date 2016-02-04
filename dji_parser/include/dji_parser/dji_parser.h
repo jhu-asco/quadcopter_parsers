@@ -47,6 +47,7 @@ private:
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
     uint8_t control_mode;///< Mode corresponding to dji
+    bool rpyt_ratemode;///< State used to switch between rate control vs angle control of y in rpyt
     //File Streams
     ofstream cmdfile;//Cmd logging
     ofstream servofile;//Raw servo pwm logging

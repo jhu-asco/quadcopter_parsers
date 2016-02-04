@@ -8,7 +8,7 @@
 namespace dji_parser{
 
 DjiParser::DjiParser(): global_ref_lat(0), global_ref_long(0), sdk_opened(false)
-                        ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
+                        ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0), rpyt_ratemode(true)
 {
   this->initialized = false;
 }
@@ -152,7 +152,14 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
       user_ctrl_data.ctrl_flag = HORIZ_ATT | VERT_TRU | HORIZ_BODY;
       if(sendyaw)
       {
-        user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_RATE | YAW_BODY;
+        if(rpyt_ratemode)
+        {
+          user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_RATE | YAW_BODY;
+        }
+        else
+        {
+          user_ctrl_data.ctrl_flag = user_ctrl_data.ctrl_flag | YAW_ANG | YAW_GND;
+        }
         user_ctrl_data.roll_or_x = rpytmsg.x*(180/M_PI);
         user_ctrl_data.pitch_or_y = -rpytmsg.y*(180/M_PI);
         user_ctrl_data.thr_z = rpytmsg.w;
@@ -282,6 +289,14 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
 void DjiParser::setmode(std::string mode)
 {
   //Dont need to implement as the commands can change them easily
+  if(strcmp(mode.c_str(),"rpyt_rate")==0)
+  {
+    rpyt_ratemode = true;
+  }
+  else if(strcmp(mode.c_str(),"rpyt_angle")==0)
+  {
+    rpyt_ratemode = false;
+  }
 }
 
 //Receive DJI Data:
@@ -306,6 +321,9 @@ void DjiParser::receiveDJIData()
     mat.getEulerYPR(data.rpydata.z, data.rpydata.y, data.rpydata.x);
     data.rpydata.y = -data.rpydata.y;
     data.rpydata.z = -data.rpydata.z;
+    data.omega.x = recv_sdk_std_msgs.w.x;
+    data.omega.y = -recv_sdk_std_msgs.w.y;
+    data.omega.z = -recv_sdk_std_msgs.w.z;
     if(enable_log)
       imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<"\t"<<recv_sdk_std_msgs.w.x<<"\t"<<recv_sdk_std_msgs.w.y<<"\t"<<recv_sdk_std_msgs.w.z<<endl;
   }
