@@ -62,6 +62,7 @@ namespace parsernode {
 			double batterypercent;//Can be also battery volts in V
 			std::string quadstate;
 			geometry_msgs::Vector3 rpydata;//Roll pitch yaw data in NWU format
+			geometry_msgs::Vector3 omega;//Angular velocities in NWU format
 			geometry_msgs::Vector3 magdata;//Magnetometer data;
 			double pressure, temperature, wind_speed, wind_angle; //Pressure from barometer; temperature from temp sensor; wind speed and wind angle
 			double altitude; //estimated altitude
