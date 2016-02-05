@@ -325,14 +325,14 @@ void DjiParser::receiveDJIData()
     data.omega.y = -recv_sdk_std_msgs.w.y;
     data.omega.z = -recv_sdk_std_msgs.w.z;
     if(enable_log)
-      imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<"\t"<<recv_sdk_std_msgs.w.x<<"\t"<<recv_sdk_std_msgs.w.y<<"\t"<<recv_sdk_std_msgs.w.z<<endl;
+      imufile<<data.timestamp<<"\t"<<data.rpydata.x<<"\t"<<data.rpydata.y<<"\t"<<data.rpydata.z<<"\t"<<recv_sdk_std_msgs.w.x<<"\t"<<-recv_sdk_std_msgs.w.y<<"\t"<<-recv_sdk_std_msgs.w.z<<endl;
   }
 
   //update velocity msg
   if ((msg_flags & ENABLE_MSG_V)) {
     data.linvel.x = recv_sdk_std_msgs.v.x;
-    data.linvel.y = recv_sdk_std_msgs.v.y;
-    data.linvel.z = recv_sdk_std_msgs.v.z;
+    data.linvel.y = -recv_sdk_std_msgs.v.y;
+    data.linvel.z = -recv_sdk_std_msgs.v.z;
     if(enable_log)
       velfile<<data.timestamp<<"\t"<<data.linvel.x<<"\t"<<data.linvel.y<<"\t"<<data.linvel.z<<endl;
   }
@@ -340,8 +340,8 @@ void DjiParser::receiveDJIData()
   //update acceleration msg
   if ((msg_flags & ENABLE_MSG_A)) {
     data.linacc.x = recv_sdk_std_msgs.a.x;
-    data.linacc.y = recv_sdk_std_msgs.a.y;
-    data.linacc.z = recv_sdk_std_msgs.a.z;
+    data.linacc.y = -recv_sdk_std_msgs.a.y;
+    data.linacc.z = -recv_sdk_std_msgs.a.z;
     if(enable_log)
       accfile<<data.timestamp<<"\t"<<data.linacc.x<<"\t"<<data.linacc.y<<"\t"<<data.linacc.z<<endl;
   }
