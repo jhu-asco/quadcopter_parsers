@@ -1,0 +1,7 @@
+<library path="lib/libquad_simulator_parser">
+  <class name="quad_simulator_parser/QuadSimParser" type="quad_simulator_parser::QuadSimParser" base_class_type="parsernode::Parser">
+    <description>
+			Parser Library for Simulated Quadcopter
+    </description>
+  </class>
+</library>
