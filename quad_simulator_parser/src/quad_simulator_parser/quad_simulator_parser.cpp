@@ -110,7 +110,7 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
       //for(int count = 0; count< number_of_steps; count++)
       //{
       if(dt > 0.03)
-        dt = 0.02;//Cap the dt for simulation
+        dt = 0.03;//Cap the dt for simulation
       sys_.Step(temp_state,0,state_,control,dt,0,0,0,0);
       //  state_ = temp_state;
       //}
@@ -140,6 +140,8 @@ bool QuadSimParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_an
       Vector3d pos = state_.p;
       ros::Time current_time = ros::Time::now();
       double dt = (current_time - prev_vel_cmd_time_).toSec();
+      if(dt > 0.03)
+        dt = 0.03;//Dont give too long dt
       prev_vel_cmd_time_ = ros::Time::now();
       state_.Clear();
       state_.p = pos + Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z)*dt;//Clear everything but current position=> Holds current position
