@@ -12,7 +12,7 @@ void QuadSimParser::setRCInputs(const sensor_msgs::Joy &joy_msg)
    rcin[0] = -(int16_t)parsernode::common::map(joy_msg.axes[0],-0.435,0.435,-10000,10000);
    rcin[1] = -(int16_t)parsernode::common::map(joy_msg.axes[1],-0.479,0.479,-10000,10000);
    rcin[2] = (int16_t)parsernode::common::map(joy_msg.axes[2],-0.6635,0.6635,-10000,10000);
-   rcin[3] = (int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
+   rcin[3] = -(int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
 }
 
 QuadSimParser::QuadSimParser()
