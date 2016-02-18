@@ -148,7 +148,7 @@ public:
         velfile<<"#Time\t Vx \t Vy \t Vz"<<endl;
         accfile<<"#Time\t Ax \t Ay \t Az"<<endl;
         magfile<<"#Time\t Mx \t My \t Mz"<<endl;
-        localposfile<<"#Time\t Posx \t Posy \t Posz\t Gps_Health"<<endl;
+        localposfile<<"#Time\t Posx \t Posy \t Posz"<<endl;
     }
     void controllog(bool logswitch)
     {

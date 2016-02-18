@@ -436,7 +436,7 @@ void DjiParser::receiveDJIData()
     //Altitude is not used: recv_sdk_std_msgs.pos.alti
     gps_health = (uint8_t)recv_sdk_std_msgs.pos.health_flag;
     if(enable_log)
-      localposfile<<data.timestamp<<"\t"<<data.localpos.x<<"\t"<<data.localpos.y<<"\t"<<data.localpos.z<<"\t"<<gps_health<<endl;
+      localposfile<<data.timestamp<<"\t"<<data.localpos.x<<"\t"<<data.localpos.y<<"\t"<<data.localpos.z<<endl;
   }
   spin_mutex.unlock();
 }

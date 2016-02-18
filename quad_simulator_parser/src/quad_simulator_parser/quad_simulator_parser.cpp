@@ -144,7 +144,8 @@ bool QuadSimParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_an
         dt = 0.03;//Dont give too long dt
       prev_vel_cmd_time_ = ros::Time::now();
       state_.Clear();
-      state_.p = pos + Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z)*dt;//Clear everything but current position=> Holds current position
+      state_.v = Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
+      state_.p = pos + state_.v*dt;//Clear everything but current position=> Holds current position
       //Set Yaw
       SO3 &so3 = SO3::Instance();
       Vector3d rpy(0,0,yaw_ang);
