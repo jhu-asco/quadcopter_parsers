@@ -27,13 +27,21 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/Joy.h>
 
+#include <queue>
+
 using namespace std;
 using namespace gcop;
 using namespace Eigen;
 namespace quad_simulator_parser{
 class QuadSimParser: public parsernode::Parser
 {
+    
 private:
+    struct RpytCmdStruct {
+      geometry_msgs::Quaternion rpytmsg;
+      ros::Time time;
+      double dt;
+    };
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
     QRotorIDModel sys_;///< Quadrotor system from GCOP for propagating the system
@@ -41,9 +49,11 @@ private:
     bool enable_qrotor_control_;///< Should be set to true before the quadrotor is controlled
     bool rpyt_ratemode;///< Specifies to use yaw rate mode or yaw angle mode in cmdrpyt
     bool vel_thread_running;///< Whether thread for moving quad using velocity commands
-    ros::Time prev_rpy_cmd_time_;///< Previous ros command time
+    //ros::Time prev_rpy_cmd_time_;///< Previous ros command time
     ros::Time prev_vel_cmd_time_;///< Previous ros command time
     int16_t rcin[4];
+    queue<RpytCmdStruct> rpyt_cmds;
+    double delay_send_time_;///< How much delay between commanded and executed
 
     //Subscribers:
     ros::Subscriber joy_sub_;
