@@ -4,6 +4,7 @@ project(quad_simulator_parser)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules /usr/local/lib/OGRE/cmake)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,6 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   std_msgs
+  cv_bridge
+  tf
+  tf_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -27,6 +31,16 @@ set(LIBS ${LIBS} ${TINYXML_LIBRARIES})
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
+find_package(ObjectRenderer REQUIRED)
+include_directories(${OBJECT_RENDERER_INCLUDE_DIRS})
+
+find_package(OGRE REQUIRED)
+find_package(OIS REQUIRED)
+include_directories( ${OIS_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}
+)
+
   
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -143,6 +157,16 @@ include_directories(
    ${catkin_LIBRARIES}
  )
 
+ add_library(camera_simulator
+   src/${PROJECT_NAME}/camera_simulator.cpp
+ )
+
+ target_link_libraries(camera_simulator
+   ${LIBS}
+   ${catkin_LIBRARIES}
+   ${OBJECT_RENDERER_LIBS}
+ )
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -150,6 +174,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(quad_simulator_parser_node src/quad_simulator_parser_node.cpp)
+add_executable(camera_simulator_node src/camera_simulator_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -157,6 +182,11 @@ add_executable(quad_simulator_parser_node src/quad_simulator_parser_node.cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(quad_simulator_parser_node
+   ${catkin_LIBRARIES}
+ )
+
+ target_link_libraries(camera_simulator_node
+   camera_simulator
    ${catkin_LIBRARIES}
  )
 
