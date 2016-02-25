@@ -27,7 +27,7 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     joy_sub_ = nh_.subscribe("joy",5,&QuadSimParser::setRCInputs,this);
     state_.Clear();//Sets to default values of Quadrotor state
     prev_vel_cmd_time_ = ros::Time::now();
-    prev_rpy_cmd_time_ = ros::Time::now();
+    //prev_rpy_cmd_time_ = ros::Time::now();
     for(int i = 0; i < 4; i++)
         rcin[i] = 0;
     //rcin[3] is thrust set to base value:
@@ -36,6 +36,11 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     rpyt_ratemode = false;
     enable_qrotor_control_ = false;
     armed = false;
+    RpytCmdStruct rpyt_cmd;
+    rpyt_cmd.time = ros::Time(0);
+    rpyt_cmd.dt = 0.02;
+    rpyt_cmds.push(rpyt_cmd);
+    delay_send_time_ = 0.2;
 }
 
 
@@ -89,33 +94,73 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
 {
   if(enable_qrotor_control_)
   {
+      RpytCmdStruct &current_cmd = rpyt_cmds.front();
       ros::Time current_time = ros::Time::now();
-      double dt = (current_time - prev_rpy_cmd_time_).toSec();
-      //Propagate Qrotor State
-      Vector4d control;
-      if(rpyt_ratemode)
+      double tdiff = (current_time - current_cmd.time).toSec();
+      if(tdiff < delay_send_time_)
       {
-        control<<rpytmsg.w, rpytmsg.x, rpytmsg.y, rpytmsg.z;
+        cout<<"Tdiff: "<<tdiff<<endl;
+        RpytCmdStruct rpyt_cmd;
+        rpyt_cmd.time = current_time;
+        if(rpyt_cmds.empty())
+          rpyt_cmd.dt = 0.02;
+        else
+          rpyt_cmd.dt = (current_time - rpyt_cmds.back().time).toSec();
+        rpyt_cmd.rpytmsg = rpytmsg;
+        rpyt_cmds.push(rpyt_cmd);
+      }
+      else if (tdiff > 2*delay_send_time_)
+      {
+        {
+          queue<RpytCmdStruct> empty;
+          rpyt_cmds.swap(empty);
+        }
+        cout<<"Tdiff: "<<tdiff<<endl;
+        RpytCmdStruct rpyt_cmd;
+        rpyt_cmd.time = current_time;
+        if(rpyt_cmds.empty())
+          rpyt_cmd.dt = 0.02;
+        else
+          rpyt_cmd.dt = (current_time - rpyt_cmds.back().time).toSec();
+        rpyt_cmd.rpytmsg = rpytmsg;
+        rpyt_cmds.push(rpyt_cmd);
       }
       else
       {
-        control<<rpytmsg.w, (rpytmsg.x-state_.u(0))/dt, (rpytmsg.y-state_.u(1))/dt,(rpytmsg.z-state_.u(2))/dt;
-        //ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
-      }
-      if(!sendyaw)
+        double &dt = current_cmd.dt;
+        //Propagate Qrotor State
+        Vector4d control;
+        if(rpyt_ratemode)
+        {
+          control<<current_cmd.rpytmsg.w, current_cmd.rpytmsg.x, current_cmd.rpytmsg.y, current_cmd.rpytmsg.z;
+        }
+        else
+        {
+          control<<current_cmd.rpytmsg.w, (current_cmd.rpytmsg.x-state_.u(0))/dt, (current_cmd.rpytmsg.y-state_.u(1))/dt,(current_cmd.rpytmsg.z-state_.u(2))/dt;
+          //ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
+        }
+        if(!sendyaw)
           control(3) = 0;
-      QRotorIDState temp_state;
-      //int number_of_steps = (dt/0.01);
-      //ROS_INFO("Number of steps: %d",number_of_steps);
-      //for(int count = 0; count< number_of_steps; count++)
-      //{
-      if(dt > 0.03)
-        dt = 0.03;//Cap the dt for simulation
-      sys_.Step(temp_state,0,state_,control,dt,0,0,0,0);
-      //  state_ = temp_state;
-      //}
-      prev_rpy_cmd_time_ = current_time;
-      state_ = temp_state;
+        QRotorIDState temp_state;
+        //int number_of_steps = (dt/0.01);
+        //ROS_INFO("Number of steps: %d",number_of_steps);
+        //for(int count = 0; count< number_of_steps; count++)
+        //{
+        if(dt > 0.03)
+          dt = 0.03;//Cap the dt for simulation
+        sys_.Step(temp_state,0,state_,control,dt,0,0,0,0);
+        //  state_ = temp_state;
+        //}
+        state_ = temp_state;
+        rpyt_cmds.pop();//Delete the Last Element
+        //Add current element
+        RpytCmdStruct rpyt_cmd;
+        rpyt_cmd.rpytmsg = rpytmsg;
+        rpyt_cmd.time = current_time;
+        rpyt_cmd.dt = (current_time - rpyt_cmds.back().time).toSec();
+        rpyt_cmds.push(rpyt_cmd);
+      }
+      
   }
   else
   {
