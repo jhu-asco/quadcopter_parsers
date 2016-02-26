@@ -136,7 +136,12 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         }
         else
         {
-          control<<current_cmd.rpytmsg.w, (current_cmd.rpytmsg.x-state_.u(0))/dt, (current_cmd.rpytmsg.y-state_.u(1))/dt,(current_cmd.rpytmsg.z-state_.u(2))/dt;
+          control<<current_cmd.rpytmsg.w, (current_cmd.rpytmsg.x-state_.u(0)), (current_cmd.rpytmsg.y-state_.u(1)),(current_cmd.rpytmsg.z-state_.u(2));
+          for(int j = 0; j < 3; j++)
+          {
+            control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
+            control[j+1] /= dt;
+          }
           //ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
         }
         if(!sendyaw)
