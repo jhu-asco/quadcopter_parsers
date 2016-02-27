@@ -108,6 +108,13 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
           rpyt_cmd.dt = (current_time - rpyt_cmds.back().time).toSec();
         rpyt_cmd.rpytmsg = rpytmsg;
         rpyt_cmds.push(rpyt_cmd);
+        geometry_msgs::Vector3 initial_state_vel;
+        initial_state_vel.x = state_.v[0];
+        initial_state_vel.y = state_.v[1];
+        initial_state_vel.z = state_.v[2];
+        SO3 &so3 = SO3::Instance();
+        double yaw_ang = so3.yaw(state_.R);
+        cmdvelguided(initial_state_vel, yaw_ang);
       }
       else if (tdiff > 2*delay_send_time_)
       {
@@ -124,6 +131,13 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
           rpyt_cmd.dt = (current_time - rpyt_cmds.back().time).toSec();
         rpyt_cmd.rpytmsg = rpytmsg;
         rpyt_cmds.push(rpyt_cmd);
+        geometry_msgs::Vector3 initial_state_vel;
+        initial_state_vel.x = state_.v[0];
+        initial_state_vel.y = state_.v[1];
+        initial_state_vel.z = state_.v[2];
+        SO3 &so3 = SO3::Instance();
+        double yaw_ang = so3.yaw(state_.R);
+        cmdvelguided(initial_state_vel, yaw_ang);
       }
       else
       {
