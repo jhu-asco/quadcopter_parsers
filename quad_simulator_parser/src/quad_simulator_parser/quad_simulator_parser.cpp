@@ -97,7 +97,7 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
       RpytCmdStruct &current_cmd = rpyt_cmds.front();
       ros::Time current_time = ros::Time::now();
       double tdiff = (current_time - current_cmd.time).toSec();
-      if(tdiff < delay_send_time_)
+      if(tdiff < delay_send_time_-0.02)
       {
         cout<<"Tdiff: "<<tdiff<<endl;
         RpytCmdStruct rpyt_cmd;
@@ -115,6 +115,8 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
         cmdvelguided(initial_state_vel, yaw_ang);
+        state_.u[2] = yaw_ang;
+        ROS_INFO("Yaw set: %f",yaw_ang);
       }
       else if (tdiff > 2*delay_send_time_)
       {
@@ -138,6 +140,8 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
         cmdvelguided(initial_state_vel, yaw_ang);
+        ROS_INFO("Yaw set: %f",yaw_ang);
+        state_.u[2] = yaw_ang;
       }
       else
       {
@@ -156,7 +160,8 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
             control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
             control[j+1] /= dt;
           }
-          //ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
+          ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
+          ROS_INFO("current_cmdyaw: %f, state.yaw: %f", current_cmd.rpytmsg.z, state_.u(2));
         }
         if(!sendyaw)
           control(3) = 0;

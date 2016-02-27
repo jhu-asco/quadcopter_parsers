@@ -187,11 +187,11 @@ if(BUILD_SIM_CAMERA)
     ${catkin_LIBRARIES}
     ${OBJECT_RENDERER_LIBS}
   )
+  add_executable(camera_simulator_node src/camera_simulator_node.cpp)
   target_link_libraries(camera_simulator_node
     camera_simulator
     ${catkin_LIBRARIES}
   )
-  add_executable(camera_simulator_node src/camera_simulator_node.cpp)
 endif(BUILD_SIM_CAMERA)
 
 
