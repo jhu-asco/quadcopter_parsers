@@ -4,6 +4,8 @@ project(quad_simulator_parser)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules /usr/local/lib/OGRE/cmake)
+option(BUILD_SIM_CAMERA "builds camera simulator" OFF)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,6 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   std_msgs
+  cv_bridge
+  tf
+  tf_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -27,6 +32,17 @@ set(LIBS ${LIBS} ${TINYXML_LIBRARIES})
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
+if(BUILD_SIM_CAMERA)
+  find_package(ObjectRenderer REQUIRED)
+  include_directories(${OBJECT_RENDERER_INCLUDE_DIRS})
+
+  find_package(OGRE REQUIRED)
+  find_package(OIS REQUIRED)
+  include_directories( ${OIS_INCLUDE_DIRS}
+    ${OGRE_INCLUDE_DIRS}
+  )
+endif(BUILD_SIM_CAMERA)
   
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -143,6 +159,7 @@ include_directories(
    ${catkin_LIBRARIES}
  )
 
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -156,9 +173,27 @@ add_executable(quad_simulator_parser_node src/quad_simulator_parser_node.cpp)
 # add_dependencies(quad_simulator_parser_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(quad_simulator_parser_node
-   ${catkin_LIBRARIES}
- )
+target_link_libraries(quad_simulator_parser_node
+  ${catkin_LIBRARIES}
+)
+
+if(BUILD_SIM_CAMERA)
+  add_library(camera_simulator
+    src/${PROJECT_NAME}/camera_simulator.cpp
+  )
+
+  target_link_libraries(camera_simulator
+    ${LIBS}
+    ${catkin_LIBRARIES}
+    ${OBJECT_RENDERER_LIBS}
+  )
+  add_executable(camera_simulator_node src/camera_simulator_node.cpp)
+  target_link_libraries(camera_simulator_node
+    camera_simulator
+    ${catkin_LIBRARIES}
+  )
+endif(BUILD_SIM_CAMERA)
+
 
 #############
 ## Install ##
