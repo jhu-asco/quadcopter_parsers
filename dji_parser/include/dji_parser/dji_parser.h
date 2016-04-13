@@ -22,6 +22,11 @@
 #include <geometry_msgs/Quaternion.h>
 #include <sensor_msgs/NavSatFix.h>
 
+//SDK library
+#include <dji_sdk_lib/DJI_API.h>
+#include <dji_sdk_lib/DJI_Flight.h>
+#include <dji_sdk/DJI_HardDriver_Manifold.h>
+
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
 
@@ -71,7 +76,7 @@ private:
     bool enable_log;
     int fd;
     //DJI SDK Member Variables:
-    activate_data_t user_act_data_;///< App activation data dji
+    ActivateData user_act_data_;///< App activation data dji
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     boost::mutex spin_mutex;
@@ -82,7 +87,15 @@ private:
 
 
 private:
+    static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
     void receiveDJIData();//receive dji data from its lib 
+    static void* APIRecvThread(void* param);
+    int init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
+      DJI::onboardSDK::CallBack broadcast_function);
+    void init(std::string device, unsigned int baudrate);
+    DJI::onboardSDK::CoreAPI* coreAPI;
+    DJI::onboardSDK::Flight* flight;
+    pthread_t m_recvTid;
 public:
     DjiParser();
     ~DjiParser()
