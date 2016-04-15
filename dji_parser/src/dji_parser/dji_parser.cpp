@@ -122,7 +122,6 @@ bool DjiParser::flowControl(bool request)
     //coreAPI->activate(&user_act_data_);
     coreAPI->setControl(request);
   }
-  //TODO: make callback for activation.  Not sure if we are suppossed to use setControl function here to enable/disable control.
   
   //Wait for 0.5 secs until sdk is opened/closed
   ros::Time current_time = ros::Time::now();
@@ -338,7 +337,6 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
 
   HardDriver_Manifold* m_hd = new HardDriver_Manifold(device, baudrate);
   m_hd->init();
-  m_hd->usbHandshake(device.c_str());
 
   coreAPI = new CoreAPI( (HardDriver*)m_hd );
   //no log output while running hotpoint mission
@@ -377,6 +375,7 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* 
    // activation
   user_act_data->ID = app_id;
   user_act_data->version = SDK_VERSION;
+  //user_act_data->version = 0x03010a00
   strcpy((char*) user_act_data->iosID, app_bundle_id.c_str());
   user_act_data->encKey = new char[65];//Create a char on heap
   strcpy(user_act_data->encKey, enc_key.c_str());
@@ -431,7 +430,7 @@ void DjiParser::receiveDJIData()
   //static uint64_t starting_timestamp =
 
   spin_mutex.lock();
-  data.timestamp = bc_data.timeStamp.time + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is still correct for new sdk
+  data.timestamp = bc_data.timeStamp.time + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
 
   //update attitude msg
   if ((msg_flags & HAS_Q) && (msg_flags & HAS_W)) {
@@ -512,7 +511,7 @@ void DjiParser::receiveDJIData()
   //update flight control info
   if ((msg_flags & HAS_DEVICE)) {
     //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-    ctrl_mode = bc_data.ctrlInfo.device; //TODO: this is not correct, but I'm not sure how to get conrol mode
+    ctrl_mode = bc_data.ctrlInfo.device; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
   }
 
   //update obtaincontrol msg
