@@ -70,11 +70,14 @@ bool DjiParser::takeoff()//Virtual override function
       if(sdk_opened)//If sdk opened successfully then takeoff
       {
         ROS_INFO("Calling Takeoff");
-        flight->task(DJI::onboardSDK::Flight::TASK::TASK_TAKEOFF);
-        //ROS_INFO("Takeoff Res: %d", res);
-        //TODO: implement callbackt o know if it succeeded
-        //if(res == 0)
-        //  takeoff_result = true;
+        CbResponse cb_response;
+        flight->task(DJI::onboardSDK::Flight::TASK::TASK_TAKEOFF, DjiParser::takeoffCb,
+          (UserData) &cb_response);
+        // TODO: may need to do some locking here? Not sure...
+        while(!cb_response.received)
+          ros::Duration(.02).sleep();          
+        ROS_INFO("Takeoff Res: %d", cb_response.succeeded);
+        takeoff_result = cb_response.succeeded;
       }
     }
 
@@ -91,10 +94,13 @@ bool DjiParser::land()
 
     if(sdk_opened)
     {
-      flight->task(DJI::onboardSDK::Flight::TASK::TASK_LANDING);
-      //TODO: how do we know if it succeeded?
-      //if(res == 0)
-      //  land_result = true;
+      CbResponse cb_response;
+      flight->task(DJI::onboardSDK::Flight::TASK::TASK_LANDING, DjiParser::landingCb,
+          (UserData) &cb_response);
+      while(!cb_response.received)
+        ros::Duration(.02).sleep();          
+      ROS_INFO("Landing Res: %d", cb_response.succeeded);
+      land_result = cb_response.succeeded;
     }
   }
   return land_result;
@@ -111,11 +117,12 @@ bool DjiParser::flowControl(bool request)
 
   if(!(this->initialized))
     return result;
-  int sdk_req = request?1:0;
   if((request && !sdk_opened)||(!request && sdk_opened))
-    coreAPI->activate(&user_act_data_);
-
-  //TODO: make callback for activation
+  {
+    //coreAPI->activate(&user_act_data_);
+    coreAPI->setControl(request);
+  }
+  //TODO: make callback for activation.  Not sure if we are suppossed to use setControl function here to enable/disable control.
   
   //Wait for 0.5 secs until sdk is opened/closed
   ros::Time current_time = ros::Time::now();
@@ -331,6 +338,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
 
   HardDriver_Manifold* m_hd = new HardDriver_Manifold(device, baudrate);
   m_hd->init();
+  m_hd->usbHandshake();
 
   coreAPI = new CoreAPI( (HardDriver*)m_hd );
   //no log output while running hotpoint mission
@@ -347,6 +355,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
 
   coreAPI->getVersion();
 }
+
 int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
   CallBack broadcast_function)
 {
@@ -377,12 +386,11 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* 
   printf("app key: %s\n", user_act_data->encKey);
   printf("=================================================\n");
 
+  
   init(serial_name.c_str(), baud_rate);
 
   coreAPI->activate(user_act_data, NULL);
   coreAPI->setBroadcastCallback(broadcast_function, (UserData)this);
-
-  //TODO: usb handshake
 
   return 0;
 }
@@ -395,6 +403,19 @@ void* DjiParser::APIRecvThread(void* param) {
     usleep(1000);
   }
 }
+
+void DjiParser::landingCb(DJI::onboardSDK::CoreAPI *, Header * header, void * userData)
+{
+  ((CbResponse*)userData)->succeeded = header->length - EXC_DATA_SIZE <= 2; // this check is how the flight API determines success, so I guess it is corrcet?
+  ((CbResponse*)userData)->received = true;
+}
+
+void DjiParser::takeoffCb(DJI::onboardSDK::CoreAPI *, Header * header, void * userData)
+{
+  ((CbResponse*)userData)->succeeded = header->length - EXC_DATA_SIZE <= 2; // this check is how the flight API determines success, so I guess it is corrcet?
+  ((CbResponse*)userData)->received = true;
+}
+
 void DjiParser::statReceiveDJIData(DJI::onboardSDK::CoreAPI *, Header *, void * userData)
 {
   ((DjiParser*)userData)->receiveDJIData();
@@ -491,13 +512,13 @@ void DjiParser::receiveDJIData()
   //update flight control info
   if ((msg_flags & HAS_DEVICE)) {
     //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-    ctrl_mode = bc_data.controlStatus; //TODO: might want ctrlInfo instead?? 
+    ctrl_mode = bc_data.ctrlInfo.device; //TODO: this is not correct, but I'm not sure how to get conrol mode
   }
 
   //update obtaincontrol msg
   if ((msg_flags & HAS_TIME)) {
     //SDK Permission
-    sdk_status = bc_data.controlStatus; // TODO: not sure if this it the right data field
+    sdk_status = bc_data.controlStatus; // whether control is obtained
 
     //update activation msg
     if(bc_data.activation)
