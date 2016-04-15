@@ -338,7 +338,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
 
   HardDriver_Manifold* m_hd = new HardDriver_Manifold(device, baudrate);
   m_hd->init();
-  m_hd->usbHandshake();
+  m_hd->usbHandshake(device.c_str());
 
   coreAPI = new CoreAPI( (HardDriver*)m_hd );
   //no log output while running hotpoint mission
