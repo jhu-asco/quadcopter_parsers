@@ -40,7 +40,7 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     rpyt_cmd.time = ros::Time(0);
     rpyt_cmd.dt = 0.02;
     rpyt_cmds.push(rpyt_cmd);
-    delay_send_time_ = 0.2;
+    nh_.param<double>("/control/delay_send_time", delay_send_time_,0.2);
 }
 
 
