@@ -170,7 +170,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
         {
           user_ctrl_data.flag = user_ctrl_data.flag | 
                                 Flight::YawLogic::YAW_PALSTANCE | 
-                                Flight::SmoothMode::SMOOTH_ENABLE; // TODO: double check what smoothmode is
+                                Flight::SmoothMode::SMOOTH_ENABLE; // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
         }
         else
         {
@@ -430,7 +430,7 @@ void DjiParser::receiveDJIData()
   //static uint64_t starting_timestamp =
 
   spin_mutex.lock();
-  data.timestamp = bc_data.timeStamp.time + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
+  data.timestamp = bc_data.timeStamp.time*(1.0/400.0) + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
 
   //update attitude msg
   if ((msg_flags & HAS_Q) && (msg_flags & HAS_W)) {
