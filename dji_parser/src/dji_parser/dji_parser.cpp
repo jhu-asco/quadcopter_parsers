@@ -108,6 +108,7 @@ bool DjiParser::land()
 
 bool DjiParser::disarm()
 {
+  //TODO: There is a new arm and disarm protocol in 3.1
   flowControl(false);
 }
 
