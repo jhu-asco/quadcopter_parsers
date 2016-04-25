@@ -431,7 +431,7 @@ void DjiParser::receiveDJIData()
   //static uint64_t starting_timestamp =
 
   spin_mutex.lock();
-  data.timestamp = bc_data.timeStamp.time*(1.0/400.0) + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
+  data.timestamp = bc_data.timeStamp.time*(1.0/400.0);// + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
 
   //update attitude msg
   if ((msg_flags & HAS_Q) && (msg_flags & HAS_W)) {
