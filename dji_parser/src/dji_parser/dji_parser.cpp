@@ -72,7 +72,7 @@ bool DjiParser::takeoff()//Virtual override function
         ROS_INFO("Calling Takeoff");
         CbResponse cb_response;
         flight->task(DJI::onboardSDK::Flight::TASK::TASK_TAKEOFF, DjiParser::takeoffCb,
-          (UserData) &cb_response);
+          (DJI::UserData) &cb_response);
         // TODO: may need to do some locking here? Not sure...
         while(!cb_response.received)
           ros::Duration(.02).sleep();          
@@ -96,7 +96,7 @@ bool DjiParser::land()
     {
       CbResponse cb_response;
       flight->task(DJI::onboardSDK::Flight::TASK::TASK_LANDING, DjiParser::landingCb,
-          (UserData) &cb_response);
+          (DJI::UserData) &cb_response);
       while(!cb_response.received)
         ros::Duration(.02).sleep();          
       ROS_INFO("Landing Res: %d", cb_response.succeeded);
@@ -351,7 +351,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
   else
     ROS_INFO("Succeed to create thread for readPoll");
 
-  coreAPI->getVersion();
+  coreAPI->getSDKVersion();
 }
 
 int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
@@ -389,7 +389,7 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* 
   init(serial_name.c_str(), baud_rate);
 
   coreAPI->activate(user_act_data, NULL);
-  coreAPI->setBroadcastCallback(broadcast_function, (UserData)this);
+  coreAPI->setBroadcastCallback(broadcast_function, (DJI::UserData)this);
 
   return 0;
 }
@@ -511,7 +511,7 @@ void DjiParser::receiveDJIData()
   //update flight control info
   if ((msg_flags & HAS_DEVICE)) {
     //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-    ctrl_mode = bc_data.ctrlInfo.device; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
+    ctrl_mode = bc_data.ctrlInfo.flightStatus; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
   }
 
   //update obtaincontrol msg
