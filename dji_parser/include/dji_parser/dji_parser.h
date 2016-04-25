@@ -22,6 +22,11 @@
 #include <geometry_msgs/Quaternion.h>
 #include <sensor_msgs/NavSatFix.h>
 
+//SDK library
+#include <dji_sdk_lib/DJI_API.h>
+#include <dji_sdk_lib/DJI_Flight.h>
+#include <dji_sdk/DJI_HardDriver_Manifold.h>
+
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
 
@@ -43,7 +48,6 @@ private:
         FINISH_LANDING=5
     };
 
-private:
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
     uint8_t control_mode;///< Mode corresponding to dji
@@ -71,7 +75,7 @@ private:
     bool enable_log;
     int fd;
     //DJI SDK Member Variables:
-    activate_data_t user_act_data_;///< App activation data dji
+    ActivateData user_act_data_;///< App activation data dji
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     boost::mutex spin_mutex;
@@ -81,8 +85,26 @@ private:
     uint8_t gps_health;///< Health of GPS
 
 
-private:
+    static void* APIRecvThread(void* param);
+    static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
     void receiveDJIData();//receive dji data from its lib 
+    int init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
+      DJI::onboardSDK::CallBack broadcast_function);
+    void init(std::string device, unsigned int baudrate);
+    static void takeoffCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
+    static void landingCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
+
+    DJI::onboardSDK::CoreAPI* coreAPI;
+    DJI::onboardSDK::Flight* flight;
+    pthread_t m_recvTid;
+
+    struct CbResponse
+    {
+      CbResponse() : received(false), succeeded(false) {}
+      volatile bool received;
+      volatile bool succeeded;
+    };
+
 public:
     DjiParser();
     ~DjiParser()
