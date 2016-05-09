@@ -10,7 +10,8 @@ using namespace DJI::onboardSDK;
 namespace dji_parser{
 
 DjiParser::DjiParser(): global_ref_lat(0), global_ref_long(0), sdk_opened(false)
-                        ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0), rpyt_ratemode(true)
+                        ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
+                        , rpyt_ratemode(true), vel_yaw_ratemode(false)
 {
   this->initialized = false;
 }
@@ -210,7 +211,7 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
     return;
 }
 
-bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
+bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
 {
   if(this->initialized)
   {
@@ -222,12 +223,15 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
       user_ctrl_data.flag = Flight::HorizontalLogic::HORIZONTAL_VELOCITY | 
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::HorizontalCoordinate::HORIZONTAL_GROUND |
-                            Flight::YawLogic::YAW_ANGLE |
                             Flight::SmoothMode::SMOOTH_ENABLE;
+      if(vel_yaw_ratemode)
+        user_ctrl_data.flag = user_ctrl_data.flag | Flight::YawLogic::YAW_PALSTANCE;
+      else
+        user_ctrl_data.flag = user_ctrl_data.flag | Flight::YawLogic::YAW_ANGLE;
       user_ctrl_data.x = vel_cmd.x;
       user_ctrl_data.y = -vel_cmd.y;
       user_ctrl_data.z = vel_cmd.z;
-      user_ctrl_data.yaw = -yaw_ang*(180/M_PI);
+      user_ctrl_data.yaw = -yaw_inp*(180/M_PI);
       flight->setFlight(&user_ctrl_data);
     }
   }
@@ -327,6 +331,14 @@ void DjiParser::setmode(std::string mode)
   else if(strcmp(mode.c_str(),"rpyt_angle")==0)
   {
     rpyt_ratemode = false;
+  }
+  else if(strcmp(mode.c_str(),"vel_angle")==0)
+  {
+    vel_yaw_ratemode = false;
+  }
+  else if(strcmp(mode.c_str(),"vel_rate")==0)
+  {
+    vel_yaw_ratemode = true;
   }
 }
 
