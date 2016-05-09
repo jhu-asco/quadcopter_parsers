@@ -52,6 +52,7 @@ private:
     parsernode::common::quaddata data;
     uint8_t control_mode;///< Mode corresponding to dji
     bool rpyt_ratemode;///< State used to switch between rate control vs angle control of y in rpyt
+    bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
     //File Streams
     ofstream cmdfile;//Cmd logging
     ofstream servofile;//Raw servo pwm logging
@@ -118,7 +119,7 @@ public:
     bool flowControl(bool);
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
+    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
     bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
