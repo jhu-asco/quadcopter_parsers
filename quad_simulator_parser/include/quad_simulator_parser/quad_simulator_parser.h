@@ -48,6 +48,7 @@ private:
     QRotorIDState state_;///< Current state of Quadcopter
     bool enable_qrotor_control_;///< Should be set to true before the quadrotor is controlled
     bool rpyt_ratemode;///< Specifies to use yaw rate mode or yaw angle mode in cmdrpyt
+    bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
     bool vel_thread_running;///< Whether thread for moving quad using velocity commands
     //ros::Time prev_rpy_cmd_time_;///< Previous ros command time
     ros::Time prev_vel_cmd_time_;///< Previous ros command time
@@ -76,7 +77,7 @@ public:
     bool flowControl(bool);
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
+    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
     bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
