@@ -524,25 +524,27 @@ void DjiParser::receiveDJIData()
   //update flight control info
   if ((msg_flags & HAS_DEVICE)) {
     //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-    ctrl_mode = bc_data.ctrlInfo.flightStatus; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
+    //ctrl_mode = bc_data.ctrlInfo.flightStatus; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
+    ctrl_mode = bc_data.ctrlInfo.mode;
+    sdk_status = bc_data.ctrlInfo.flightStatus;
   }
 
   //update obtaincontrol msg
-  if ((msg_flags & HAS_TIME)) {
+  //if ((msg_flags & HAS_TIME)) {
     //SDK Permission
-    sdk_status = bc_data.controlStatus; // whether control is obtained
+    //sdk_status = bc_data.controlStatus; // whether control is obtained
 
     //update activation msg
-    if(bc_data.activation)
-    {
-      this->initialized = true;
-//      ROS_INFO("Initialized DJI");
-    }
-    else
-    {
-      this->initialized = false;
-    }
+  if(bc_data.activation)
+  {
+    this->initialized = true;
+    //      ROS_INFO("Initialized DJI");
   }
+  else
+  {
+    this->initialized = false;
+  }
+  //}
 
   if ((msg_flags & HAS_POS)) {
     //Initialize ref
