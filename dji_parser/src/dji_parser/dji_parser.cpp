@@ -527,6 +527,10 @@ void DjiParser::receiveDJIData()
     //ctrl_mode = bc_data.ctrlInfo.flightStatus; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
     ctrl_mode = bc_data.ctrlInfo.mode;
     sdk_status = bc_data.ctrlInfo.flightStatus;
+    if(enable_log)
+    {
+      statusfile<<data.timestamp<<"\t"<<quad_status<<"\t"<<sdk_status<<"\t"<<ctrl_mode<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rpyt_ratemode)<<endl;
+    }
   }
 
   //update obtaincontrol msg

@@ -62,6 +62,7 @@ private:
     ofstream accfile;//Acc data logging
     ofstream magfile;//Mag data logging
     ofstream localposfile;//Local pos data logging
+    ofstream statusfile;//Status of various systems controlling quadrotor
     //Publishers ROS
     ros::Publisher global_ref_pub;
     //Create Buffers for each of these files:
@@ -72,6 +73,7 @@ private:
     char magfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char servofile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char localposfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
+    char statusfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char rcinputfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     bool enable_log;
     int fd;
@@ -141,6 +143,7 @@ public:
         accfile.open((logdir+"/acc.dat").c_str());
         magfile.open((logdir+"/mag.dat").c_str());
         localposfile.open((logdir+"/localposfile.dat").c_str());
+        statusfile.open((logdir+"/statusfile.dat").c_str());
 
         cmdfile.precision(10);
         servofile.precision(10);
@@ -150,6 +153,7 @@ public:
         accfile.precision(10);
         magfile.precision(10);
         localposfile.precision(10);
+        statusfile.precision(10);
 
         //Create Buffer:
         imufile.rdbuf()->pubsetbuf(imufile_buffer, FILE_BUFFER_SIZE);
@@ -160,6 +164,7 @@ public:
         accfile.rdbuf()->pubsetbuf(accfile_buffer, FILE_BUFFER_SIZE);
         magfile.rdbuf()->pubsetbuf(magfile_buffer, FILE_BUFFER_SIZE);
         localposfile.rdbuf()->pubsetbuf(localposfile_buffer, FILE_BUFFER_SIZE);
+        statusfile.rdbuf()->pubsetbuf(statusfile_buffer, FILE_BUFFER_SIZE);
 
         //#DEBUG Print Buffer size:
         std::cout<<"Imu file buffer size: "<<imufile.rdbuf()->in_avail();
@@ -172,6 +177,7 @@ public:
         accfile<<"#Time\t Ax \t Ay \t Az"<<endl;
         magfile<<"#Time\t Mx \t My \t Mz"<<endl;
         localposfile<<"#Time\t Posx \t Posy \t Posz"<<endl;
+        statusfile<<"#Time\t quad_status\t sdk_status \t ctrl_mode \t gps_health\t vel_rateflag\t rpy_rateflag"<<endl;
     }
     void controllog(bool logswitch)
     {
