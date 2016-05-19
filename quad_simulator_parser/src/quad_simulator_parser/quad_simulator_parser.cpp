@@ -34,6 +34,7 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
     ROS_INFO("RCIn2: %d",rcin[2]);
     rpyt_ratemode = false;
+    vel_yaw_ratemode = false;
     enable_qrotor_control_ = false;
     armed = false;
     RpytCmdStruct rpyt_cmd;
@@ -114,7 +115,9 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.z = state_.v[2];
         SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
+        bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
         cmdvelguided(initial_state_vel, yaw_ang);
+        vel_yaw_ratemode = temp_vel_yaw_ratemode;
         state_.u[2] = yaw_ang;
         //ROS_INFO("Yaw set: %f",yaw_ang);
       }
@@ -139,7 +142,10 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.z = state_.v[2];
         SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
+        bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
+        vel_yaw_ratemode = false;
         cmdvelguided(initial_state_vel, yaw_ang);
+        vel_yaw_ratemode = temp_vel_yaw_ratemode;
         //ROS_INFO("Yaw set: %f",yaw_ang);
         state_.u[2] = yaw_ang;
       }
@@ -202,11 +208,12 @@ void QuadSimParser::reset_attitude(double roll, double pitch, double yaw)
     return;
 }
 
-bool QuadSimParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)
+bool QuadSimParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
 {
   if(enable_qrotor_control_)
   {
       Vector3d pos = state_.p;
+      Matrix3d R1 = state_.R;
       ros::Time current_time = ros::Time::now();
       double dt = (current_time - prev_vel_cmd_time_).toSec();
       if(dt > 0.03)
@@ -215,10 +222,21 @@ bool QuadSimParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_an
       state_.Clear();
       state_.v = Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
       state_.p = pos + state_.v*dt;//Clear everything but current position=> Holds current position
-      //Set Yaw
-      SO3 &so3 = SO3::Instance();
-      Vector3d rpy(0,0,yaw_ang);
-      so3.q2g(state_.R,rpy);
+      if(vel_yaw_ratemode)
+      {
+        state_.w[2] = yaw_inp;
+        SO3 &so3 = SO3::Instance();
+        Vector3d rpy(0,0,yaw_inp*dt);
+        so3.q2g(state_.R,rpy);
+        state_.R = R1*state_.R;
+      }
+      else
+      {
+        //Set Yaw
+        SO3 &so3 = SO3::Instance();
+        Vector3d rpy(0,0,yaw_inp);
+        so3.q2g(state_.R,rpy);
+      }
       //Propagate Qrotor State
       //TODO: Create a thread which keeps moving the quadrotor. When other modes of propagating are called, should stop this thread
   }
@@ -296,6 +314,15 @@ void QuadSimParser::setmode(std::string mode)
   else if(strcmp(mode.c_str(),"rpyt_angle")==0)
   {
     rpyt_ratemode = false;
+  }
+  else if(strcmp(mode.c_str(),"vel_angle")==0)
+  {
+    vel_yaw_ratemode = false;
+  }
+  else if(strcmp(mode.c_str(),"vel_rate")==0)
+  {
+    vel_yaw_ratemode = true;
+    ROS_INFO("Vel Yaw ratemode");
   }
   return;
 }
