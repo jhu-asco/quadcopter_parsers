@@ -467,7 +467,7 @@ void DjiParser::receiveDJIData()
   if ((msg_flags & HAS_V)) {
     data.linvel.x = bc_data.v.x;
     data.linvel.y = -bc_data.v.y;
-    data.linvel.z = -bc_data.v.z;
+    data.linvel.z = bc_data.v.z;
     if(enable_log)
       velfile<<data.timestamp<<"\t"<<data.linvel.x<<"\t"<<data.linvel.y<<"\t"<<data.linvel.z<<endl;
   }
@@ -529,7 +529,7 @@ void DjiParser::receiveDJIData()
     sdk_status = bc_data.ctrlInfo.flightStatus;
     if(enable_log)
     {
-      statusfile<<data.timestamp<<"\t"<<quad_status<<"\t"<<sdk_status<<"\t"<<ctrl_mode<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rpyt_ratemode)<<endl;
+      statusfile<<data.timestamp<<"\t"<<int(quad_status)<<"\t"<<int(sdk_status)<<"\t"<<int(ctrl_mode)<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rpyt_ratemode)<<endl;
     }
   }
 
