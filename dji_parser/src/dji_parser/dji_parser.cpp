@@ -185,6 +185,10 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
         user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
         user_ctrl_data.z = rpytmsg.w;
         user_ctrl_data.yaw = -rpytmsg.z*(180/M_PI);
+        //Constrain user control x and y i.e roll and pitch:
+        user_ctrl_data.x = (user_ctrl_data.x > M_PI/6)?M_PI/6:(user_ctrl_data.x < -M_PI/6)?-M_PI/6:user_ctrl_data.x;
+        user_ctrl_data.y = (user_ctrl_data.y > M_PI/6)?M_PI/6:(user_ctrl_data.y < -M_PI/6)?-M_PI/6:user_ctrl_data.y;
+        
         flight->setFlight(&user_ctrl_data);
       }
       else
@@ -198,6 +202,8 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
         user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
         user_ctrl_data.z = rpytmsg.w;
         user_ctrl_data.yaw = 0;
+        user_ctrl_data.x = (user_ctrl_data.x > M_PI/6)?M_PI/6:(user_ctrl_data.x < -M_PI/6)?-M_PI/6:user_ctrl_data.x;
+        user_ctrl_data.y = (user_ctrl_data.y > M_PI/6)?M_PI/6:(user_ctrl_data.y < -M_PI/6)?-M_PI/6:user_ctrl_data.y;
         flight->setFlight(&user_ctrl_data);
       }
     }
