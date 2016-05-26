@@ -53,6 +53,7 @@ private:
     uint8_t control_mode;///< Mode corresponding to dji
     bool rpyt_ratemode;///< State used to switch between rate control vs angle control of y in rpyt
     bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
+    
     //File Streams
     ofstream cmdfile;//Cmd logging
     ofstream servofile;//Raw servo pwm logging
@@ -65,6 +66,10 @@ private:
     ofstream statusfile;//Status of various systems controlling quadrotor
     //Publishers ROS
     ros::Publisher global_ref_pub;
+    ros::Publisher gps_pub;
+    //GPS Pub Info
+    double gps_pub_rate; //Hz
+    ros::Time last_gps_pub_time;
     //Create Buffers for each of these files:
     char cmdfile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream
     char imufile_buffer[FILE_BUFFER_SIZE];//Buffer for ofstream

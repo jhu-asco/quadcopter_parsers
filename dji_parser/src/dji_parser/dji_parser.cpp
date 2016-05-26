@@ -22,6 +22,8 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   enable_log = false;
   //Set Data Properties
   spin_mutex.lock();
+  gps_pub_rate = 10.;
+  last_gps_pub_time = ros::Time::now();
   data.mass = 2.8;//Start with small  values
   data.thrustbias = data.mass*9.81; //We can estimate this later
   data.thrustmax = 3.4*9.81;//Additional payload of 1Kg
@@ -30,6 +32,7 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   spin_mutex.unlock();
   //Initialize ros publishers:
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
+  gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Latched gps fix publisher
 
   //Initialize DJI:
   init_parameters_and_activate(nh_, &user_act_data_, DjiParser::statReceiveDJIData);
@@ -568,6 +571,17 @@ void DjiParser::receiveDJIData()
       nav_fix_msg.longitude = global_ref_long;
       nav_fix_msg.header.stamp = ros::Time::now();
       global_ref_pub.publish(nav_fix_msg);
+    }
+    if((ros::Time::now()-last_gps_pub_time).toSec() >= 1./gps_pub_rate)
+    {
+      global_ref_lat = bc_data.pos.latitude * 180.0 / C_PI;
+      global_ref_long = bc_data.pos.longitude * 180.0 / C_PI;
+      sensor_msgs::NavSatFix nav_fix_msg;
+      nav_fix_msg.altitude = bc_data.pos.height;
+      nav_fix_msg.latitude = global_ref_lat;
+      nav_fix_msg.longitude = global_ref_long;
+      nav_fix_msg.header.stamp = last_gps_pub_time = ros::Time::now();
+      gps_pub.publish(nav_fix_msg);
     }
 
     //update local_position msg
