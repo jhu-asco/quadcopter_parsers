@@ -30,6 +30,7 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     //prev_rpy_cmd_time_ = ros::Time::now();
     for(int i = 0; i < 4; i++)
         rcin[i] = 0;
+    //sys_.kp[2] = 5;
     //rcin[3] is thrust set to base value:
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
     ROS_INFO("RCIn2: %d",rcin[2]);
@@ -41,7 +42,14 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
     rpyt_cmd.time = ros::Time(0);
     rpyt_cmd.dt = 0.02;
     rpyt_cmds.push(rpyt_cmd);
-    nh_.param<double>("/control/delay_send_time", delay_send_time_,0.2);
+    nh_.param<double>("/reconfig/delay_send_time", delay_send_time_,0.2);
+    kt_decrease_timer_ = nh_.createTimer(ros::Duration(5.0), &QuadSimParser::ktTimerCallback, this);
+}
+
+void QuadSimParser::ktTimerCallback(const ros::TimerEvent& )
+{
+  if(sys_.kt > 0.1)
+    sys_.kt -= 0.00005;//Decrease kt by a small amount
 }
 
 
@@ -166,7 +174,7 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
             control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
             control[j+1] /= dt;
           }
-          //ROS_INFO("Rate Computed: %f,%f,%f",control[1], control[2], control[3]);
+          //ROS_INFO("Rate Computed: %f,%f,%f; rpytmsg.z: %f",control[1], control[2], control[3], current_cmd.rpytmsg.z);
           //ROS_INFO("current_cmdyaw: %f, state.yaw: %f", current_cmd.rpytmsg.z, state_.u(2));
         }
         if(!sendyaw)
@@ -179,6 +187,7 @@ bool QuadSimParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         if(dt > 0.03)
           dt = 0.03;//Cap the dt for simulation
         sys_.Step(temp_state,0,state_,control,dt,0,0,0,0);
+        //cout<<"sys.kt: "<<sys_.kt<<", thrust: "<<control[0]<<endl;
         //  state_ = temp_state;
         //}
         state_ = temp_state;
@@ -290,6 +299,7 @@ void QuadSimParser::getquaddata(parsernode::common::quaddata &d1)
   Vector3d rpy;
   so3.g2q(rpy,state_.R);
   d1.rpydata.x = rpy(0); d1.rpydata.y = rpy(1); d1.rpydata.z = rpy(2);
+  //cout<<"rpy: "<<d1.rpydata.x<<", "<<d1.rpydata.y<<", "<<d1.rpydata.z<<endl;
   d1.omega.x = state_.w(0); d1.omega.y = state_.w(1); d1.omega.z = state_.w(2);
   d1.linvel.x = state_.v(0); d1.linvel.y = state_.v(1); d1.linvel.z = state_.v(2);
   d1.linacc.x = sys_.acc(0); d1.linacc.y = sys_.acc(1); d1.linacc.z = sys_.acc(2);

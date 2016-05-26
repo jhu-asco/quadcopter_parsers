@@ -15,13 +15,13 @@ CameraSimulator::CameraSimulator(ros::NodeHandle nh, ros::NodeHandle nh_private)
   if (!nh_private.getParam ("body_frame_name", body_frame_name))
     body_frame_name = "body";
   if (!nh_private.getParam ("model_name", model_name))
-    model_name = "hackerman2.mesh";
+    model_name = "carterrain_goodquality_fillholes.mesh";
   if (!nh_private.getParam ("resource_path", resource_path))
     resource_path = "./";
                 
   CameraRenderApplication *renderer = new CameraRenderApplication(resource_path);
   renderer->go();
-  renderer->loadModel("model", "hackerman2.mesh");
+  renderer->loadModel("model", model_name);
   vih = new VirtualImageHandler(renderer);
   K = vih->getCameraIntrinsics();
 

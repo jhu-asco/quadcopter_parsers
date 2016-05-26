@@ -3,6 +3,6 @@
     <param name="world_frame_name" type="string" value="world" />
     <param name="body_frame_name" type="string" value="simquad" />
     <param name="resource_path" type="string" value="$(find quad_simulator_parser)/ogre_cfg/"/>
-    <param name="model_name" type="string" value="hackerman2.mesh"/>
+    <param name="model_name" type="string" value="carterrain_goodquality_fillholes.mesh"/>
   </node>
 </launch>

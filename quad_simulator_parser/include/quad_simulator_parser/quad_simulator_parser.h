@@ -61,8 +61,12 @@ private:
 
     //Internal modes:
     bool armed;
+
+    //Timer to keep decreasing thrust gain kt
+    ros::Timer kt_decrease_timer_;
 protected:
     void setRCInputs(const sensor_msgs::Joy &joy_msg);
+    void ktTimerCallback(const ros::TimerEvent& );
 
 public:
     QuadSimParser();
