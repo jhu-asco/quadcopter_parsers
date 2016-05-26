@@ -574,12 +574,12 @@ void DjiParser::receiveDJIData()
     }
     if((ros::Time::now()-last_gps_pub_time).toSec() >= 1./gps_pub_rate)
     {
-      global_ref_lat = bc_data.pos.latitude * 180.0 / C_PI;
-      global_ref_long = bc_data.pos.longitude * 180.0 / C_PI;
+      double glat = bc_data.pos.latitude * 180.0 / C_PI;
+      double glong = bc_data.pos.longitude * 180.0 / C_PI;
       sensor_msgs::NavSatFix nav_fix_msg;
       nav_fix_msg.altitude = bc_data.pos.height;
-      nav_fix_msg.latitude = global_ref_lat;
-      nav_fix_msg.longitude = global_ref_long;
+      nav_fix_msg.latitude = glat;
+      nav_fix_msg.longitude = glong;
       nav_fix_msg.header.stamp = last_gps_pub_time = ros::Time::now();
       gps_pub.publish(nav_fix_msg);
     }
