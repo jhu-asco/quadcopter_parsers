@@ -70,7 +70,7 @@ void QuadSimParser::gpsTimerCallback(const ros::TimerEvent& )
 {
   sensor_msgs::NavSatFix nav_fix_msg;
   nav_fix_msg.altitude = state_.p[2];
-  ned_convert_gps(state_.p[0], state_.p[1], nav_fix_msg.latitude, nav_fix_msg.longitude);
+  ned_convert_gps(state_.p[0], -state_.p[1], nav_fix_msg.longitude, nav_fix_msg.latitude);
   nav_fix_msg.header.stamp = ros::Time::now();
   gps_pub.publish(nav_fix_msg);
 }
