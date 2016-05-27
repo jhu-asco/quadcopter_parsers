@@ -25,6 +25,20 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
 {
     //Add Subscriber to a joystick for rcinput
     joy_sub_ = nh_.subscribe("joy",5,&QuadSimParser::setRCInputs,this);
+    //Add Publisher:
+    global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
+    {
+      //Publish 0 as ref msg:
+      sensor_msgs::NavSatFix nav_fix_msg;
+      nav_fix_msg.altitude = 0;
+      nav_fix_msg.latitude = 0;
+      nav_fix_msg.longitude = 0;
+      nav_fix_msg.header.stamp = ros::Time::now();
+      global_ref_pub.publish(nav_fix_msg);
+    }
+    gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Gps publisher
+    gps_pub_timer_ = nh_.createTimer(ros::Duration(1.0), &QuadSimParser::gpsTimerCallback, this);
+
     state_.Clear();//Sets to default values of Quadrotor state
     prev_vel_cmd_time_ = ros::Time::now();
     //prev_rpy_cmd_time_ = ros::Time::now();
@@ -50,6 +64,15 @@ void QuadSimParser::ktTimerCallback(const ros::TimerEvent& )
 {
   if(sys_.kt > 0.1)
     sys_.kt -= 0.00005;//Decrease kt by a small amount
+}
+
+void QuadSimParser::gpsTimerCallback(const ros::TimerEvent& )
+{
+  sensor_msgs::NavSatFix nav_fix_msg;
+  nav_fix_msg.altitude = state_.p[2];
+  ned_convert_gps(state_.p[0], state_.p[1], nav_fix_msg.latitude, nav_fix_msg.longitude);
+  nav_fix_msg.header.stamp = ros::Time::now();
+  gps_pub.publish(nav_fix_msg);
 }
 
 

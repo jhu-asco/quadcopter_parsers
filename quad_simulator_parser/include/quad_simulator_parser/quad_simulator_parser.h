@@ -29,6 +29,12 @@
 
 #include <queue>
 
+#define C_EARTH (double) 6378137.0
+#define C_PI (double) 3.141592653589793
+#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
+#define RAD2DEG(RAD) ((RAD)*((180.0)/(C_PI)))
+
+
 using namespace std;
 using namespace gcop;
 using namespace Eigen;
@@ -55,18 +61,31 @@ private:
     int16_t rcin[4];
     queue<RpytCmdStruct> rpyt_cmds;
     double delay_send_time_;///< How much delay between commanded and executed
+    double global_ref_lat, global_ref_long;///<Lat and Long of Home
 
     //Subscribers:
     ros::Subscriber joy_sub_;
+    ros::Publisher global_ref_pub;
+    ros::Publisher gps_pub;
 
     //Internal modes:
     bool armed;
 
     //Timer to keep decreasing thrust gain kt
     ros::Timer kt_decrease_timer_;
+    //Gps Timer:
+    ros::Timer gps_pub_timer_;
 protected:
     void setRCInputs(const sensor_msgs::Joy &joy_msg);
     void ktTimerCallback(const ros::TimerEvent& );
+    void gpsTimerCallback(const ros::TimerEvent& );
+    inline void ned_convert_gps(const float &ned_x, const float &ned_y,
+        double &gps_t_lon, double &gps_t_lat)
+    {
+      gps_t_lat = RAD2DEG((ned_x/C_EARTH));
+      gps_t_lon = RAD2DEG((ned_y/(C_EARTH*cos(DEG2RAD(gps_t_lat)))));
+    }
+
 
 public:
     QuadSimParser();
