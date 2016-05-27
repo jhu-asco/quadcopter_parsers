@@ -22,7 +22,7 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   enable_log = false;
   //Set Data Properties
   spin_mutex.lock();
-  gps_pub_rate = 10.;
+  gps_pub_rate = 1.;
   last_gps_pub_time = ros::Time::now();
   data.mass = 2.8;//Start with small  values
   data.thrustbias = data.mass*9.81; //We can estimate this later
@@ -32,7 +32,7 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   spin_mutex.unlock();
   //Initialize ros publishers:
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
-  gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Latched gps fix publisher
+  gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Gps publisher
 
   //Initialize DJI:
   init_parameters_and_activate(nh_, &user_act_data_, DjiParser::statReceiveDJIData);
