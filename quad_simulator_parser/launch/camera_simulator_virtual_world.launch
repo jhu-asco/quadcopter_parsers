@@ -1,9 +1,8 @@
 <launch>
   <node name="camera_simulator" pkg="quad_simulator_parser" type="camera_simulator_node" output="screen">
-    <param name="world_frame_name" type="string" value="world" />
-    <param name="body_frame_name" type="string" value="simquad" />
+    <param name="world_frame_name" type="string" value="virtual_world" />
+    <param name="body_frame_name" type="string" value="dji" />
     <param name="resource_path" type="string" value="$(find quad_simulator_parser)/ogre_cfg/"/>
-    <!--<param name="model_name" type="string" value="carterrain_goodquality_fillholes.mesh"/>-->
     <param name="model_name" type="string" value="Cylinder.004.mesh"/>
   </node>
 </launch>
