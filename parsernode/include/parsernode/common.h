@@ -15,17 +15,9 @@ namespace parsernode {
 		inline std::string addtimestring( std::string inmsg)
 		{
 # define TIME_SIZE 80
-			const struct tm *tm;
-			size_t len;
-			time_t now;
 			char *s;
-
-			now = time ( NULL );
-			tm = localtime ( &now );
-
 			s = (char *)malloc ( TIME_SIZE * sizeof ( char ) );
 
-			len = strftime ( s, TIME_SIZE, "%d_%B_%Y_%I_%M_%S_%p", tm );
 			//char *filename = new char[strlen(inmsg)+1];
 			//strcpy(filename,inmsg);
 			//			memcpy(filename,inmsg,strlen(inmsg)+1);
