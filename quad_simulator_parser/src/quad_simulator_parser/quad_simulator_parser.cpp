@@ -4,6 +4,7 @@
 #include <quad_simulator_parser/quad_simulator_parser.h>
 #include <tf/tf.h>
 #include <ros/ros.h>
+#include <sensor_msgs/NavSatFix.h>
 
 namespace quad_simulator_parser{
 
