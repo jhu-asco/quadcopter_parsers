@@ -131,8 +131,8 @@ endif(BUILD_SIM_CAMERA)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES quad_simulator_parser
+  INCLUDE_DIRS include
+  LIBRARIES quad_simulator
 #  CATKIN_DEPENDS geometry_msgs parsernode pluginlib roscpp std_msgs
 #  DEPENDS system_lib
 )
@@ -150,13 +150,21 @@ include_directories(
 )
 
 ## Declare a C++ library
+ add_library(quad_simulator
+   src/${PROJECT_NAME}/quad_simulator.cpp
+ )
+
+ target_link_libraries(quad_simulator
+   ${LIBS}
+   ${catkin_LIBRARIES}
+ )
+
  add_library(quad_simulator_parser
    src/${PROJECT_NAME}/quad_simulator_parser.cpp
  )
 
  target_link_libraries(quad_simulator_parser
-   ${LIBS}
-   ${catkin_LIBRARIES}
+   quad_simulator
  )
 
 
@@ -235,10 +243,10 @@ endif(BUILD_SIM_CAMERA)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_quad_simulator_parser.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-quad-simulator-test tests/quad_simulator_tests.cpp)
+if(TARGET ${PROJECT_NAME}-quad-simulator-test)
+  target_link_libraries(${PROJECT_NAME}-quad-simulator-test quad_simulator)
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
