@@ -12,7 +12,7 @@ void QuadSimulator::setRCInputs(const sensor_msgs::Joy &joy_msg)
    rcin[3] = -(int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
 }
 
-QuadSimulator::QuadSimulator(): parsernode::Parser(), delay_send_time_(0.2), battery_percent_(100), takeoff_altitude_(0.5)
+QuadSimulator::QuadSimulator(): parsernode::Parser(), delay_send_time_(0.2), battery_percent_(100), takeoff_altitude_(0.5), so3(gcop::SO3::Instance())
 {
     this->non_ros_initialize();
     this->initialized = true;
@@ -38,8 +38,7 @@ void QuadSimulator::non_ros_initialize()
 }
 
 //Extend Functions from Paser:
-
-bool QuadSimulator::takeoff()//Virtual override function
+bool QuadSimulator::takeoff()
 {
   enable_qrotor_control_ = true;
   armed = true;
@@ -100,7 +99,6 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.x = state_.v[0];
         initial_state_vel.y = state_.v[1];
         initial_state_vel.z = state_.v[2];
-        SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
         bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
         cmdvelguided(initial_state_vel, yaw_ang);
@@ -122,7 +120,6 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.x = state_.v[0];
         initial_state_vel.y = state_.v[1];
         initial_state_vel.z = state_.v[2];
-        SO3 &so3 = SO3::Instance();
         double yaw_ang = so3.yaw(state_.R);
         bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
         vel_yaw_ratemode = false;
@@ -150,16 +147,10 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         }
         if(!sendyaw)
           control(3) = 0;
-        QRotorIDState temp_state;
-        //int number_of_steps = (dt/0.01);
-        //for(int count = 0; count< number_of_steps; count++)
-        //{
+        gcop::QRotorIDState temp_state;
         if(dt > 0.03)
           dt = 0.03;//Cap the dt for simulation
         sys_.Step(temp_state,0,state_,control,dt,0,0,0,0);
-        //cout<<"sys.kt: "<<sys_.kt<<", thrust: "<<control[0]<<endl;
-        //  state_ = temp_state;
-        //}
         state_ = temp_state;
         rpyt_cmds.pop();//Delete the Last Element
         //Add current element
@@ -180,7 +171,6 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
 
 void QuadSimulator::reset_attitude(double roll, double pitch, double yaw)
 {
-    SO3 &so3 = SO3::Instance();
     Vector3d rpy(roll, pitch, yaw);
     so3.q2g(state_.R,rpy);
     return;
@@ -199,11 +189,11 @@ bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_in
       prev_vel_cmd_time_ = Clock::now();
       state_.Clear();
       state_.v = Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
-      state_.p = pos + state_.v*dt;//Clear everything but current position=> Holds current position
+      //Clear everything but current position=> Holds current position
+      state_.p = pos + state_.v*dt;
       if(vel_yaw_ratemode)
       {
         state_.w[2] = yaw_inp;
-        SO3 &so3 = SO3::Instance();
         Vector3d rpy(0,0,yaw_inp*dt);
         so3.q2g(state_.R,rpy);
         state_.R = R1*state_.R;
@@ -211,11 +201,9 @@ bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_in
       else
       {
         //Set Yaw
-        SO3 &so3 = SO3::Instance();
         Vector3d rpy(0,0,yaw_inp);
         so3.q2g(state_.R,rpy);
       }
-      //Propagate Qrotor State
       //TODO: Create a thread which keeps moving the quadrotor. When other modes of propagating are called, should stop this thread
   }
   else
@@ -233,7 +221,6 @@ bool QuadSimulator::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desi
       state_.Clear();
       //Set Qrotor at way point straight away
       state_.p<<desired_pos.x, desired_pos.y, desired_pos.z;
-      SO3 &so3 = SO3::Instance();
       Vector3d rpy(0,0,desired_yaw);
       so3.q2g(state_.R,rpy);
     }
@@ -245,16 +232,15 @@ bool QuadSimulator::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desi
 }
 
 
-void QuadSimulator::grip(int state)//TriState Gripper
+void QuadSimulator::grip(int state)
 {
-  //NOT IMPLEMENTED
+  throw std::runtime_error("Grip not implemented");
   return;
 }
 
 void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
 {
 
-  SO3 &so3 = SO3::Instance();
   //Return data from state
   d1.altitude = state_.p(2);
   d1.batterypercent = battery_percent_;
@@ -268,7 +254,6 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
   Vector3d rpy;
   so3.g2q(rpy,state_.R);
   d1.rpydata.x = rpy(0); d1.rpydata.y = rpy(1); d1.rpydata.z = rpy(2);
-  //cout<<"rpy: "<<d1.rpydata.x<<", "<<d1.rpydata.y<<", "<<d1.rpydata.z<<endl;
   d1.omega.x = state_.w(0); d1.omega.y = state_.w(1); d1.omega.z = state_.w(2);
   d1.linvel.x = state_.v(0); d1.linvel.y = state_.v(1); d1.linvel.z = state_.v(2);
   d1.linacc.x = sys_.acc(0); d1.linacc.y = sys_.acc(1); d1.linacc.z = sys_.acc(2);

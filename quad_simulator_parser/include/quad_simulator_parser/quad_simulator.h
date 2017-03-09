@@ -5,19 +5,10 @@
 #include <parsernode/parser.h> //main parser base class
 
 // Standard includes
-#include <iostream>
-#include <cstdlib>
-#include <unistd.h>
-#include <cmath>
-#include <string>
-#include <inttypes.h>
-#include <fstream>
-#include <sys/time.h>
-#include <time.h>
-#include <bitset>         // std::bitset
 #include <boost/thread.hpp>
 #include <chrono>
 #include <stdexcept>
+#include <queue>
 
 //Gcop System Includes
 #include <gcop/qrotoridmodel.h>
@@ -25,10 +16,7 @@
 
 //Messages:
 #include <geometry_msgs/Quaternion.h>
-#include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/Joy.h>
-
-#include <queue>
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
@@ -36,8 +24,6 @@
 #define RAD2DEG(RAD) ((RAD)*((180.0)/(C_PI)))
 
 
-using namespace std;
-using namespace gcop;
 using namespace Eigen;
 
 using Clock = chrono::high_resolution_clock;
@@ -55,8 +41,8 @@ protected:
     };
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
-    QRotorIDModel sys_;///< Quadrotor system from GCOP for propagating the system
-    QRotorIDState state_;///< Current state of Quadcopter
+    gcop::QRotorIDModel sys_;///< Quadrotor system from GCOP for propagating the system
+    gcop::QRotorIDState state_;///< Current state of Quadcopter
     bool enable_qrotor_control_;///< Should be set to true before the quadrotor is controlled
     bool rpyt_ratemode;///< Specifies to use yaw rate mode or yaw angle mode in cmdrpyt
     bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
@@ -68,6 +54,8 @@ protected:
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     double battery_percent_;///< Percentage of battery remaining for quadrotor 
     double takeoff_altitude_;///< Altitude to reach when taking off
+    //so3
+    gcop::SO3 &so3;
 
     //Internal modes:
     bool armed;///< Whether quadrotor is armed or not
