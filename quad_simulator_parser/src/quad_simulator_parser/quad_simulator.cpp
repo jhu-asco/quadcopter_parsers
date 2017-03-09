@@ -131,7 +131,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
       {
         double &dt = current_cmd.dt;
         //Propagate Qrotor State
-        Vector4d control;
+        Eigen::Vector4d control;
         if(rpyt_ratemode)
         {
           control<<current_cmd.rpytmsg.w, current_cmd.rpytmsg.x, current_cmd.rpytmsg.y, current_cmd.rpytmsg.z;
@@ -171,7 +171,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
 
 void QuadSimulator::reset_attitude(double roll, double pitch, double yaw)
 {
-    Vector3d rpy(roll, pitch, yaw);
+    Eigen::Vector3d rpy(roll, pitch, yaw);
     so3.q2g(state_.R,rpy);
     return;
 }
@@ -180,28 +180,28 @@ bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_in
 {
   if(enable_qrotor_control_)
   {
-      Vector3d pos = state_.p;
-      Matrix3d R1 = state_.R;
+      Eigen::Vector3d pos = state_.p;
+      Eigen::Matrix3d R1 = state_.R;
       TimePoint current_time = Clock::now();
       double dt =((std::chrono::duration<double>)(current_time - prev_vel_cmd_time_)).count();
       if(dt > 0.03)
         dt = 0.03;//Dont give too long dt
       prev_vel_cmd_time_ = Clock::now();
       state_.Clear();
-      state_.v = Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
+      state_.v = Eigen::Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
       //Clear everything but current position=> Holds current position
       state_.p = pos + state_.v*dt;
       if(vel_yaw_ratemode)
       {
         state_.w[2] = yaw_inp;
-        Vector3d rpy(0,0,yaw_inp*dt);
+        Eigen::Vector3d rpy(0,0,yaw_inp*dt);
         so3.q2g(state_.R,rpy);
         state_.R = R1*state_.R;
       }
       else
       {
         //Set Yaw
-        Vector3d rpy(0,0,yaw_inp);
+        Eigen::Vector3d rpy(0,0,yaw_inp);
         so3.q2g(state_.R,rpy);
       }
       //TODO: Create a thread which keeps moving the quadrotor. When other modes of propagating are called, should stop this thread
@@ -221,7 +221,7 @@ bool QuadSimulator::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desi
       state_.Clear();
       //Set Qrotor at way point straight away
       state_.p<<desired_pos.x, desired_pos.y, desired_pos.z;
-      Vector3d rpy(0,0,desired_yaw);
+      Eigen::Vector3d rpy(0,0,desired_yaw);
       so3.q2g(state_.R,rpy);
     }
     else
@@ -251,7 +251,7 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
       d1.quadstate += "ENABLE_CONTROL ";
   if(rpyt_ratemode)
       d1.quadstate += "RATE MODE ";
-  Vector3d rpy;
+  Eigen::Vector3d rpy;
   so3.g2q(rpy,state_.R);
   d1.rpydata.x = rpy(0); d1.rpydata.y = rpy(1); d1.rpydata.z = rpy(2);
   d1.omega.x = state_.w(0); d1.omega.y = state_.w(1); d1.omega.z = state_.w(2);
