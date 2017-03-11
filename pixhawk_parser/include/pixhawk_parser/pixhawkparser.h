@@ -136,6 +136,8 @@ class PixhawkParser: public parsernode::Parser
 
       int parameter_find_count;
 
+      bool initialized_temp;///< Temporary variable which is protected by spin mutex
+
 			///Reconfig Callback
       void reconfigCallback(PixhawkTuningInterfaceConfig &tuning_params, uint32_t level);
 
