@@ -6,6 +6,8 @@
 #include <parsernode/parser.h> //main parser base class
 #include <quad_simulator_parser/quad_simulator.h> //base class for this
 
+#include <tf/transform_broadcaster.h>
+
 using namespace std;
 using namespace gcop;
 using namespace Eigen;
@@ -18,15 +20,18 @@ private:
     ros::Subscriber joy_sub_;
     ros::Publisher global_ref_pub;
     ros::Publisher gps_pub;
+    tf::TransformBroadcaster tf_broadcaster;
 
     //Timer to keep decreasing thrust gain kt
     ros::Timer kt_decrease_timer_;
     //Gps Timer:
     ros::Timer gps_pub_timer_;
+    //TF Timer:
+    ros::Timer tf_timer_;
 protected:
     void ktTimerCallback(const ros::TimerEvent& );
     void gpsTimerCallback(const ros::TimerEvent& );
-
+    void tfTimerCallback(const ros::TimerEvent&);
 
 public:
     QuadSimParser();
