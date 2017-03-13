@@ -4,6 +4,7 @@
 #include <dji_parser/dji_parser.h>
 #include <tf/tf.h>
 #include <ros/ros.h>
+#include <stdexcept>
 
 using namespace DJI::onboardSDK;
 
@@ -50,6 +51,7 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
     if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
     {
       ROS_WARN("Timeout initializing");
+      throw std::runtime_error("Timeout initializing DJI!");
       break;
     }
     ros::Rate(10).sleep();//sleep for 0.1 secs

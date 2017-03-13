@@ -25,6 +25,7 @@ void ArdroneParser::initialize(ros::NodeHandle &nh_)
 	reset_pub = nh_.advertise<std_msgs::Empty>("/ardrone/reset",1);
 	cmdrpyt_pub = nh_.advertise<geometry_msgs::Twist>("/cmd_vel",1);
 	imurecalib_client = nh_.serviceClient<std_srvs::Empty>("/ardrone/imu_recalib");
+  this->initialized = true;
 }
 
 void ArdroneParser::navCallback(const ardrone_autonomy::Navdata::ConstPtr navdata_)
