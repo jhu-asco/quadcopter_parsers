@@ -155,11 +155,6 @@ include_directories(
    src/${PROJECT_NAME}/quad_simulator.cpp
  )
 
- #target_link_libraries(quad_simulator
- #  ${LIBS}
- #  ${catkin_LIBRARIES}
- #)
-
  add_library(quad_simulator_parser
    src/${PROJECT_NAME}/quad_simulator_parser.cpp
  )
