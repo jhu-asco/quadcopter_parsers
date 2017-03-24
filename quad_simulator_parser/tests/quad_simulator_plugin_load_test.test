@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="QuadSimulatorPluginLoadTest" pkg="quad_simulator_parser" type="quad_simulator_parser-quad-simulator-plugin-load-test">
+  </test>
+</launch>

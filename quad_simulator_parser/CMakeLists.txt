@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   tf
   tf_conversions
+  rostest
 )
 
 ## System dependencies are found with CMake's conventions
@@ -154,17 +155,14 @@ include_directories(
    src/${PROJECT_NAME}/quad_simulator.cpp
  )
 
- target_link_libraries(quad_simulator
-   ${LIBS}
-   ${catkin_LIBRARIES}
- )
-
  add_library(quad_simulator_parser
    src/${PROJECT_NAME}/quad_simulator_parser.cpp
  )
 
  target_link_libraries(quad_simulator_parser
    quad_simulator
+   ${LIBS}
+   ${catkin_LIBRARIES}
  )
 
 
@@ -182,6 +180,7 @@ add_executable(quad_simulator_parser_node src/quad_simulator_parser_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(quad_simulator_parser_node
+  ${LIBS}
   ${catkin_LIBRARIES}
 )
 
@@ -245,7 +244,12 @@ endif(BUILD_SIM_CAMERA)
 ## Add gtest based cpp test target and link libraries
 catkin_add_gtest(${PROJECT_NAME}-quad-simulator-test tests/quad_simulator_tests.cpp)
 if(TARGET ${PROJECT_NAME}-quad-simulator-test)
-  target_link_libraries(${PROJECT_NAME}-quad-simulator-test quad_simulator)
+  target_link_libraries(${PROJECT_NAME}-quad-simulator-test quad_simulator ${LIBS} ${catkin_LIBRARIES})
+endif()
+
+add_rostest_gtest(${PROJECT_NAME}-quad-simulator-plugin-load-test tests/quad_simulator_plugin_load_test.test tests/quad_simulator_plugin_load_test.cpp)
+if(TARGET ${PROJECT_NAME}-quad-simulator-test)
+  target_link_libraries(${PROJECT_NAME}-quad-simulator-plugin-load-test ${LIBS} ${catkin_LIBRARIES})
 endif()
 
 ## Add folders to be run by python nosetests
