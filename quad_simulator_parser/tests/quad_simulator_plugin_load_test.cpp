@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
-#include <quad_simulator_parser/quad_simulator.h>
+#include <parsernode/parser.h>
 #include <ros/ros.h>
 
 
