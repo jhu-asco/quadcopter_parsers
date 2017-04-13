@@ -101,7 +101,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.z = state_.v[2];
         double yaw_ang = so3.yaw(state_.R);
         bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
-        cmdvelguided(initial_state_vel, yaw_ang);
+        cmdvel_yaw_angle_guided(initial_state_vel, yaw_ang);
         vel_yaw_ratemode = temp_vel_yaw_ratemode;
         state_.u[2] = yaw_ang;
       }
@@ -122,8 +122,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.z = state_.v[2];
         double yaw_ang = so3.yaw(state_.R);
         bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
-        vel_yaw_ratemode = false;
-        cmdvelguided(initial_state_vel, yaw_ang);
+        cmdvel_yaw_angle_guided(initial_state_vel, yaw_ang);
         vel_yaw_ratemode = temp_vel_yaw_ratemode;
         state_.u[2] = yaw_ang;
       }
@@ -174,6 +173,22 @@ void QuadSimulator::reset_attitude(double roll, double pitch, double yaw)
     Eigen::Vector3d rpy(roll, pitch, yaw);
     so3.q2g(state_.R,rpy);
     return;
+}
+
+bool QuadSimulator::cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
+{
+  if(!vel_yaw_ratemode) {
+    vel_yaw_ratemode = true;
+  }
+  return cmdvelguided(vel_cmd, yaw_rate);
+}
+
+bool QuadSimulator::cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle)
+{
+  if(vel_yaw_ratemode) {
+    vel_yaw_ratemode = false;
+  }
+  return cmdvelguided(vel_cmd, yaw_angle);
 }
 
 bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)

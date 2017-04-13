@@ -61,6 +61,8 @@ class Parser
 		virtual bool calibrateimubias()=0;//Calibrate imu of the quadcopter based on sample data
 		virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false)=0;//Command the euler angles of the quad and the thrust. the msg format is (x,y,z,w) -> (roll, pitch, yaw, thrust). The thrust value will be adjusted based on whethere there is thrust bias or not.
     virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)=0;
+    virtual bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)=0;
+    virtual bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang)=0;
     virtual bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0)=0;
 		virtual void grip(int state)=0;//Tri State Gripper
 		virtual void reset_attitude(double roll, double pitch, double yaw)=0;

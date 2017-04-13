@@ -163,6 +163,24 @@ public:
     */
     virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
     /**
+    * @brief Send velocity and yaw rate to quadrotor
+    *
+    * @param vel_cmd Velocity command to send
+    * @param yaw_rate Yaw rate to be sent in radians/s
+    *
+    * @return True if successful
+    */
+    virtual bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
+    /**
+    * @brief Send velocity and yaw angle to quadrotor
+    *
+    * @param vel_cmd Velocity command to send
+    * @param yaw_angle Yaw angle to send in radians
+    *
+    * @return
+    */
+    virtual bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
+    /**
     * @brief Send position and yaw command to quadrotor
     *
     * @param desired_pos Position command

@@ -127,6 +127,8 @@ public:
     bool calibrateimubias();
     bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
     bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
+    bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
     bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);

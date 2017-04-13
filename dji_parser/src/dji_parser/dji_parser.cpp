@@ -222,6 +222,22 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
     return;
 }
 
+bool DjiParser::cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
+{
+  if(!vel_yaw_ratemode) {
+    vel_yaw_ratemode = true;
+  }
+  return cmdvelguided(vel_cmd, yaw_rate);
+}
+
+bool DjiParser::cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle)
+{
+  if(vel_yaw_ratemode) {
+    vel_yaw_ratemode = false;
+  }
+  return cmdvelguided(vel_cmd, yaw_angle);
+}
+
 bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
 {
   if(this->initialized)
