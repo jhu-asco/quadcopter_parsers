@@ -521,6 +521,9 @@ void DjiParser::receiveDJIData()
     if(bc_data.rc.mode == -8000) {
       data.rc_sdk_control_switch = true;
     }
+    else {
+      data.rc_sdk_control_switch = false;
+    }
     /*rc_channels.mode = recv_sdk_std_msgs.rc.mode;
     rc_channels.gear = recv_sdk_std_msgs.rc.gear;
     rc_channels_publisher.publish(rc_channels);
