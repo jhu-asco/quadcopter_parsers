@@ -27,8 +27,8 @@ void QuadSimulator::non_ros_initialize()
         rcin[i] = 0;
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
     rpyt_ratemode = false;
-    vel_yaw_ratemode = false;
-    enable_qrotor_control_ = false;
+    vel_yaw_ratemode = true;
+    enable_qrotor_control_ = true;
     armed = false;
     RpytCmdStruct rpyt_cmd;
     rpyt_cmd.time = TimePoint();
@@ -51,7 +51,6 @@ bool QuadSimulator::land()
 {
   state_.Clear();
   armed = false;
-  enable_qrotor_control_ = false;
   return true;
 }
 
@@ -278,6 +277,7 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
   d1.mass = 1.0;
   d1.thrustbias = 9.81/(sys_.kt);
   d1.armed = armed;
+  d1.rc_sdk_control_switch = enable_qrotor_control_;
   for(int i = 0; i < 4; i++)
     d1.servo_in[i] = rcin[i];
   return;

@@ -33,7 +33,7 @@ TEST(QuadSimulatorTests, Land) {
     ASSERT_EQ(data.localpos.x, 0.0);
     ASSERT_EQ(data.localpos.y, 0.0);
     ASSERT_EQ(data.localpos.z, 0.0);
-    ASSERT_STREQ(data.quadstate.c_str(), "");
+    ASSERT_STREQ(data.quadstate.c_str(), "ENABLE_CONTROL ");
 }
 
 TEST(QuadSimulatorTests, Disarm) {
