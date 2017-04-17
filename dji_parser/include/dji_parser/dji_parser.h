@@ -30,6 +30,8 @@
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
 
+#include <tf/transform_broadcaster.h>
+
 
 #ifndef FILE_BUFFER_SIZE
 #define FILE_BUFFER_SIZE 1024
@@ -69,6 +71,7 @@ private:
     ros::Publisher gps_pub;
 
     ros::Timer tf_timer_;
+    tf::TransformBroadcaster tf_broadcaster;
     //GPS Pub Info
     double gps_pub_rate; //Hz
     ros::Time last_gps_pub_time;
