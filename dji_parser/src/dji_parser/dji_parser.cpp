@@ -261,7 +261,7 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
       user_ctrl_data.yaw = -yaw_inp*(180/M_PI);
       flight->setFlight(&user_ctrl_data);
 
-      velocity_goal = vel_cmd;
+      data.velocity_goal = vel_cmd;
     }
   }
   return true;
@@ -287,7 +287,7 @@ bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_
     //ROS_INFO("Offset: %f,%f,%f,%f",user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y, user_ctrl_data.thr_z, user_ctrl_data.yaw);
     flight->setFlight(&user_ctrl_data);
 
-    position_goal = desired_pos;
+    data.position_goal = desired_pos;
   }
   else
   {
