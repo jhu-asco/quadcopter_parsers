@@ -60,6 +60,20 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   {
     ROS_INFO("Initialized dji");
   }
+
+  tf_timer_ = nh_.createTimer(ros::Duration(0.1), &DjiParser::tfTimerCallback, this);
+}
+
+void DjiParser::tfTimerCallback(const ros::TimerEvent&) 
+{
+  tf::Transform transform;
+  transform.setOrigin( tf::Vector3(state_.p[0], state_.p[1], state_.p[2]) );
+  Eigen::Vector3d rpy;
+  so3.g2q(rpy, state_.R);
+  tf::Quaternion q;
+  q.setRPY(rpy(0), rpy(1), rpy(2));
+  transform.setRotation(q);
+  tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "quad"));
 }
 
 //Extend Functions from Paser:
