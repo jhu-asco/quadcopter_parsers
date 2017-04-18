@@ -30,6 +30,8 @@
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
 
+#include <tf/transform_broadcaster.h>
+
 
 #ifndef FILE_BUFFER_SIZE
 #define FILE_BUFFER_SIZE 1024
@@ -67,6 +69,9 @@ private:
     //Publishers ROS
     ros::Publisher global_ref_pub;
     ros::Publisher gps_pub;
+
+    ros::Timer tf_timer_;
+    tf::TransformBroadcaster tf_broadcaster;
     //GPS Pub Info
     double gps_pub_rate; //Hz
     ros::Time last_gps_pub_time;
@@ -93,6 +98,7 @@ private:
     uint8_t gps_health;///< Health of GPS
 
 
+    void tfTimerCallback(const ros::TimerEvent&);
     static void* APIRecvThread(void* param);
     static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
     void receiveDJIData();//receive dji data from its lib 
@@ -112,6 +118,7 @@ private:
       volatile bool received;
       volatile bool succeeded;
     };
+
 
 public:
     DjiParser();
