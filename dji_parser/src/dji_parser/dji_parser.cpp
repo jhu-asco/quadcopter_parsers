@@ -262,6 +262,7 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
       flight->setFlight(&user_ctrl_data);
 
       data.velocity_goal = vel_cmd;
+      data.velocity_goal_yaw = yaw_inp;
     }
   }
   return true;
@@ -288,6 +289,7 @@ bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_
     flight->setFlight(&user_ctrl_data);
 
     data.position_goal = desired_pos;
+    data.position_goal_yaw = desired_yaw;
   }
   else
   {

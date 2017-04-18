@@ -63,7 +63,9 @@ namespace parsernode {
       geometry_msgs::Vector3 linacc;//Linear acceleration of quadcopter
       geometry_msgs::Vector3 localpos;// Local pos based on home NWU format
       geometry_msgs::Vector3 velocity_goal;// Goal velocity based on home NWU format
+      double velocity_goal_yaw;
       geometry_msgs::Vector3 position_goal;// Goal position based on home NWU format
+      double position_goal_yaw;
       double timestamp;//timestamp from drone
       double mass, thrustbias;//Mass of the Quadcopter, the bias in thrust needed if the quadcopter does not compensate for gravity by itself.
       double thrustmin, thrustmax;//Max and min values for thrust Not the output values
