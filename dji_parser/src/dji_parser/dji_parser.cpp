@@ -535,8 +535,8 @@ void DjiParser::receiveDJIData()
     if(enable_log)
       rcinputfile<<data.timestamp<<"\t"<<data.servo_in[0]<<"\t"<<data.servo_in[1]<<"\t"
         <<data.servo_in[2]<<"\t"<<data.servo_in[3]<<endl;
-    // -8000 is obtained by testing with matrice and dji radio
-    if(bc_data.rc.mode == -8000) {
+    // 8000 is obtained by testing with matrice and dji radio
+    if(bc_data.rc.mode == 8000) {
       data.rc_sdk_control_switch = true;
     }
     else {
