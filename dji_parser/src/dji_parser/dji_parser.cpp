@@ -335,6 +335,7 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
 {
   spin_mutex.lock();
   //Create Quad State String based on existing status:
+  data.quadstate = "";
   switch(quad_status)
   {
     case STANDBY :
