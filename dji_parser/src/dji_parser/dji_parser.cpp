@@ -6,6 +6,22 @@
 #include <ros/ros.h>
 #include <stdexcept>
 
+// Flags valid for M100
+// Change flags for M600
+// based on shift bit
+#define HAS_Q 0x0002
+#define HAS_A 0x0004
+#define HAS_V 0x0008
+#define HAS_W 0x0010
+#define HAS_POS 0x0020
+#define HAS_MAG 0x0040
+#define HAS_RC 0x0080
+#define HAS_GIMBAL 0x0100
+#define HAS_STATUS 0x0200
+#define HAS_BATTERY 0x0400
+#define HAS_DEVICE 0x0800
+
+
 using namespace DJI::onboardSDK;
 
 namespace dji_parser{
@@ -180,22 +196,22 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
     if(sdk_opened)
     {
       FlightData user_ctrl_data;
-      user_ctrl_data.flag = Flight::HorizontalLogic::HORIZONTAL_ANGLE | 
-                            Flight::VerticalLogic::VERTICAL_THRUST | 
-                            Flight::HorizontalCoordinate::HORIZONTAL_BODY;
+      user_ctrl_data.flag = DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_ANGLE |
+                            DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_THRUST |
+                            DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY;
       if(sendyaw)
       {
         if(rpyt_ratemode)
         {
-          user_ctrl_data.flag = user_ctrl_data.flag | 
-                                Flight::YawLogic::YAW_PALSTANCE | 
-                                Flight::SmoothMode::SMOOTH_ENABLE; // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
+          user_ctrl_data.flag = user_ctrl_data.flag |
+                                DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
+                                DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE; // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
         }
         else
         {
-          user_ctrl_data.flag = user_ctrl_data.flag | 
-                                Flight::YawLogic::YAW_ANGLE | 
-                                Flight::SmoothMode::SMOOTH_ENABLE;
+          user_ctrl_data.flag = user_ctrl_data.flag |
+                                DJI::onboardSDK::Flight::YawLogic::YAW_ANGLE |
+                                DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
         }
         // TODO: double check these are all valid in new sdk
         user_ctrl_data.x = rpytmsg.x*(180/M_PI);
@@ -210,9 +226,9 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
       }
       else
       {
-        user_ctrl_data.flag = user_ctrl_data.flag | 
-                              Flight::YawLogic::YAW_PALSTANCE | 
-                              Flight::SmoothMode::SMOOTH_ENABLE;
+        user_ctrl_data.flag = user_ctrl_data.flag |
+                              DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
+                              DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
                                                            //   TODO: In v3.1 there is something called 
                                                            //   SmoothMode which is not explained
         user_ctrl_data.x = rpytmsg.x*(180/M_PI);
@@ -264,9 +280,9 @@ bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
                             Flight::HorizontalCoordinate::HORIZONTAL_GROUND |
                             Flight::SmoothMode::SMOOTH_ENABLE;
       if(vel_yaw_ratemode)
-        user_ctrl_data.flag = user_ctrl_data.flag | Flight::YawLogic::YAW_PALSTANCE;
+        user_ctrl_data.flag = user_ctrl_data.flag | DJI::onboardSDK::Flight::YawLogic::YAW_RATE;
       else
-        user_ctrl_data.flag = user_ctrl_data.flag | Flight::YawLogic::YAW_ANGLE;
+        user_ctrl_data.flag = user_ctrl_data.flag | DJI::onboardSDK::Flight::YawLogic::YAW_ANGLE;
       user_ctrl_data.x = vel_cmd.x;
       user_ctrl_data.y = -vel_cmd.y;
       user_ctrl_data.z = vel_cmd.z;
@@ -409,10 +425,17 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
   else
     ROS_INFO("Succeed to create thread for readPoll");
 
-  coreAPI->getSDKVersion();
+  version_data = coreAPI->getDroneVersion(2);//Timeout in sec
+  // If true implies the hardware is either A3 etc
+  if(strcmp(version_data.hwVersion, "M100") != 0) {
+    shift_bit = 2;
+  }
+  else {
+    shift_bit = 0;
+  }
 }
 
-int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
+int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data,
   CallBack broadcast_function)
 {
   std::string serial_name;
@@ -430,10 +453,11 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* 
   nh_.param("app_bundle_id", app_bundle_id, std::string("12345678901234567890123456789012"));
   nh_.param("enc_key", enc_key,
       std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
+  // Initialize serial port
+  init(serial_name.c_str(), baud_rate);
    // activation
   user_act_data->ID = app_id;
-  user_act_data->version = SDK_VERSION;
-  //user_act_data->version = 0x03010a00
+  user_act_data->version = version_data.fwVersion;
   strcpy((char*) user_act_data->iosID, app_bundle_id.c_str());
   user_act_data->encKey = new char[65];//Create a char on heap
   strcpy(user_act_data->encKey, enc_key.c_str());
@@ -444,9 +468,7 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* 
   printf("=================================================\n");
 
   
-  init(serial_name.c_str(), baud_rate);
-
-  coreAPI->activate(user_act_data, NULL);
+  coreAPI->activate(user_act_data);
   coreAPI->setBroadcastCallback(broadcast_function, (DJI::UserData)this);
 
   return 0;
@@ -489,7 +511,6 @@ void DjiParser::receiveDJIData()
 
   spin_mutex.lock();
   data.timestamp = bc_data.timeStamp.time*(1.0/400.0);// + 1e-9*bc_data.timeStamp.nanoTime; //(bc_data.timeStamp.time*(1.0/600.0)); //TODO: ensure this scaling is correct for new sdk
-
   //update attitude msg
   if ((msg_flags & HAS_Q) && (msg_flags & HAS_W)) {
     tf::Quaternion qt(bc_data.q.q1, bc_data.q.q2, bc_data.q.q3, bc_data.q.q0);
@@ -527,7 +548,7 @@ void DjiParser::receiveDJIData()
   }
 
   //update rc_channel msg
-  if ((msg_flags & HAS_RC)) {
+  if ((msg_flags & (HAS_RC<<shift_bit))) {
     data.servo_in[0] = (int16_t)bc_data.rc.roll;
     data.servo_in[1] = (int16_t)bc_data.rc.pitch;
     data.servo_in[2] = (int16_t)bc_data.rc.throttle;
@@ -549,7 +570,7 @@ void DjiParser::receiveDJIData()
   }
 
   //update compass msg
-  if ((msg_flags & HAS_MAG)) {
+  if (msg_flags & (HAS_MAG<<shift_bit)) {
     data.magdata.x = (double)bc_data.mag.x;
     data.magdata.y = (double)bc_data.mag.y;
     data.magdata.z = (double)bc_data.mag.z;
@@ -560,7 +581,7 @@ void DjiParser::receiveDJIData()
    //Fix Bug with Data Status TODO
 
   //update flight_status 
-  if ((msg_flags & HAS_STATUS)) {
+  if (msg_flags & (HAS_STATUS<<shift_bit)) {
     quad_status = bc_data.status;
     if(quad_status == IN_AIR)
       data.armed = true;
@@ -569,12 +590,12 @@ void DjiParser::receiveDJIData()
   }
 
   //update battery msg
-  if ((msg_flags & HAS_BATTERY)) {
+  if (msg_flags & (HAS_BATTERY<<shift_bit)) {
     data.batterypercent = (double)bc_data.battery;
   }
 
   //update flight control info
-  if ((msg_flags & HAS_DEVICE)) {
+  if (msg_flags & (HAS_DEVICE<<shift_bit)) {
     //flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
     //ctrl_mode = bc_data.ctrlInfo.flightStatus; //TODO: I don't think this is correct, but I'm not sure how to get conrol mode
     ctrl_mode = bc_data.ctrlInfo.mode;

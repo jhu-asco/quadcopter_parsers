@@ -88,7 +88,8 @@ private:
     bool enable_log;
     int fd;
     //DJI SDK Member Variables:
-    ActivateData user_act_data_;///< App activation data dji
+    DJI::onboardSDK::ActivateData user_act_data_;///< App activation data dji
+    DJI::onboardSDK::VersionData version_data;///< Provides the sdk version, hardware type used
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     boost::mutex spin_mutex;
@@ -96,13 +97,14 @@ private:
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
     uint8_t gps_health;///< Health of GPS
+    uint8_t shift_bit;///< For hardware a3, N3, M600, the shift bit is 2 for extracting certain data
 
 
     void tfTimerCallback(const ros::TimerEvent&);
     static void* APIRecvThread(void* param);
     static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
     void receiveDJIData();//receive dji data from its lib 
-    int init_parameters_and_activate(ros::NodeHandle& nh_, ActivateData* user_act_data,
+    int init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data,
       DJI::onboardSDK::CallBack broadcast_function);
     void init(std::string device, unsigned int baudrate);
     static void takeoffCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
