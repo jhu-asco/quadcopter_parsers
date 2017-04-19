@@ -42,7 +42,7 @@ void userFunction()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "parser");
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh_("~");
   pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
   ROS_INFO("I am fine");
   try

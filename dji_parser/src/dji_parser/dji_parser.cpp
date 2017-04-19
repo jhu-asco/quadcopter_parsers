@@ -426,6 +426,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
     ROS_INFO("Succeed to create thread for readPoll");
 
   version_data = coreAPI->getDroneVersion(2);//Timeout in sec
+  ROS_INFO("Hardware type: %s", version_data.hwVersion);
   // If true implies the hardware is either A3 etc
   if(strcmp(version_data.hwVersion, "M100") != 0) {
     shift_bit = 2;
@@ -612,7 +613,7 @@ void DjiParser::receiveDJIData()
     //sdk_status = bc_data.controlStatus; // whether control is obtained
 
     //update activation msg
-  if(bc_data.activation)
+  if(bc_data.activation == 0)
   {
     this->initialized = true;
     //      ROS_INFO("Initialized DJI");
@@ -620,6 +621,10 @@ void DjiParser::receiveDJIData()
   else
   {
     this->initialized = false;
+    if(bc_data.activation != 255)// default value
+    {
+      ROS_ERROR("Activation error: %d", bc_data.activation);
+    }
   }
   //}
 
