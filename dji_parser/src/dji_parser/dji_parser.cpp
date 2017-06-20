@@ -222,7 +222,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
         user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
         user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
         
-        flight->setFlight(&user_ctrl_data);
+        flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
       }
       else
       {
@@ -237,7 +237,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
         user_ctrl_data.yaw = 0;
         user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
         user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
-        flight->setFlight(&user_ctrl_data);
+        flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
       }
     }
   }
@@ -314,7 +314,7 @@ bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_
     spin_mutex.unlock();
     user_ctrl_data.yaw = -desired_yaw*(180/M_PI);
     //ROS_INFO("Offset: %f,%f,%f,%f",user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y, user_ctrl_data.thr_z, user_ctrl_data.yaw);
-    flight->setFlight(&user_ctrl_data);
+    flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
 
     data.position_goal = desired_pos;
     data.position_goal_yaw = desired_yaw;
