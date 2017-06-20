@@ -49,6 +49,10 @@ private:
         LANDING = 4,
         FINISH_LANDING=5
     };
+    enum HardwareType {
+        MATRICE,
+        A3
+    };
 
     //Members depicting the state of the quadcopter
     parsernode::common::quaddata data;
@@ -98,6 +102,8 @@ private:
     uint8_t sdk_status;///< Whether sdk is open or close
     uint8_t gps_health;///< Health of GPS
     uint8_t shift_bit;///< For hardware a3, N3, M600, the shift bit is 2 for extracting certain data
+    uint16_t rc_f_pwm; ///< RC switch signal given when in SDK mode
+    HardwareType hardware_type; ///< Flight controller hardware
 
 
     void tfTimerCallback(const ros::TimerEvent&);

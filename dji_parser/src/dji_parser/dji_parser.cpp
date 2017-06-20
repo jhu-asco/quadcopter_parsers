@@ -431,9 +431,13 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
   // If true implies the hardware is either A3 etc
   if(strcmp(version_data.hwVersion, "M100") != 0) {
     shift_bit = 2;
+    rc_f_pwm = 10000;
+    hardware_type = A3;
   }
   else {
     shift_bit = 0;
+    rc_f_pwm = 8000;
+    hardware_type = MATRICE;
   }
 }
 
@@ -559,7 +563,7 @@ void DjiParser::receiveDJIData()
       rcinputfile<<data.timestamp<<"\t"<<data.servo_in[0]<<"\t"<<data.servo_in[1]<<"\t"
         <<data.servo_in[2]<<"\t"<<data.servo_in[3]<<endl;
     // 8000 is obtained by testing with matrice and dji radio
-    if(bc_data.rc.mode == 8000) {
+    if(bc_data.rc.mode == rc_f_pwm) {
       data.rc_sdk_control_switch = true;
     }
     else {
@@ -592,8 +596,12 @@ void DjiParser::receiveDJIData()
   }
 
   //update battery msg
-  if (msg_flags & (HAS_BATTERY<<shift_bit)) {
-    data.batterypercent = (double)bc_data.battery;
+  if(hardware_type == MATRICE) {
+    if (msg_flags & (HAS_BATTERY<<shift_bit)) {
+      data.batterypercent = (double)bc_data.battery;
+    }
+  } else {
+    data.batterypercent = 100; // A3 does not support battery voltage measurement wtf
   }
 
   //update flight control info
