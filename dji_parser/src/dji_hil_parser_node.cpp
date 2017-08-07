@@ -33,7 +33,8 @@ void userFunction()
     else if(!strcmp("Quit", input.c_str()))
     {
       dji_parser.reset();
-      ros::shutdown();
+      user_mutex_.unlock();
+      break;
     }
     user_mutex_.unlock();
   }

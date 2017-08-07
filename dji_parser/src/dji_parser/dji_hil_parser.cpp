@@ -53,6 +53,9 @@ void DjiHILParser::initialize(ros::NodeHandle &nh_)
   data.thrustmax = 3.4*9.81;//Additional payload of 1Kg
   data.thrustmin = 0;
   data.rpbound = M_PI/4;//This is the physical limit enforced by many drivers. This is not the same as the controller bound on angles
+  data.batterypercent = 100; // Set battery always to zero in HIL mode
+  data.localpos.z = 0; // Set the height to zero to begin with in HIL mode. The height is changed during takeoff and landing
+  data.rc_sdk_control_switch = true; // In HIL mode we are always in Auto mode (Not in manual mode)
   spin_mutex.unlock();
   //Initialize ros publishers:
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
@@ -124,39 +127,7 @@ bool DjiHILParser::disarm()
 
 bool DjiHILParser::flowControl(bool request)
 {
-  bool result = false;
-
-  if(!(this->initialized))
-    return result;
-  if((request && !sdk_opened)||(!request && sdk_opened))
-  {
-    //coreAPI->activate(&user_act_data_);
-    coreAPI->setControl(request);
-  }
-
-  //Wait for 0.5 secs until sdk is opened/closed
-  ros::Time current_time = ros::Time::now();
-  while(ros::ok())
-  {
-    spin_mutex.lock();
-    sdk_opened = (sdk_status == 0)?false:(sdk_status == 1)?true:false;
-    if((request && sdk_opened)||(!request && !sdk_opened))
-    {
-      result = true;
-      spin_mutex.unlock();
-      break;
-    }
-    else if((ros::Time::now() - current_time).toSec() > 5.0)//Wait for few secs
-    {
-      ROS_INFO("Timeout");
-      result = false;
-      spin_mutex.unlock();
-      break;
-    }
-    spin_mutex.unlock();
-    ros::Rate(10).sleep();//sleep for 0.1 secs
-  }
-  return result;
+  return true;
 }
 
 bool DjiHILParser::calibrateimubias()
@@ -432,13 +403,6 @@ void DjiHILParser::receiveDJIData()
     if(enable_log)
       rcinputfile<<data.timestamp<<"\t"<<data.servo_in[0]<<"\t"<<data.servo_in[1]<<"\t"
         <<data.servo_in[2]<<"\t"<<data.servo_in[3]<<endl;
-    // 8000 is obtained by testing with matrice and dji radio
-    if(bc_data.rc.mode == rc_f_pwm) {
-      data.rc_sdk_control_switch = true;
-    }
-    else {
-      data.rc_sdk_control_switch = false;
-    }
     /*rc_channels.mode = recv_sdk_std_msgs.rc.mode;
     rc_channels.gear = recv_sdk_std_msgs.rc.gear;
     rc_channels_publisher.publish(rc_channels);
@@ -465,14 +429,6 @@ void DjiHILParser::receiveDJIData()
       data.armed = false;
   }
 
-  //update battery msg
-  if(hardware_type == MATRICE) {
-    if (msg_flags & (HAS_BATTERY<<shift_bit)) {
-      data.batterypercent = (double)bc_data.battery;
-    }
-  } else {
-    data.batterypercent = 100; // A3 does not support battery voltage measurement wtf
-  }
 
   //update flight control info
   if (msg_flags & (HAS_DEVICE<<shift_bit)) {
