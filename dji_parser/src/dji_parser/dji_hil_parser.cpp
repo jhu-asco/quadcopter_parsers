@@ -55,7 +55,6 @@ void DjiHILParser::initialize(ros::NodeHandle &nh_)
   data.rpbound = M_PI/4;//This is the physical limit enforced by many drivers. This is not the same as the controller bound on angles
   data.batterypercent = 100; // Set battery always to zero in HIL mode
   data.localpos.z = 0; // Set the height to zero to begin with in HIL mode. The height is changed during takeoff and landing
-  data.rc_sdk_control_switch = true; // In HIL mode we are always in Auto mode (Not in manual mode)
   data.armed = false;// Start with armed in false mode
   spin_mutex.unlock();
   //Initialize ros publishers:
@@ -406,6 +405,13 @@ void DjiHILParser::receiveDJIData()
     if(enable_log)
       rcinputfile<<data.timestamp<<"\t"<<data.servo_in[0]<<"\t"<<data.servo_in[1]<<"\t"
         <<data.servo_in[2]<<"\t"<<data.servo_in[3]<<endl;
+    // 8000 is obtained by testing with matrice and dji radio
+    if(bc_data.rc.mode == rc_f_pwm) {
+      data.rc_sdk_control_switch = true;
+    }
+    else {
+      data.rc_sdk_control_switch = false;
+    }
     /*rc_channels.mode = recv_sdk_std_msgs.rc.mode;
     rc_channels.gear = recv_sdk_std_msgs.rc.gear;
     rc_channels_publisher.publish(rc_channels);
