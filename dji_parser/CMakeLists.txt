@@ -127,6 +127,7 @@ include_directories(
 ## Declare a C++ library
  add_library(dji_parser
    src/${PROJECT_NAME}/dji_parser.cpp
+   src/${PROJECT_NAME}/dji_hil_parser.cpp
  )
 
  target_link_libraries(dji_parser
@@ -141,12 +142,18 @@ include_directories(
 ## Declare a C++ executable
 add_executable(dji_parser_node src/dji_parser_node.cpp)
 
+add_executable(dji_hil_parser_node src/dji_hil_parser_node.cpp)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(dji_parser_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(dji_parser_node
+   ${catkin_LIBRARIES}
+ )
+
+ target_link_libraries(dji_hil_parser_node
    ${catkin_LIBRARIES}
  )
 

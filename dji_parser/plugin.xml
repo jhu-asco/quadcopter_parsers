@@ -4,4 +4,9 @@
 			Parser Library for DJI Matrice 100
     </description>
   </class>
+  <class name="dji_parser/DjiHILParser" type="dji_parser::DjiHILParser" base_class_type="parsernode::Parser">
+    <description>
+			HIL Parser Library for DJI Matrice 100
+    </description>
+  </class>
 </library>
