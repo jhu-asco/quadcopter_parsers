@@ -56,6 +56,7 @@ void DjiHILParser::initialize(ros::NodeHandle &nh_)
   data.batterypercent = 100; // Set battery always to zero in HIL mode
   data.localpos.z = 0; // Set the height to zero to begin with in HIL mode. The height is changed during takeoff and landing
   data.rc_sdk_control_switch = true; // In HIL mode we are always in Auto mode (Not in manual mode)
+  data.armed = false;// Start with armed in false mode
   spin_mutex.unlock();
   //Initialize ros publishers:
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
@@ -107,6 +108,7 @@ bool DjiHILParser::takeoff()//Virtual override function
     spin_mutex.lock();
     data.localpos.z = 1.0;
     data.altitude = 1.0;
+    data.armed = true;
     spin_mutex.unlock();
     return true;
 }
@@ -116,6 +118,7 @@ bool DjiHILParser::land()
     spin_mutex.lock();
     data.localpos.z = 0.0;
     data.altitude = 0.0;
+    data.armed = false;
     spin_mutex.unlock();
   return true;
 }
@@ -419,15 +422,6 @@ void DjiHILParser::receiveDJIData()
   }
 
    //Fix Bug with Data Status TODO
-
-  //update flight_status
-  if (msg_flags & (HAS_STATUS<<shift_bit)) {
-    quad_status = bc_data.status;
-    if(quad_status == IN_AIR)
-      data.armed = true;
-    else if(quad_status == FINISH_LANDING)
-      data.armed = false;
-  }
 
 
   //update flight control info
