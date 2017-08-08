@@ -82,6 +82,8 @@ namespace parsernode {
                             ,armed(false)
                             ,servo_in()
                             , rc_sdk_control_switch(true)
+                            , velocity_goal_yaw(0)
+                            , position_goal_yaw(0)
                              {
                                rpydata.x = 0; rpydata.y = 0; rpydata.z = 0;
                                magdata.x = 0; magdata.y = 0; magdata.z = 0;

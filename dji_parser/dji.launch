@@ -2,7 +2,7 @@
 <launch>
 <node pkg="dji_parser" name="dji_parser_node" type="dji_parser_node" output="screen">
   <!-- node parameters -->
-  <param name="serial_name" type="string" value="/dev/ttydji"/>
+  <param name="serial_name" type="string" value="/dev/ttyUSB0"/>
   <param name="baud_rate" type="int" value="230400"/>
   <param name="app_id" type="int" value="1024052"/>
   <param name="app_api_level" type="int" value="2"/>
