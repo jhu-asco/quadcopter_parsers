@@ -52,7 +52,7 @@ void DjiParser::initialize(ros::NodeHandle &nh_)
   gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Gps publisher
 
   //Initialize DJI:
-  init_parameters_and_activate(nh_, &user_act_data_, DjiParser::statReceiveDJIData);
+  init_parameters_and_activate(nh_, &user_act_data_);
   //Wait till dji is initialized properly:
   ros::Time current_time = ros::Time::now();
   while(ros::ok())
@@ -441,8 +441,7 @@ void DjiParser::init(std::string device, unsigned int baudrate) {
   }
 }
 
-int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data,
-  CallBack broadcast_function)
+int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data)
 {
   std::string serial_name;
   int baud_rate;
@@ -475,7 +474,7 @@ int DjiParser::init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSD
 
   
   coreAPI->activate(user_act_data);
-  coreAPI->setBroadcastCallback(broadcast_function, (DJI::UserData)this);
+  coreAPI->setBroadcastCallback(DjiParser::statReceiveDJIData, (DJI::UserData)this);
 
   return 0;
 }

@@ -55,7 +55,6 @@ private:
     };
 
     //Members depicting the state of the quadcopter
-    parsernode::common::quaddata data;
     uint8_t control_mode;///< Mode corresponding to dji
     bool rpyt_ratemode;///< State used to switch between rate control vs angle control of y in rpyt
     bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
@@ -96,7 +95,6 @@ private:
     DJI::onboardSDK::VersionData version_data;///< Provides the sdk version, hardware type used
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
-    boost::mutex spin_mutex;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
@@ -109,9 +107,7 @@ private:
     void tfTimerCallback(const ros::TimerEvent&);
     static void* APIRecvThread(void* param);
     static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
-    void receiveDJIData();//receive dji data from its lib 
-    int init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data,
-      DJI::onboardSDK::CallBack broadcast_function);
+    int init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data);
     void init(std::string device, unsigned int baudrate);
     static void takeoffCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
     static void landingCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
@@ -127,24 +123,28 @@ private:
       volatile bool succeeded;
     };
 
+protected:
+    parsernode::common::quaddata data; ///< Collected data struct for the entire quadrotor state
+    boost::mutex spin_mutex; ///< Mutex to sync receiving data from DJI and getter functions
+    virtual void receiveDJIData();//receive dji data from its lib 
 
 public:
     DjiParser();
-    ~DjiParser()
+    virtual ~DjiParser()
     {
         disarm();//release sdk control
     }
     //Extend functions from Parser:
-    bool takeoff();
-    bool land();
-    bool disarm();
-    bool flowControl(bool);
-    bool calibrateimubias();
-    bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
-    bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
-    bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
-    bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
+    virtual bool takeoff();
+    virtual bool land();
+    virtual bool disarm();
+    virtual bool flowControl(bool);
+    virtual bool calibrateimubias();
+    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
+    virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    virtual bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
+    virtual bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
+    virtual bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
     void setmode(std::string mode);
