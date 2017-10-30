@@ -1,12 +1,3 @@
-/* This is the plugin which is dependent on Parser base class.
- * It provides code implementation for DJI Matrice Quadcopter in
- * HIL mode.
- * In this mode, the data from Quadrotor is provided. But functions
- * such as arming, takeoff etc only modify the height of the quadrotor
- * and state of the quadrotor without sending those commands
- * to the low-level API. This can be used to test controllers and estimators
- * without actually flying the Quadrotor.
- */
 #include <pluginlib/class_list_macros.h>
 #include <dji_parser/dji_hil_parser.h>
 #include <tf/tf.h>

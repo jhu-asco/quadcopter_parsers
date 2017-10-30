@@ -1,7 +1,13 @@
 #ifndef DJI_HIL_PARSER_H
 #define DJI_HIL_PARSER_H
-/* This header is subclassed from parser.h and will include data from DJI Matrice Quadcopter. It will also provide interfaces for commanding the DJI Quadcopter. It uses the official dji_sdk drivers to do the commanding and getting the navdata
- * This class uses internal locking to ensure the quaddata is available to Qt thread without bumping into ros serial. This is enough since the order of working is not important to us. Read internal vs external locking: http://www.boost.org/doc/libs/1_55_0/doc/html/thread/synchronization.html
+/* This is the plugin which is dependent on Parser base class.
+ * It provides code implementation for DJI Matrice Quadcopter in
+ * Hardware In Loop (HIL) mode.
+ * In this mode, the data from Quadrotor is provided. But functions
+ * such as arming, takeoff etc only modify the height of the quadrotor
+ * and state of the quadrotor without sending those commands
+ * to the low-level API. This can be used to test controllers and estimators
+ * without actually flying the Quadrotor.
  */
 #include <parsernode/parser.h> //main parser base class
 #include <dji_parser/dji_parser.h> // Parent DJI Parser class
