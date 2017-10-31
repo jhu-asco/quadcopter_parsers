@@ -10,7 +10,7 @@ TEST(QuadSimulatorTests, BaseCtor) {
 
 TEST(QuadSimulatorTests, Initializer) {
     QuadSimulator quad_simulator_instance;
-    ASSERT_NO_THROW(quad_simulator_instance.non_ros_initialize());
+    ASSERT_NO_THROW(quad_simulator_instance.initialize());
 }
 
 TEST(QuadSimulatorTests, Takeoff) {

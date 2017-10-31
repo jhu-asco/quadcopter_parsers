@@ -10,7 +10,7 @@ ArdroneParser::ArdroneParser()
 }
 
 //PluginLib Initialization function
-void ArdroneParser::initialize(ros::NodeHandle &nh_)
+void ArdroneParser::initialize()
 {
 	//Re initialize the base members parameters as needed:
 	data.mass = 0.42;

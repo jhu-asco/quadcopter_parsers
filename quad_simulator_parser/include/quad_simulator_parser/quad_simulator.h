@@ -216,15 +216,7 @@ public:
     /**
     * @brief Use for initializing without ROS
     */
-    void non_ros_initialize();
-    /**
-    * @brief Used for initializing with ROS
-    *
-    * @param  NodeHandle to setup publishers/subscribers
-    */
-    virtual void initialize(ros::NodeHandle &){
-        non_ros_initialize();
-    }
+    void initialize();
     /**
     * @brief Get sensor data from quadrotor
     *

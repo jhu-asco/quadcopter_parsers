@@ -71,6 +71,7 @@ class PixhawkParser: public parsernode::Parser
 	{
 
 		private://Members depicting the state of the quadcopter
+      ros::NodeHandle nh_;///< Internal node handle
 			parsernode::common::quaddata data;
 			boost::mutex spin_mutex;
 			uint8_t targetsys_id;
@@ -200,7 +201,7 @@ class PixhawkParser: public parsernode::Parser
 				imufile.close();
 				//serial_recvthread->join();
 			}
-			void initialize(ros::NodeHandle &nh_);
+			void initialize();
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
 			bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang);
       bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate) {

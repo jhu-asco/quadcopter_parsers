@@ -42,13 +42,12 @@ void userFunction()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "parser");
-  ros::NodeHandle nh_;
   pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
   ROS_INFO("I am fine");
   try
   {
     quad_simulator_parser = parser_loader.createInstance("quad_simulator_parser/QuadSimParser");
-    quad_simulator_parser->initialize(nh_);
+    quad_simulator_parser->initialize();
 
     ROS_INFO("Created Quad Sim Parser Successfully");
   }

@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	try
 	{
 		boost::shared_ptr<parsernode::Parser> ardrone_parser = parser_loader.createInstance("ardroneparser/ArdroneParser");
-		ardrone_parser->initialize(nh_);
+		ardrone_parser->initialize();
 
 		ROS_INFO("Created Ardrone Parser Successfully");
 	}

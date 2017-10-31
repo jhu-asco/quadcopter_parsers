@@ -42,13 +42,12 @@ void userFunction()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "parser");
-  ros::NodeHandle nh_("~");
   pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
   ROS_INFO("I am fine");
   try
   {
     dji_parser = parser_loader.createInstance("dji_parser/DjiParser");
-    dji_parser->initialize(nh_);
+    dji_parser->initialize();
     ROS_INFO("DJI ACtivation: %d",dji_parser->initialized);
 
     ROS_INFO("Created DJI Parser Successfully");

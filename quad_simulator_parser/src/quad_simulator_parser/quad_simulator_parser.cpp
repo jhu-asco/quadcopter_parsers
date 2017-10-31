@@ -8,12 +8,12 @@
 
 namespace quad_simulator_parser{
 
-QuadSimParser::QuadSimParser():quad_simulator::QuadSimulator()
+QuadSimParser::QuadSimParser():quad_simulator::QuadSimulator(), nh_("~uav")
 {
 }
 
 //PluginLib Initialization function
-void QuadSimParser::initialize(ros::NodeHandle &nh_)
+void QuadSimParser::initialize()
 {
     //Add Subscriber to a joystick for rcinput
     joy_sub_ = nh_.subscribe("joy",5,&QuadSimParser::setRCInputs,(quad_simulator::QuadSimulator*)this);
@@ -37,7 +37,7 @@ void QuadSimParser::initialize(ros::NodeHandle &nh_)
 
     tf_timer_ = nh_.createTimer(ros::Duration(0.1), &QuadSimParser::tfTimerCallback, this);
 
-    this->non_ros_initialize();
+    quad_simulator::QuadSimulator::initialize();
 }
 
 void QuadSimParser::tfTimerCallback(const ros::TimerEvent&) 

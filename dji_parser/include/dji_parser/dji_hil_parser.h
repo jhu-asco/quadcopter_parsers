@@ -17,6 +17,7 @@ class DjiHILParser: public DjiParser
 {
 private:
     void receiveDJIData();//receive dji data from its lib 
+    ros::NodeHandle nh_;///< Internal node handle
 public:
     DjiHILParser();
     //Extend functions from Parser:

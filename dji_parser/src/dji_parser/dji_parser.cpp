@@ -26,7 +26,7 @@ using namespace DJI::onboardSDK;
 
 namespace dji_parser{
 
-DjiParser::DjiParser(): global_ref_lat(0), global_ref_long(0), sdk_opened(false)
+DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), sdk_opened(false)
                         ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
                         , rpyt_ratemode(true), vel_yaw_ratemode(false)
 {
@@ -34,7 +34,7 @@ DjiParser::DjiParser(): global_ref_lat(0), global_ref_long(0), sdk_opened(false)
 }
 
 //PluginLib Initialization function
-void DjiParser::initialize(ros::NodeHandle &nh_)
+void DjiParser::initialize()
 {
   enable_log = false;
   //Set Data Properties

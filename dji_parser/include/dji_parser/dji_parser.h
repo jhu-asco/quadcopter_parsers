@@ -53,6 +53,7 @@ private:
         MATRICE,
         A3
     };
+    ros::NodeHandle nh_;///< Internal node handle
 
     //Members depicting the state of the quadcopter
     uint8_t control_mode;///< Mode corresponding to dji
@@ -148,7 +149,7 @@ public:
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
     void setmode(std::string mode);
-    void initialize(ros::NodeHandle &nh_);
+    void initialize();
     void getquaddata(parsernode::common::quaddata &d1);
     void setaltitude(double altitude_)
     {
