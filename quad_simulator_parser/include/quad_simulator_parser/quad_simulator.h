@@ -216,7 +216,7 @@ public:
     /**
     * @brief Use for initializing without ROS
     */
-    void initialize();
+    virtual void initialize();
     /**
     * @brief Get sensor data from quadrotor
     *
