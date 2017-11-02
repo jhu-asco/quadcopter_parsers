@@ -4,13 +4,13 @@
 #include <pixhawk_parser/pixhawkparser.h>
 namespace pixhawk_parser{
 
-	PixhawkParser::PixhawkParser()
+	PixhawkParser::PixhawkParser(): nh_("~uav")
   {
     this->initialized = false;
     this->imu_reset = false;
 	}
 	//PluginLib Initialization function
-	void PixhawkParser::initialize(ros::NodeHandle &nh_)
+	void PixhawkParser::initialize()
 	{ 
 		heartbeatinit = false;
 		enable_log = false;

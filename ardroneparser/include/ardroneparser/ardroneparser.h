@@ -18,6 +18,7 @@ class ArdroneParser: public parsernode::Parser
 	{
 
 		private://Members depicting the state of the quadcopter
+      ros::NodeHandle nh_;///< Internal node handle
 			parsernode::common::quaddata data;
 			boost::mutex spin_mutex;
 			
@@ -43,7 +44,7 @@ class ArdroneParser: public parsernode::Parser
 				cmdrpyt_pub.shutdown();
 				imurecalib_client.shutdown();
 			}
-			void initialize(ros::NodeHandle &nh_);
+			void initialize();
 			void navCallback(const ardrone_autonomy::Navdata::ConstPtr navdata_);
 			bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
 			bool land();
@@ -71,6 +72,10 @@ class ArdroneParser: public parsernode::Parser
 				//TODO NOT IMPLEMENTED
 				return;
 			}
+      bool flowControl(bool) {
+				//TODO NOT IMPLEMENTED
+        return false;
+      }
 			void setaltitude(double altitude_)//Set the altitude value in the data
 			{
 				spin_mutex.lock();
@@ -82,6 +87,18 @@ class ArdroneParser: public parsernode::Parser
 				//NOT Needed
 				return;
 			}
+      bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang) {
+        return false;
+      }
+      bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate) {
+        return false;
+      }
+      bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_ang) {
+        return false;
+      }
+      bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0) {
+        return false;
+      }
 	};
 };
 #endif // ARDRONE_PARSHER_H

@@ -8,8 +8,7 @@ TEST(QuadSimulatorPluginTests, LoadPlugin) {
   std::unique_ptr<parsernode::Parser> quad_simulator_parser;
   pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
   quad_simulator_parser.reset(parser_loader.createUnmanagedInstance("quad_simulator_parser/QuadSimParser"));
-  ros::NodeHandle nh;
-  quad_simulator_parser->initialize(nh);
+  quad_simulator_parser->initialize();
   SUCCEED();
 }
 

@@ -16,6 +16,8 @@ class QuadSimParser: public quad_simulator::QuadSimulator
 {
     
 private:
+    // NodeHandle
+    ros::NodeHandle nh_;
     //Subscribers:
     ros::Subscriber joy_sub_;
     ros::Publisher global_ref_pub;
@@ -40,7 +42,7 @@ public:
         disarm();//release sdk control
     }
     //Extend functions from Parser:
-    virtual void initialize(ros::NodeHandle &nh_);
+    virtual void initialize();
 };
 }
 #endif // DJI_PARSHER_H

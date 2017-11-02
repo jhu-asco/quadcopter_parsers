@@ -14,12 +14,12 @@ void QuadSimulator::setRCInputs(const sensor_msgs::Joy &joy_msg)
 
 QuadSimulator::QuadSimulator(): parsernode::Parser(), delay_send_time_(0.2), battery_percent_(100), takeoff_altitude_(0.5), so3(gcop::SO3::Instance())
 {
-    this->non_ros_initialize();
+    this->initialize();
     this->initialized = true;
 }
 
 //PluginLib Initialization function
-void QuadSimulator::non_ros_initialize()
+void QuadSimulator::initialize()
 {
     state_.Clear();//Sets to default values of Quadrotor state
     prev_vel_cmd_time_ = Clock::now();

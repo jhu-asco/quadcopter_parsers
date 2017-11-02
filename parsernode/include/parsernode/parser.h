@@ -69,7 +69,7 @@ class Parser
     virtual void setmode(std::string mode)=0;
 
 		//PluginLib initialization function
-		virtual void initialize(ros::NodeHandle &nh_)=0;
+		virtual void initialize()=0;
 		virtual void getquaddata(common::quaddata &d1)=0;
 		virtual ~Parser()
 		{

@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 	try
 	{
 		pixhawk_parser = parser_loader.createInstance("pixhawk_parser/PixhawkParser");
-		pixhawk_parser->initialize(nh_);
+		pixhawk_parser->initialize();
 
 		ROS_INFO("Created Pixhawk Parser Successfully");
 	}
