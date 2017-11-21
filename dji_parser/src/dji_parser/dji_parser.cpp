@@ -26,7 +26,7 @@ using namespace DJI::onboardSDK;
 
 namespace dji_parser{
 
-DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), sdk_opened(false)
+DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), global_ref_x(0), global_ref_y(0), global_ref_z(0), sdk_opened(false)
                         ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
                         , rpyt_ratemode(true), vel_yaw_ratemode(false)
 {
@@ -51,6 +51,12 @@ void DjiParser::initialize()
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
   gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Gps publisher
 
+  
+  nh_.param("use_guidance_pos", use_guidance_pos_, false);
+
+  if(use_guidance_pos_) {
+    guidance_sub_ = nh_.subscribe("/guidance/global_position", 1, &DjiParser::guidanceCallback, this);
+  }
   //Initialize DJI:
   init_parameters_and_activate(nh_, &user_act_data_);
   //Wait till dji is initialized properly:
@@ -78,6 +84,19 @@ void DjiParser::initialize()
   }
 
   tf_timer_ = nh_.createTimer(ros::Duration(0.1), &DjiParser::tfTimerCallback, this);
+}
+
+void DjiParser::guidanceCallback(const geometry_msgs::Point& p) {
+  spin_mutex.lock();
+  if(global_ref_x == 0 && global_ref_y == 0 && global_ref_z == 0) {
+    global_ref_x = p.x;
+    global_ref_y = p.y;
+    global_ref_z = p.z;
+  }
+  data.localpos.x = p.x - global_ref_x;
+  data.localpos.y = -(p.y - global_ref_y);
+  data.localpos.z = -(p.z - global_ref_z);
+  spin_mutex.unlock();
 }
 
 void DjiParser::tfTimerCallback(const ros::TimerEvent&) 
@@ -662,16 +681,18 @@ void DjiParser::receiveDJIData()
     }
 
     //update local_position msg
-    DJI_SDK::gps_convert_ned(
-        data.localpos.x,
-        data.localpos.y,
-        bc_data.pos.longitude * 180.0 / C_PI,
-        bc_data.pos.latitude * 180.0 / C_PI,
-        global_ref_long,
-        global_ref_lat
-        );
-    data.localpos.y = - data.localpos.y;//NED to NWU format
-    data.localpos.z = bc_data.pos.height;
+    if(!use_guidance_pos_) { 
+      DJI_SDK::gps_convert_ned(
+          data.localpos.x,
+          data.localpos.y,
+          bc_data.pos.longitude * 180.0 / C_PI,
+          bc_data.pos.latitude * 180.0 / C_PI,
+          global_ref_long,
+          global_ref_lat
+          );
+      data.localpos.y = - data.localpos.y;//NED to NWU format
+      data.localpos.z = bc_data.pos.height;
+    }
     //Altitude is not used: recv_sdk_std_msgs.pos.alti
     gps_health = (uint8_t)bc_data.pos.health;
     if(enable_log)

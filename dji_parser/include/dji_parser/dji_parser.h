@@ -20,6 +20,7 @@
 
 //Messages:
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Point.h>
 #include <sensor_msgs/NavSatFix.h>
 
 //SDK library
@@ -74,6 +75,8 @@ private:
     ros::Publisher global_ref_pub;
     ros::Publisher gps_pub;
 
+    ros::Subscriber guidance_sub_;
+
     ros::Timer tf_timer_;
     tf::TransformBroadcaster tf_broadcaster;
     //GPS Pub Info
@@ -96,6 +99,8 @@ private:
     DJI::onboardSDK::VersionData version_data;///< Provides the sdk version, hardware type used
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
+    double global_ref_x, global_ref_y, global_ref_z;
+    bool use_guidance_pos_;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
@@ -105,6 +110,7 @@ private:
     HardwareType hardware_type; ///< Flight controller hardware
 
 
+    void guidanceCallback(const geometry_msgs::Point&);
     void tfTimerCallback(const ros::TimerEvent&);
     static void* APIRecvThread(void* param);
     static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
