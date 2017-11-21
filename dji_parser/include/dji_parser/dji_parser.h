@@ -100,7 +100,7 @@ private:
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     double global_ref_x, global_ref_y, global_ref_z;
-    boost::mutex spin_mutex;
+    bool use_guidance_pos_;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close

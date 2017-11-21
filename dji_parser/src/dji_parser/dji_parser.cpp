@@ -51,8 +51,12 @@ void DjiParser::initialize()
   global_ref_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps/fix",10, true);//Latched gps fix publisher
   gps_pub = nh_.advertise<sensor_msgs::NavSatFix>("gps",1);//Gps publisher
 
-  guidance_sub_ = nh_.subscribe("/guidance/global_position", 1, &DjiParser::guidanceCallback, this);
+  
+  nh_.param("use_guidance_pos", use_guidance_pos_, false);
 
+  if(use_guidance_pos_) {
+    guidance_sub_ = nh_.subscribe("/guidance/global_position", 1, &DjiParser::guidanceCallback, this);
+  }
   //Initialize DJI:
   init_parameters_and_activate(nh_, &user_act_data_);
   //Wait till dji is initialized properly:
@@ -677,18 +681,18 @@ void DjiParser::receiveDJIData()
     }
 
     //update local_position msg
-    /*
-    DJI_SDK::gps_convert_ned(
-        data.localpos.x,
-        data.localpos.y,
-        bc_data.pos.longitude * 180.0 / C_PI,
-        bc_data.pos.latitude * 180.0 / C_PI,
-        global_ref_long,
-        global_ref_lat
-        );
-    data.localpos.y = - data.localpos.y;//NED to NWU format
-    */
-    //data.localpos.z = bc_data.pos.height;
+    if(!use_guidance_pos_) { 
+      DJI_SDK::gps_convert_ned(
+          data.localpos.x,
+          data.localpos.y,
+          bc_data.pos.longitude * 180.0 / C_PI,
+          bc_data.pos.latitude * 180.0 / C_PI,
+          global_ref_long,
+          global_ref_lat
+          );
+      data.localpos.y = - data.localpos.y;//NED to NWU format
+      data.localpos.z = bc_data.pos.height;
+    }
     //Altitude is not used: recv_sdk_std_msgs.pos.alti
     gps_health = (uint8_t)bc_data.pos.health;
     if(enable_log)
