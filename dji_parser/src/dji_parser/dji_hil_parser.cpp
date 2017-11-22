@@ -45,7 +45,12 @@ bool DjiHILParser::flowControl(bool request)
   return true;
 }
 
-bool DjiHILParser::cmdrpythrust(geometry_msgs::Quaternion &, bool)
+bool DjiHILParser::cmdrpyawratethrust(geometry_msgs::Quaternion &)
+{
+  return true;
+}
+
+bool DjiHILParser::cmdrpythrust(geometry_msgs::Quaternion &)
 {
   return true;
 }
@@ -56,11 +61,6 @@ bool DjiHILParser::cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &, double &)
 }
 
 bool DjiHILParser::cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &, double &)
-{
-  return true;
-}
-
-bool DjiHILParser::cmdvelguided(geometry_msgs::Vector3 &, double &)
 {
   return true;
 }

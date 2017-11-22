@@ -28,7 +28,6 @@ namespace dji_parser{
 
 DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), global_ref_x(0), global_ref_y(0), global_ref_z(0), sdk_opened(false)
                         ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
-                        , rp_angle_yawrate_mode(true), vel_yaw_ratemode(false)
 {
   this->initialized = false;
 }
@@ -208,59 +207,42 @@ bool DjiParser::calibrateimubias()
   //Not Implemented as of now
 }
 
-bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
+bool DjiParser::cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg)
 {
-  if(this->initialized)
-  {
-    if(sdk_opened)
-    {
-      FlightData user_ctrl_data;
-      user_ctrl_data.flag = DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_ANGLE |
-                            DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_THRUST |
-                            DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY;
-      if(sendyaw)
-      {
-        if(rp_angle_yawrate_mode)
-        {
-          user_ctrl_data.flag = user_ctrl_data.flag |
-                                DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
-                                DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE; // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
-        }
-        else
-        {
-          user_ctrl_data.flag = user_ctrl_data.flag |
-                                DJI::onboardSDK::Flight::YawLogic::YAW_ANGLE |
-                                DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
-        }
-        // TODO: double check these are all valid in new sdk
-        user_ctrl_data.x = rpytmsg.x*(180/M_PI);
-        user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
-        user_ctrl_data.z = rpytmsg.w;
-        user_ctrl_data.yaw = -rpytmsg.z*(180/M_PI);
-        //Constrain user control x and y i.e roll and pitch:
-        user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
-        user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
-        
-        flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
-      }
-      else
-      {
-        user_ctrl_data.flag = user_ctrl_data.flag |
-                              DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
-                              DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
-                                                           //   TODO: In v3.1 there is something called 
-                                                           //   SmoothMode which is not explained
-        user_ctrl_data.x = rpytmsg.x*(180/M_PI);
-        user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
-        user_ctrl_data.z = rpytmsg.w;
-        user_ctrl_data.yaw = 0;
-        user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
-        user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
-        flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
-      }
-    }
+  // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
+  uint8_t flag = Flight::HorizontalLogic::HORIZONTAL_ANGLE |
+                 Flight::VerticalLogic::VERTICAL_THRUST |
+                 Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                 Flight::YawLogic::YAW_RATE |
+                 Flight::SmoothMode::SMOOTH_ENABLE;
+  setFlightMovement(flag, rpytmsg);
+}
+
+bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg)
+{
+  // TODO: double check what smoothmode is (I guess smooth mode smoothly changes the control from current value to the new value; Whereas non-smooth abruptly changes the value thereby making it go to the desired command as fast as possible)
+  uint8_t flag = Flight::HorizontalLogic::HORIZONTAL_ANGLE |
+                 Flight::VerticalLogic::VERTICAL_THRUST |
+                 Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                 Flight::YawLogic::YAW_ANGLE |
+                 Flight::SmoothMode::SMOOTH_ENABLE;
+  setFlightMovement(flag, rpytmsg);
+}
+
+bool DjiParser::setFlightMovement(uint8_t flag, geometry_msgs::Quaternion &rpytmsg) {
+  if(this->initialized && sdk_opened) {
+    FlightData user_ctrl_data;
+    user_ctrl_data.flag = flag;
+    user_ctrl_data.x = rpytmsg.x*(180/M_PI);
+    user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
+    user_ctrl_data.z = rpytmsg.w;
+    user_ctrl_data.yaw = 0;
+    user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
+    user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
+    flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
+    return true;
   }
-  return true;
+  return false;
 }
 
 void DjiParser::reset_attitude(double roll, double pitch, double yaw)
@@ -271,48 +253,45 @@ void DjiParser::reset_attitude(double roll, double pitch, double yaw)
 
 bool DjiParser::cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
 {
-  if(!vel_yaw_ratemode) {
-    vel_yaw_ratemode = true;
+  if(this->initialized && sdk_opened) {
+    FlightData user_ctrl_data;
+    user_ctrl_data.flag = Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                          Flight::VerticalLogic::VERTICAL_VELOCITY |
+                          Flight::HorizontalCoordinate::HORIZONTAL_GROUND |
+                          Flight::YawLogic::YAW_RATE |
+                          Flight::SmoothMode::SMOOTH_ENABLE;
+    user_ctrl_data.x = vel_cmd.x;
+    user_ctrl_data.y = -vel_cmd.y;
+    user_ctrl_data.z = vel_cmd.z;
+    user_ctrl_data.yaw = -yaw_rate*(180/M_PI);
+    flight->setFlight(&user_ctrl_data);
+    data.velocity_goal = vel_cmd;
+    data.velocity_goal_yaw = yaw_rate;
+    return true;
   }
-  return cmdvelguided(vel_cmd, yaw_rate);
+  return false;
 }
 
 bool DjiParser::cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle)
 {
-  if(vel_yaw_ratemode) {
-    vel_yaw_ratemode = false;
-  }
-  return cmdvelguided(vel_cmd, yaw_angle);
-}
+  if(this->initialized && sdk_opened) {
+    FlightData user_ctrl_data;
+    user_ctrl_data.flag = Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                          Flight::VerticalLogic::VERTICAL_VELOCITY |
+                          Flight::HorizontalCoordinate::HORIZONTAL_GROUND |
+                          Flight::YawLogic::YAW_ANGLE |
+                          Flight::SmoothMode::SMOOTH_ENABLE;
+    user_ctrl_data.x = vel_cmd.x;
+    user_ctrl_data.y = -vel_cmd.y;
+    user_ctrl_data.z = vel_cmd.z;
+    user_ctrl_data.yaw = -yaw_angle*(180/M_PI);
+    flight->setFlight(&user_ctrl_data);
 
-bool DjiParser::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
-{
-  if(this->initialized)
-  {
-    if(sdk_opened)
-    {
-      //Convert velocity from NWU frame to NED frame
-      //Also velocity in z direction is set such that positive velocity means going up
-      FlightData user_ctrl_data;
-      user_ctrl_data.flag = Flight::HorizontalLogic::HORIZONTAL_VELOCITY | 
-                            Flight::VerticalLogic::VERTICAL_VELOCITY |
-                            Flight::HorizontalCoordinate::HORIZONTAL_GROUND |
-                            Flight::SmoothMode::SMOOTH_ENABLE;
-      if(vel_yaw_ratemode)
-        user_ctrl_data.flag = user_ctrl_data.flag | DJI::onboardSDK::Flight::YawLogic::YAW_RATE;
-      else
-        user_ctrl_data.flag = user_ctrl_data.flag | DJI::onboardSDK::Flight::YawLogic::YAW_ANGLE;
-      user_ctrl_data.x = vel_cmd.x;
-      user_ctrl_data.y = -vel_cmd.y;
-      user_ctrl_data.z = vel_cmd.z;
-      user_ctrl_data.yaw = -yaw_inp*(180/M_PI);
-      flight->setFlight(&user_ctrl_data);
-
-      data.velocity_goal = vel_cmd;
-      data.velocity_goal_yaw = yaw_inp;
-    }
+    data.velocity_goal = vel_cmd;
+    data.velocity_goal_yaw = yaw_angle;
+    return true;
   }
-  return true;
+  return false;
 }
 
 bool DjiParser::cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw)
@@ -400,27 +379,6 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
   d1 = data;//Copy data
   spin_mutex.unlock();
   return;
-}
-
-void DjiParser::setmode(std::string mode)
-{
-  //Dont need to implement as the commands can change them easily
-  if(strcmp(mode.c_str(),"rp_angle_yawrate")==0)
-  {
-    rp_angle_yawrate_mode = true;
-  }
-  else if(strcmp(mode.c_str(),"rpyt_angle")==0)
-  {
-    rp_angle_yawrate_mode = false;
-  }
-  else if(strcmp(mode.c_str(),"vel_angle")==0)
-  {
-    vel_yaw_ratemode = false;
-  }
-  else if(strcmp(mode.c_str(),"vel_rate")==0)
-  {
-    vel_yaw_ratemode = true;
-  }
 }
 
 void DjiParser::init(std::string device, unsigned int baudrate) {
@@ -630,7 +588,7 @@ void DjiParser::receiveDJIData()
     sdk_status = bc_data.ctrlInfo.flightStatus;
     if(enable_log)
     {
-      statusfile<<data.timestamp<<"\t"<<int(quad_status)<<"\t"<<int(sdk_status)<<"\t"<<int(ctrl_mode)<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rp_angle_yawrate_mode)<<endl;
+      statusfile<<data.timestamp<<"\t"<<int(quad_status)<<"\t"<<int(sdk_status)<<"\t"<<int(ctrl_mode)<<"\t"<<int(gps_health)<<endl;
     }
   }
 

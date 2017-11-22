@@ -56,11 +56,6 @@ private:
     };
     ros::NodeHandle nh_;///< Internal node handle
 
-    //Members depicting the state of the quadcopter
-    uint8_t control_mode;///< Mode corresponding to dji
-    bool rp_angle_yawrate_mode;///< State used to switch between rate control vs angle control of y in rpyt
-    bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
-    
     //File Streams
     ofstream cmdfile;//Cmd logging
     ofstream servofile;//Raw servo pwm logging
@@ -135,6 +130,9 @@ protected:
     boost::mutex spin_mutex; ///< Mutex to sync receiving data from DJI and getter functions
     virtual void receiveDJIData();//receive dji data from its lib 
 
+    bool setFlightMovement(uint8_t flag, geometry_msgs::Quaternion &rpytmsg);
+
+
 public:
     DjiParser();
     virtual ~DjiParser()
@@ -147,14 +145,13 @@ public:
     virtual bool disarm();
     virtual bool flowControl(bool);
     virtual bool calibrateimubias();
-    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg);
+    virtual bool cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg);
     virtual bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
     virtual bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
     virtual bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
-    void setmode(std::string mode);
     void initialize();
     void getquaddata(parsernode::common::quaddata &d1);
     void setaltitude(double altitude_)

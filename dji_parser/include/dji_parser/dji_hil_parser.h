@@ -25,8 +25,8 @@ public:
     bool land();
     bool disarm();
     bool flowControl(bool);
-    bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg);
+    bool cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg);
     bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
     bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
     bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
