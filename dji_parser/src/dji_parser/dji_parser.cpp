@@ -28,7 +28,7 @@ namespace dji_parser{
 
 DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), global_ref_x(0), global_ref_y(0), global_ref_z(0), sdk_opened(false)
                         ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0)
-                        , rpyt_ratemode(true), vel_yaw_ratemode(false)
+                        , rp_angle_yawrate_mode(true), vel_yaw_ratemode(false)
 {
   this->initialized = false;
 }
@@ -220,7 +220,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
                             DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY;
       if(sendyaw)
       {
-        if(rpyt_ratemode)
+        if(rp_angle_yawrate_mode)
         {
           user_ctrl_data.flag = user_ctrl_data.flag |
                                 DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
@@ -405,13 +405,13 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
 void DjiParser::setmode(std::string mode)
 {
   //Dont need to implement as the commands can change them easily
-  if(strcmp(mode.c_str(),"rpyt_rate")==0)
+  if(strcmp(mode.c_str(),"rp_angle_yawrate")==0)
   {
-    rpyt_ratemode = true;
+    rp_angle_yawrate_mode = true;
   }
   else if(strcmp(mode.c_str(),"rpyt_angle")==0)
   {
-    rpyt_ratemode = false;
+    rp_angle_yawrate_mode = false;
   }
   else if(strcmp(mode.c_str(),"vel_angle")==0)
   {
@@ -630,7 +630,7 @@ void DjiParser::receiveDJIData()
     sdk_status = bc_data.ctrlInfo.flightStatus;
     if(enable_log)
     {
-      statusfile<<data.timestamp<<"\t"<<int(quad_status)<<"\t"<<int(sdk_status)<<"\t"<<int(ctrl_mode)<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rpyt_ratemode)<<endl;
+      statusfile<<data.timestamp<<"\t"<<int(quad_status)<<"\t"<<int(sdk_status)<<"\t"<<int(ctrl_mode)<<"\t"<<int(gps_health)<<"\t"<<int(vel_yaw_ratemode)<<"\t"<<int(rp_angle_yawrate_mode)<<endl;
     }
   }
 

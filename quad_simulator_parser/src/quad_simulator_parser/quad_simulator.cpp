@@ -27,6 +27,7 @@ void QuadSimulator::initialize()
         rcin[i] = 0;
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
     rpyt_ratemode = false;
+    rp_angle_yawrate_mode = false;
     vel_yaw_ratemode = true;
     enable_qrotor_control_ = true;
     armed = false;
@@ -141,6 +142,10 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
           {
             control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
             control[j+1] /= dt;
+          }
+          if(rp_angle_yawrate_mode)
+          {
+            control[3] = current_cmd.rpytmsg.z;
           }
         }
         if(!sendyaw)
@@ -292,6 +297,11 @@ void QuadSimulator::setmode(std::string mode)
   }
   else if(strcmp(mode.c_str(),"rpyt_angle")==0)
   {
+    rpyt_ratemode = false;
+  }
+  else if(strcmp(mode.c_str(), "rp_angle_yawrate")==0)
+  {
+    rp_angle_yawrate_mode = true;
     rpyt_ratemode = false;
   }
   else if(strcmp(mode.c_str(),"vel_angle")==0)

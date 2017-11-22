@@ -62,6 +62,7 @@ protected:
     gcop::QRotorIDState state_;///< Current state of Quadcopter
     bool enable_qrotor_control_;///< Should be set to true before the quadrotor is controlled
     bool rpyt_ratemode;///< Specifies to use yaw rate mode or yaw angle mode in cmdrpyt
+    bool rp_angle_yawrate_mode;///< Specifies to use yaw rate and rp angles in cmdrpyt
     bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
     bool vel_thread_running;///< Whether thread for moving quad using velocity commands
     TimePoint prev_vel_cmd_time_;///< Previous command time
