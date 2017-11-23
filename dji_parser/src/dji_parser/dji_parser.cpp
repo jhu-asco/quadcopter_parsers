@@ -236,7 +236,7 @@ bool DjiParser::setFlightMovement(uint8_t flag, geometry_msgs::Quaternion &rpytm
     user_ctrl_data.x = rpytmsg.x*(180/M_PI);
     user_ctrl_data.y = -rpytmsg.y*(180/M_PI);
     user_ctrl_data.z = rpytmsg.w;
-    user_ctrl_data.yaw = 0;
+    user_ctrl_data.yaw = -rpytmsg.z*(180/M_PI);
     user_ctrl_data.x = (user_ctrl_data.x > 30.0)?30.0:(user_ctrl_data.x < -30.0)?-30.0:user_ctrl_data.x;
     user_ctrl_data.y = (user_ctrl_data.y > 30.0)?30.0:(user_ctrl_data.y < -30.0)?-30.0:user_ctrl_data.y;
     flight->setMovementControl(user_ctrl_data.flag, user_ctrl_data.x, user_ctrl_data.y, user_ctrl_data.z, user_ctrl_data.yaw);
