@@ -20,6 +20,7 @@
 
 //Messages:
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Point.h>
 #include <sensor_msgs/NavSatFix.h>
 
 //SDK library
@@ -55,11 +56,6 @@ private:
     };
     ros::NodeHandle nh_;///< Internal node handle
 
-    //Members depicting the state of the quadcopter
-    uint8_t control_mode;///< Mode corresponding to dji
-    bool rpyt_ratemode;///< State used to switch between rate control vs angle control of y in rpyt
-    bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
-    
     //File Streams
     ofstream cmdfile;//Cmd logging
     ofstream servofile;//Raw servo pwm logging
@@ -73,6 +69,8 @@ private:
     //Publishers ROS
     ros::Publisher global_ref_pub;
     ros::Publisher gps_pub;
+
+    ros::Subscriber guidance_sub_;
 
     ros::Timer tf_timer_;
     tf::TransformBroadcaster tf_broadcaster;
@@ -96,6 +94,8 @@ private:
     DJI::onboardSDK::VersionData version_data;///< Provides the sdk version, hardware type used
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
+    double global_ref_x, global_ref_y, global_ref_z;
+    bool use_guidance_pos_;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
@@ -105,6 +105,7 @@ private:
     HardwareType hardware_type; ///< Flight controller hardware
 
 
+    void guidanceCallback(const geometry_msgs::Point&);
     void tfTimerCallback(const ros::TimerEvent&);
     static void* APIRecvThread(void* param);
     static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
@@ -129,6 +130,9 @@ protected:
     boost::mutex spin_mutex; ///< Mutex to sync receiving data from DJI and getter functions
     virtual void receiveDJIData();//receive dji data from its lib 
 
+    bool setFlightMovement(uint8_t flag, geometry_msgs::Quaternion &rpytmsg);
+
+
 public:
     DjiParser();
     virtual ~DjiParser()
@@ -141,14 +145,13 @@ public:
     virtual bool disarm();
     virtual bool flowControl(bool);
     virtual bool calibrateimubias();
-    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
-    virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg);
+    virtual bool cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg);
     virtual bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
     virtual bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
     virtual bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
     void grip(int state);
     void reset_attitude(double roll, double pitch, double yaw);
-    void setmode(std::string mode);
     void initialize();
     void getquaddata(parsernode::common::quaddata &d1);
     void setaltitude(double altitude_)

@@ -61,8 +61,6 @@ protected:
     gcop::QRotorIDModel sys_;///< Quadrotor system from GCOP for propagating the system
     gcop::QRotorIDState state_;///< Current state of Quadcopter
     bool enable_qrotor_control_;///< Should be set to true before the quadrotor is controlled
-    bool rpyt_ratemode;///< Specifies to use yaw rate mode or yaw angle mode in cmdrpyt
-    bool vel_yaw_ratemode;///< State used to switch between rate control vs angle control of y in vel
     bool vel_thread_running;///< Whether thread for moving quad using velocity commands
     TimePoint prev_vel_cmd_time_;///< Previous command time
     int16_t rcin[4];///< Radio channel input
@@ -97,8 +95,26 @@ protected:
       gps_t_lat = RAD2DEG((ned_x/C_EARTH));
       gps_t_lon = RAD2DEG((ned_y/(C_EARTH*cos(DEG2RAD(gps_t_lat)))));
     }
-
-
+    /**
+    * @brief send velocity and yaw command to quadrotor
+    *
+    * @param vel_cmd Velocity command to send
+    * @param yaw_inp Yaw input can be yaw angle/ yaw rate.
+    * @param vel_yaw_ratemode if set to true, uses yaw input as rate and as yaw angle otherwise
+    *
+    * @return true if successful
+    */
+    virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp, bool vel_yaw_ratemode);
+    /**
+    * @brief Send rpythrust command to quadrotor
+    *
+    * @param rpytmsg rpyt message to send to quadrotor
+    * @param rp_angle_yawrate_mode if set to true, interprets rpytmessage as roll, pitch,
+    * yawrate and thrust. If false, interprets input as roll, pitch, yaw and thrust
+    *
+    * @return true if successful
+    */
+    virtual bool cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, bool rp_angle_yawrate_mode); 
 public:
     /**
     * @brief Constructor
@@ -145,23 +161,21 @@ public:
     */
     virtual bool calibrateimubias();
     /**
-    * @brief Send rpythrust command to quadrotor
+    * @brief Command roll, pitch , yaw and thrust to quadrotor
     *
     * @param rpytmsg rpyt message to send to quadrotor
-    * @param sendyaw If false, will not send yaw command to quadrotor
     *
     * @return true if successful
     */
-    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw = false);
+    virtual bool cmdrpythrust(geometry_msgs::Quaternion &rpytmsg);
     /**
-    * @brief send velocity and yaw command to quadrotor
+    * @brief Command roll, pitch, yawrate and thrust to quadrotor
     *
-    * @param vel_cmd Velocity command to send
-    * @param yaw_inp Yaw input can be yaw angle/ yaw rate.
+    * @param rpytmsg rpyt message to send to quadrotor
     *
     * @return true if successful
     */
-    virtual bool cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp);
+    virtual bool cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg);
     /**
     * @brief Send velocity and yaw rate to quadrotor
     *
@@ -203,16 +217,6 @@ public:
     * @param yaw yaw angle
     */
     virtual void reset_attitude(double roll, double pitch, double yaw);
-    /**
-    * @brief Can set the following string modes:
-    *  -> rpyt_rate
-    *  -> rpyt_angle
-    *  -> vel_angle
-    *  -> vel_rate
-    *
-    * @param mode one of the above specified modes as string
-    */
-    virtual void setmode(std::string mode);
     /**
     * @brief Use for initializing without ROS
     */

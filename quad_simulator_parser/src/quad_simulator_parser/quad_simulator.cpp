@@ -26,8 +26,6 @@ void QuadSimulator::initialize()
     for(int i = 0; i < 4; i++)
         rcin[i] = 0;
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
-    rpyt_ratemode = false;
-    vel_yaw_ratemode = true;
     enable_qrotor_control_ = true;
     armed = false;
     RpytCmdStruct rpyt_cmd;
@@ -77,7 +75,15 @@ bool QuadSimulator::calibrateimubias()
   return false;
 }
 
-bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendyaw)
+bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg) {
+  cmdrpythrustInternal(rpytmsg, false);
+}
+
+bool QuadSimulator::cmdrpyawratethrust(geometry_msgs::Quaternion &rpytmsg) {
+  cmdrpythrustInternal(rpytmsg, true);
+}
+
+bool QuadSimulator::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, bool rp_angle_yawrate_mode)
 {
   if(enable_qrotor_control_)
   {
@@ -99,9 +105,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.y = state_.v[1];
         initial_state_vel.z = state_.v[2];
         double yaw_ang = so3.yaw(state_.R);
-        bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
         cmdvel_yaw_angle_guided(initial_state_vel, yaw_ang);
-        vel_yaw_ratemode = temp_vel_yaw_ratemode;
         state_.u[2] = yaw_ang;
       }
       else if (tdiff > 2*delay_send_time_)
@@ -120,9 +124,7 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         initial_state_vel.y = state_.v[1];
         initial_state_vel.z = state_.v[2];
         double yaw_ang = so3.yaw(state_.R);
-        bool temp_vel_yaw_ratemode = vel_yaw_ratemode;
         cmdvel_yaw_angle_guided(initial_state_vel, yaw_ang);
-        vel_yaw_ratemode = temp_vel_yaw_ratemode;
         state_.u[2] = yaw_ang;
       }
       else
@@ -130,21 +132,16 @@ bool QuadSimulator::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg, bool sendya
         double &dt = current_cmd.dt;
         //Propagate Qrotor State
         Eigen::Vector4d control;
-        if(rpyt_ratemode)
+        control<<current_cmd.rpytmsg.w, (current_cmd.rpytmsg.x-state_.u(0)), (current_cmd.rpytmsg.y-state_.u(1)),(current_cmd.rpytmsg.z-state_.u(2));
+        for(int j = 0; j < 3; j++)
         {
-          control<<current_cmd.rpytmsg.w, current_cmd.rpytmsg.x, current_cmd.rpytmsg.y, current_cmd.rpytmsg.z;
+          control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
+          control[j+1] /= dt;
         }
-        else
+        if(rp_angle_yawrate_mode)
         {
-          control<<current_cmd.rpytmsg.w, (current_cmd.rpytmsg.x-state_.u(0)), (current_cmd.rpytmsg.y-state_.u(1)),(current_cmd.rpytmsg.z-state_.u(2));
-          for(int j = 0; j < 3; j++)
-          {
-            control[j+1] = control[j+1]>M_PI?control[j+1]-2*M_PI:(control[j+1]<-M_PI)?control[j+1]+2*M_PI:control[j+1];
-            control[j+1] /= dt;
-          }
+          control[3] = current_cmd.rpytmsg.z;
         }
-        if(!sendyaw)
-          control(3) = 0;
         gcop::QRotorIDState temp_state;
         if(dt > 0.03)
           dt = 0.03;//Cap the dt for simulation
@@ -176,21 +173,15 @@ void QuadSimulator::reset_attitude(double roll, double pitch, double yaw)
 
 bool QuadSimulator::cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate)
 {
-  if(!vel_yaw_ratemode) {
-    vel_yaw_ratemode = true;
-  }
-  return cmdvelguided(vel_cmd, yaw_rate);
+  return cmdvelguided(vel_cmd, yaw_rate, true);
 }
 
 bool QuadSimulator::cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle)
 {
-  if(vel_yaw_ratemode) {
-    vel_yaw_ratemode = false;
-  }
-  return cmdvelguided(vel_cmd, yaw_angle);
+  return cmdvelguided(vel_cmd, yaw_angle, false);
 }
 
-bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp)
+bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_inp, bool vel_yaw_ratemode)
 {
   if(enable_qrotor_control_)
   {
@@ -263,8 +254,6 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
       d1.quadstate += "ARMED ";
   if(enable_qrotor_control_)
       d1.quadstate += "ENABLE_CONTROL ";
-  if(rpyt_ratemode)
-      d1.quadstate += "RATE MODE ";
   Eigen::Vector3d rpy;
   so3.g2q(rpy,state_.R);
   d1.rpydata.x = rpy(0); d1.rpydata.y = rpy(1); d1.rpydata.z = rpy(2);
@@ -282,28 +271,4 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
     d1.servo_in[i] = rcin[i];
   return;
 }
-
-
-void QuadSimulator::setmode(std::string mode)
-{
-  if(strcmp(mode.c_str(),"rpyt_rate")==0)
-  {
-    rpyt_ratemode = true;
-  }
-  else if(strcmp(mode.c_str(),"rpyt_angle")==0)
-  {
-    rpyt_ratemode = false;
-  }
-  else if(strcmp(mode.c_str(),"vel_angle")==0)
-  {
-    vel_yaw_ratemode = false;
-  }
-  else if(strcmp(mode.c_str(),"vel_rate")==0)
-  {
-    vel_yaw_ratemode = true;
-  }
-  return;
-}
-
-
 }
