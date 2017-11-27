@@ -11,6 +11,7 @@ namespace dji_parser{
 DjiHILParser::DjiHILParser(): DjiParser() 
 {
   this->initialized = false;
+  data.batterypercent = 100;
 }
 
 //Extend Functions from Paser:
@@ -75,7 +76,7 @@ void DjiHILParser::receiveDJIData()
   //Record data
   spin_mutex.lock();
   bool armed = data.armed;
-  bool batterypercent = data.batterypercent;
+  double batterypercent = data.batterypercent;
   double z = data.localpos.z;
   spin_mutex.unlock();
   DjiParser::receiveDJIData();
