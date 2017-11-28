@@ -12,10 +12,12 @@ void QuadSimulator::setRCInputs(const sensor_msgs::Joy &joy_msg)
    rcin[3] = -(int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
 }
 
-QuadSimulator::QuadSimulator(): parsernode::Parser(), delay_send_time_(0.2), battery_percent_(100), takeoff_altitude_(0.5), so3(gcop::SO3::Instance())
-{
-    this->initialize();
-    this->initialized = true;
+QuadSimulator::QuadSimulator()
+    : parsernode::Parser(), delay_send_time_(0.2), battery_percent_(100),
+      takeoff_altitude_(0.5), so3(gcop::SO3::Instance()),
+      use_perfect_time_(false) {
+  this->initialize();
+  this->initialized = true;
 }
 
 //PluginLib Initialization function
@@ -89,7 +91,12 @@ bool QuadSimulator::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, boo
   {
       RpytCmdStruct &current_cmd = rpyt_cmds.front();
       TimePoint current_time = Clock::now();
-      double tdiff = ((std::chrono::duration<double>)(current_time - current_cmd.time)).count();
+      double tdiff = delay_send_time_;
+      if (!use_perfect_time_) {
+        tdiff =
+            ((std::chrono::duration<double>)(current_time - current_cmd.time))
+                .count();
+      }
       if(tdiff < delay_send_time_-0.02)
       {
         RpytCmdStruct rpyt_cmd;
@@ -152,7 +159,13 @@ bool QuadSimulator::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, boo
         RpytCmdStruct rpyt_cmd;
         rpyt_cmd.rpytmsg = rpytmsg;
         rpyt_cmd.time = current_time;
-        rpyt_cmd.dt = ((std::chrono::duration<double>)(current_time - rpyt_cmds.back().time)).count();
+        if (use_perfect_time_) {
+          rpyt_cmd.dt = 0.02;
+        } else {
+          rpyt_cmd.dt = ((std::chrono::duration<double>)(current_time -
+                                                         rpyt_cmds.back().time))
+                            .count();
+        }
         rpyt_cmds.push(rpyt_cmd);
       }
   }
@@ -188,10 +201,15 @@ bool QuadSimulator::cmdvelguided(geometry_msgs::Vector3 &vel_cmd, double &yaw_in
       Eigen::Vector3d pos = state_.p;
       Eigen::Matrix3d R1 = state_.R;
       TimePoint current_time = Clock::now();
-      double dt =((std::chrono::duration<double>)(current_time - prev_vel_cmd_time_)).count();
-      if(dt > 0.03)
-        dt = 0.03;//Dont give too long dt
-      prev_vel_cmd_time_ = Clock::now();
+      double dt = 0.02;
+      if (!use_perfect_time_) {
+        dt =
+            ((std::chrono::duration<double>)(current_time - prev_vel_cmd_time_))
+                .count();
+        if (dt > 0.03)
+          dt = 0.03; // Dont give too long dt
+        prev_vel_cmd_time_ = Clock::now();
+      }
       state_.Clear();
       state_.v = Eigen::Vector3d(vel_cmd.x, vel_cmd.y, vel_cmd.z);
       //Clear everything but current position=> Holds current position

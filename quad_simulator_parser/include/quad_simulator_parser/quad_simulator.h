@@ -73,8 +73,10 @@ protected:
 
     gcop::SO3 &so3;///< SO3 instance to perform arithmetic on SO3 group
     bool armed;///< Whether quadrotor is armed or not
+    bool use_perfect_time_; ///< Do not differentiate based on high resolution
+                            ///clock
 
-protected:
+  protected:
     /**
     * @brief map and save joystick input to rc channels
     *
@@ -295,6 +297,32 @@ public:
     */
     void setTakeoffAltitude(double altitude) {
       takeoff_altitude_ = altitude;
+    }
+
+    /**
+    * @brief Choose not to differentiate commands based on time received.
+    *
+    * Automatically increment the time on the commands by 0.02
+    *
+    * @param flag true to not differentiate
+    */
+    void usePerfectTime(bool flag = true) {
+      if (flag) {
+        use_perfect_time_ = true;
+        // Clear existing rpyt commands if any
+        {
+          queue<RpytCmdStruct> empty;
+          rpyt_cmds.swap(empty);
+        }
+        // Add default rpyt command with zero rpyt to
+        // queue
+        RpytCmdStruct rpyt_cmd;
+        rpyt_cmd.time = TimePoint();
+        rpyt_cmd.dt = 0.02;
+        rpyt_cmds.push(rpyt_cmd);
+      } else {
+        use_perfect_time_ = false;
+      }
     }
 };
 }
