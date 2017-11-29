@@ -317,6 +317,8 @@ public:
         // Add default rpyt command with zero rpyt to
         // queue
         RpytCmdStruct rpyt_cmd;
+        rpyt_cmd.rpytmsg.w = 9.81 / (sys_.kt);
+        rpyt_cmd.rpytmsg.x = rpyt_cmd.rpytmsg.y = rpyt_cmd.rpytmsg.z = 0;
         rpyt_cmd.time = TimePoint();
         rpyt_cmd.dt = 0.02;
         rpyt_cmds.push(rpyt_cmd);
