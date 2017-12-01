@@ -524,7 +524,7 @@ void DjiParser::receiveDJIData()
   if ((msg_flags & HAS_A)) {
     data.linacc.x = bc_data.a.x;
     data.linacc.y = -bc_data.a.y;
-    data.linacc.z = -bc_data.a.z;
+    data.linacc.z = bc_data.a.z;
     if(enable_log)
       accfile<<data.timestamp<<"\t"<<data.linacc.x<<"\t"<<data.linacc.y<<"\t"<<data.linacc.z<<endl;
   }
