@@ -326,6 +326,17 @@ public:
         use_perfect_time_ = false;
       }
     }
+
+    void setRCInputsWithoutMapping(std::vector<int16_t> rc_input) {
+      int N = rc_input.size();
+      for(int i = 0; i < 4; ++i) {
+        if(i < N) {
+          rcin[i] = rc_input[i];
+        } else {
+          break;
+        }
+      }
+    }
 };
 }
 #endif // QUAD_SIMULATOR_H
