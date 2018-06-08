@@ -10,6 +10,14 @@ void QuadSimulator::setRCInputs(const sensor_msgs::Joy &joy_msg)
    rcin[1] = -(int16_t)parsernode::common::map(joy_msg.axes[1],-0.479,0.479,-10000,10000);
    rcin[2] = (int16_t)parsernode::common::map(joy_msg.axes[2],-0.6635,0.6635,-10000,10000);
    rcin[3] = -(int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
+   // If one switch is flipped make it manual
+   if(joy_msg.axes[3] < 0.5) {
+     flowControl(false);
+     state_.p[2] = parsernode::common::map(joy_msg.axes[4], -0.9, 0.9, 0, 4);
+     rc_sdk_switch = false;
+   } else {
+     rc_sdk_switch = true;
+   }
 }
 
 QuadSimulator::QuadSimulator()
@@ -36,6 +44,7 @@ void QuadSimulator::initialize()
     rpyt_cmd.time = TimePoint();
     rpyt_cmd.dt = 0.02;
     rpyt_cmds.push(rpyt_cmd);
+    rc_sdk_switch = true;
     //TODO May be add a kt decrease timer for future
 }
 
@@ -60,6 +69,7 @@ bool QuadSimulator::land()
 bool QuadSimulator::disarm()
 {
   state_.Clear();
+  rc_sdk_switch = false;
   enable_qrotor_control_ = false;
   armed = false;
   return true;
@@ -68,6 +78,7 @@ bool QuadSimulator::disarm()
 
 bool QuadSimulator::flowControl(bool request)
 {
+  rc_sdk_switch = request;
   enable_qrotor_control_ = request;
   return true;
 }
@@ -286,7 +297,7 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
   d1.mass = 1.0;
   d1.thrustbias = 9.81/(sys_.kt);
   d1.armed = armed;
-  d1.rc_sdk_control_switch = enable_qrotor_control_;
+  d1.rc_sdk_control_switch = rc_sdk_switch;
   for(int i = 0; i < 4; i++)
     d1.servo_in[i] = rcin[i];
   return;
