@@ -36,7 +36,7 @@ void QuadSimulator::initialize()
     for(int i = 0; i < 4; i++)
         rcin[i] = 0;
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
-    enable_qrotor_control_ = true;
+    flowControl(true);
     armed = false;
     RpytCmdStruct rpyt_cmd;
     rpyt_cmd.rpytmsg.w = 9.81 / (sys_.kt);
@@ -44,14 +44,13 @@ void QuadSimulator::initialize()
     rpyt_cmd.time = TimePoint();
     rpyt_cmd.dt = 0.02;
     rpyt_cmds.push(rpyt_cmd);
-    rc_sdk_switch = true;
     //TODO May be add a kt decrease timer for future
 }
 
 //Extend Functions from Paser:
 bool QuadSimulator::takeoff()
 {
-  enable_qrotor_control_ = true;
+  flowControl(true);
   armed = true;
   state_.p(2) = takeoff_altitude_;//Set Height to 0.5 m when takeoff
   return true;
@@ -69,8 +68,7 @@ bool QuadSimulator::land()
 bool QuadSimulator::disarm()
 {
   state_.Clear();
-  rc_sdk_switch = false;
-  enable_qrotor_control_ = false;
+  flowControl(false);
   armed = false;
   return true;
 }
