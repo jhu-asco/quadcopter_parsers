@@ -69,6 +69,7 @@ protected:
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     double battery_percent_;///< Percentage of battery remaining for quadrotor 
     double takeoff_altitude_;///< Altitude to reach when taking off
+    bool rc_sdk_switch;///< Switch depicting whether flow control can be enabled or not
     ///
 
     gcop::SO3 &so3;///< SO3 instance to perform arithmetic on SO3 group

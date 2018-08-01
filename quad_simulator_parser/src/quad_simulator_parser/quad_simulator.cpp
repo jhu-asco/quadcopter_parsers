@@ -10,6 +10,14 @@ void QuadSimulator::setRCInputs(const sensor_msgs::Joy &joy_msg)
    rcin[1] = -(int16_t)parsernode::common::map(joy_msg.axes[1],-0.479,0.479,-10000,10000);
    rcin[2] = (int16_t)parsernode::common::map(joy_msg.axes[2],-0.6635,0.6635,-10000,10000);
    rcin[3] = -(int16_t)parsernode::common::map(joy_msg.axes[5],-0.52,0.52,-10000,10000);
+   // If one switch is flipped make it manual
+   if(joy_msg.axes[3] < 0.5) {
+     flowControl(false);
+     state_.p[2] = parsernode::common::map(joy_msg.axes[4], -0.9, 0.9, 0, 4);
+     rc_sdk_switch = false;
+   } else {
+     rc_sdk_switch = true;
+   }
 }
 
 QuadSimulator::QuadSimulator()
@@ -28,7 +36,7 @@ void QuadSimulator::initialize()
     for(int i = 0; i < 4; i++)
         rcin[i] = 0;
     rcin[2] = parsernode::common::map(9.81/(sys_.kt),10,100,-10000,10000);
-    enable_qrotor_control_ = true;
+    flowControl(true);
     armed = false;
     RpytCmdStruct rpyt_cmd;
     rpyt_cmd.rpytmsg.w = 9.81 / (sys_.kt);
@@ -42,7 +50,7 @@ void QuadSimulator::initialize()
 //Extend Functions from Paser:
 bool QuadSimulator::takeoff()
 {
-  enable_qrotor_control_ = true;
+  flowControl(true);
   armed = true;
   state_.p(2) = takeoff_altitude_;//Set Height to 0.5 m when takeoff
   return true;
@@ -60,7 +68,7 @@ bool QuadSimulator::land()
 bool QuadSimulator::disarm()
 {
   state_.Clear();
-  enable_qrotor_control_ = false;
+  flowControl(false);
   armed = false;
   return true;
 }
@@ -68,6 +76,7 @@ bool QuadSimulator::disarm()
 
 bool QuadSimulator::flowControl(bool request)
 {
+  rc_sdk_switch = request;
   enable_qrotor_control_ = request;
   return true;
 }
@@ -286,7 +295,7 @@ void QuadSimulator::getquaddata(parsernode::common::quaddata &d1)
   d1.mass = 1.0;
   d1.thrustbias = 9.81/(sys_.kt);
   d1.armed = armed;
-  d1.rc_sdk_control_switch = enable_qrotor_control_;
+  d1.rc_sdk_control_switch = rc_sdk_switch;
   for(int i = 0; i < 4; i++)
     d1.servo_in[i] = rcin[i];
   return;
