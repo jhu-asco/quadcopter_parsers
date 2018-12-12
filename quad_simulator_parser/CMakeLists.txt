@@ -25,14 +25,21 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(GCOP REQUIRED systems)
 include_directories(${GCOP_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${GCOP_LIBRARIES})
 
 find_package(TinyXML REQUIRED)
 include_directories(${TINYXML_INCLUDE_DIR})
-set(LIBS ${LIBS} ${TINYXML_LIBRARIES})
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
+find_package(casadi)
+if (casadi_FOUND)
+  message("Found CASADI")
+  include_directories(${CASADI_INCLUDE_DIRS})
+  link_directories( ${CASADI_LIBRARY_DIRS})
+  set(GCOP_LIBRARIES ${GCOP_LIBRARIES} ${CASADI_LIBRARIES})
+endif()
+set(LIBS ${LIBS} ${GCOP_LIBRARIES} ${TINYXML_LIBRARIES})
 
 if(BUILD_SIM_CAMERA)
   find_package(ObjectRenderer REQUIRED)
