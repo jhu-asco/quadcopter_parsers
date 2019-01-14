@@ -262,6 +262,14 @@ public:
     ///
 
     /**
+    * @brief Set the simulated acceleration bias
+    * @param acc_bias Acceleration bias to set
+    */
+    void setAccelerationBias(Eigen::Vector3d acc_bias) {
+      sys_.a0 = acc_bias;
+    }
+
+    /**
      * @brief set the rc channel information stored
      * in the UAV brain
      *
