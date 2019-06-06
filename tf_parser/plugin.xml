@@ -1,0 +1,7 @@
+<library path="lib/libtf_parser">
+  <class name="tf_parser/TFParser" type="tf_parser::TFParser" base_class_type="parsernode::Parser">
+    <description>
+			Parser Library for Tensorflow Quadcopter
+    </description>
+  </class>
+</library>
