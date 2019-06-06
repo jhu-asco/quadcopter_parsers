@@ -31,7 +31,7 @@ using Clock = chrono::high_resolution_clock;
 */
 using TimePoint = chrono::high_resolution_clock::time_point;
 
-namespace tf_parser{
+namespace tf_parser {
 /**
 * @brief Simulator class for quadrotor
 *

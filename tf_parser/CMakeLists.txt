@@ -113,7 +113,7 @@ link_directories(${PROJECT_SOURCE_DIR}/clib/lib)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES quad_simulator
+  LIBRARIES tf_parser
 #  CATKIN_DEPENDS geometry_msgs parsernode pluginlib roscpp std_msgs
 #  DEPENDS system_lib
 )
@@ -136,10 +136,7 @@ add_library(tf_parser
   src/${PROJECT_NAME}/tf_model.cpp
 )
 
-target_link_libraries(tf_parser ${LIBS})
-
-add_executable(load_model src/${PROJECT_NAME}/load_model.c)
-target_link_libraries(load_model tensorflow tensorflow_framework)
+target_link_libraries(tf_parser ${LIBS} tensorflow tensorflow_framework)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -198,15 +195,15 @@ target_link_libraries(load_model tensorflow tensorflow_framework)
 #############
 
 ## Add gtest based cpp test target and link libraries
-#catkin_add_gtest(${PROJECT_NAME}-quad-simulator-test tests/quad_simulator_tests.cpp)
-#if(TARGET ${PROJECT_NAME}-quad-simulator-test)
-#  target_link_libraries(${PROJECT_NAME}-quad-simulator-test quad_simulator ${catkin_LIBRARIES})
-#endif()
-#
-#add_rostest_gtest(${PROJECT_NAME}-quad-simulator-plugin-load-test tests/quad_simulator_plugin_load_test.test tests/quad_simulator_plugin_load_test.cpp)
-#if(TARGET ${PROJECT_NAME}-quad-simulator-test)
-#  target_link_libraries(${PROJECT_NAME}-quad-simulator-plugin-load-test ${catkin_LIBRARIES})
-#endif()
+catkin_add_gtest(${PROJECT_NAME}-tf-parser-test tests/tf_parser_tests.cpp)
+if(TARGET ${PROJECT_NAME}-tf-parser-test)
+  target_link_libraries(${PROJECT_NAME}-tf-parser-test tf_parser ${catkin_LIBRARIES})
+endif()
+
+add_rostest_gtest(${PROJECT_NAME}-tf-parser-plugin-load-test tests/tf_parser_plugin_load_test.test tests/tf_parser_plugin_load_test.cpp)
+if(TARGET ${PROJECT_NAME}-tf-parser-plugin-load-test)
+  target_link_libraries(${PROJECT_NAME}-tf-parser-plugin-load-test ${catkin_LIBRARIES})
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

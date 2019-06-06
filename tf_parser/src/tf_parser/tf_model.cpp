@@ -51,6 +51,54 @@ void TFModel::predict(const State& state, Eigen::Vector3f& control, State& next_
   next_state.p = state.p + dt * next_state.v;
 }
 
+int TFModel::modelCreate(model_t* model, const char* graph_def_filename) {
+  model->status = TF_NewStatus();
+  model->graph = TF_NewGraph();
+
+  {
+    // Create the session.
+    TF_SessionOptions* opts = TF_NewSessionOptions();
+    model->session = TF_NewSession(model->graph, opts, model->status);
+    TF_DeleteSessionOptions(opts);
+    if (!okay(model->status)) return 0;
+  }
+
+  TF_Graph* g = model->graph;
+
+  {
+    // Import the graph.
+    TF_Buffer* graph_def = readFile(graph_def_filename);
+    if (graph_def == NULL) return 0;
+    printf("Read GraphDef of %zu bytes\n", graph_def->length);
+    TF_ImportGraphDefOptions* opts = TF_NewImportGraphDefOptions();
+    TF_GraphImportGraphDef(g, graph_def, opts, model->status);
+    TF_DeleteImportGraphDefOptions(opts);
+    TF_DeleteBuffer(graph_def);
+    if (!okay(model->status)) return 0;
+  }
+
+  // Handles to the interesting operations in the graph.
+  model->state_in.oper = TF_GraphOperationByName(g, "input/state_in");
+  model->state_in.index = 0;
+  model->control_in.oper = TF_GraphOperationByName(g, "input/controls_in");
+  model->control_in.index = 0;
+  model->f_output.oper = TF_GraphOperationByName(g, "f/hidden_to_output/f/hidden_to_output/dense_final/BiasAdd");
+  model->f_output.index = 0;
+  model->g_output.oper = TF_GraphOperationByName(g, "g/hidden_to_output/g/hidden_to_output/dense_final/BiasAdd");
+  model->g_output.index = 0;
+  model->batch_norm_phase.oper = TF_GraphOperationByName(g, "input/batch_normalization_phase");
+  model->batch_norm_phase.index = 0;
+
+  model->init_op = TF_GraphOperationByName(g, "init");
+  model->train_op = TF_GraphOperationByName(g, "train");
+  model->save_op = TF_GraphOperationByName(g, "save/control_dependency");
+  model->restore_op = TF_GraphOperationByName(g, "save/restore_all");
+
+  model->checkpoint_file.oper = TF_GraphOperationByName(g, "save/Const");
+  model->checkpoint_file.index = 0;
+  return 1;
+}
+
 Eigen::Matrix<float, 5, 5> TFModel::gToCovariance(const Vector15f& g) {
   // First convert g vec to lower triangular form
   Eigen::Matrix<float, 5, 5> cov_tri;
@@ -269,4 +317,12 @@ TF_Tensor* TFModel::scalarStringTensor(const char* str, TF_Status* status) {
   memset(data, 0, 8);  // 8-byte offset of first string.
   TF_StringEncode(str, strlen(str), (char*)data + 8, nbytes - 8, status);
   return t;
+}
+
+int TFModel::okay(TF_Status* status) {
+  if (TF_GetCode(status) != TF_OK) {
+    fprintf(stderr, "ERROR: %s\n", TF_Message(status));
+    return 0;
+  }
+  return 1;
 }

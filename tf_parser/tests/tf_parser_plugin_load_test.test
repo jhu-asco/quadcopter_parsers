@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="TFParserPluginLoadTest" pkg="tf_parser" type="tf_parser-tf-parser-plugin-load-test">
+  </test>
+</launch>
