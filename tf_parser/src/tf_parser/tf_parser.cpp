@@ -1,3 +1,4 @@
+#include <pluginlib/class_list_macros.h>
 #include <tf_parser/tf_parser.h>
 #include <tf/tf.h>
 #include <ros/ros.h>
@@ -299,4 +300,5 @@ void TFParser::getquaddata(parsernode::common::quaddata &d1)
     d1.servo_in[i] = rcin[i];
   return;
 }
-}
+};
+PLUGINLIB_DECLARE_CLASS(tf_parser, TFParser, tf_parser::TFParser, parsernode::Parser)
