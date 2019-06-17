@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tf_parser)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -g ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
+#find_package(Protobuf 3.1 REQUIRED)
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/clib/include)
@@ -112,10 +113,10 @@ link_directories(${PROJECT_SOURCE_DIR}/clib/lib)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES tf_parser
+  INCLUDE_DIRS include clib/include
+  LIBRARIES tf_parser 
 #  CATKIN_DEPENDS geometry_msgs parsernode pluginlib roscpp std_msgs
-#  DEPENDS system_lib
+#  DEPENDS 
 )
 
 ###########
@@ -134,6 +135,7 @@ include_directories(
 add_library(tf_parser
   src/${PROJECT_NAME}/tf_parser.cpp
   src/${PROJECT_NAME}/tf_model.cpp
+  src/${PROJECT_NAME}/state.cpp
 )
 
 target_link_libraries(tf_parser ${LIBS} tensorflow tensorflow_framework)
@@ -198,6 +200,11 @@ target_link_libraries(tf_parser ${LIBS} tensorflow tensorflow_framework)
 catkin_add_gtest(${PROJECT_NAME}-tf-parser-test tests/tf_parser_tests.cpp)
 if(TARGET ${PROJECT_NAME}-tf-parser-test)
   target_link_libraries(${PROJECT_NAME}-tf-parser-test tf_parser ${catkin_LIBRARIES})
+endif()
+
+catkin_add_gtest(${PROJECT_NAME}-tf-model-test tests/tf_model_tests.cpp)
+if(TARGET ${PROJECT_NAME}-tf-model-test)
+  target_link_libraries(${PROJECT_NAME}-tf-model-test tf_parser ${catkin_LIBRARIES})
 endif()
 
 add_rostest_gtest(${PROJECT_NAME}-tf-parser-plugin-load-test tests/tf_parser_plugin_load_test.test tests/tf_parser_plugin_load_test.cpp)

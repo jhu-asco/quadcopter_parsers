@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include "tf_parser/state.h"
 #include <tensorflow/c/c_api.h>
+#include <gtest/gtest.h>
 
 class TFModel {
 public:
@@ -12,6 +13,8 @@ public:
   void predict(const State& state, Eigen::Vector3f& control, State& next_state, const double dt);
 
 private:
+  FRIEND_TEST(TFModelTests, Dynamics);
+
   typedef Eigen::Matrix<float, 5, 1> Vector5f;
   typedef Eigen::Matrix<float, 15, 1> Vector15f;
 
