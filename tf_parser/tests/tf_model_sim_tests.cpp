@@ -1,19 +1,19 @@
 #include <gtest/gtest.h>
-#include <tf_parser/tf_parser.h>
+#include <tf_parser/tf_model_sim.h>
 
 using namespace tf_parser;
 
-TEST(TFParserTests, BaseCtor) {
-  ASSERT_NO_THROW(TFParser());
+TEST(TFModelSimTests, BaseCtor) {
+  ASSERT_NO_THROW(TFModelSim());
 }
 
-TEST(TFParserTests, Initializer) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, Initializer) {
+    TFModelSim quad_simulator_instance;
     ASSERT_NO_THROW(quad_simulator_instance.initialize());
 }
 
-TEST(TFParserTests, Takeoff) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, Takeoff) {
+    TFModelSim quad_simulator_instance;
     quad_simulator_instance.takeoff();
     //Get Data and ensure we are in right mode
     parsernode::common::quaddata data;
@@ -22,8 +22,8 @@ TEST(TFParserTests, Takeoff) {
     ASSERT_STREQ(data.quadstate.c_str(), "ARMED ENABLE_CONTROL ");
 }
 
-TEST(TFParserTests, Land) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, Land) {
+    TFModelSim quad_simulator_instance;
     quad_simulator_instance.takeoff();
     quad_simulator_instance.land();
     //Get Data and ensure we are in right mode
@@ -35,8 +35,8 @@ TEST(TFParserTests, Land) {
     ASSERT_STREQ(data.quadstate.c_str(), "ENABLE_CONTROL ");
 }
 
-TEST(TFParserTests, Disarm) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, Disarm) {
+    TFModelSim quad_simulator_instance;
     quad_simulator_instance.takeoff();
     quad_simulator_instance.disarm();
     //Get Data and ensure we are in right mode
@@ -48,8 +48,8 @@ TEST(TFParserTests, Disarm) {
     ASSERT_STREQ(data.quadstate.c_str(), "");
 }
 
-TEST(TFParserTests, DisableFlowControl) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, DisableFlowControl) {
+    TFModelSim quad_simulator_instance;
     quad_simulator_instance.takeoff();
     quad_simulator_instance.flowControl(false);
     //Get Data and ensure we are in right mode
@@ -59,13 +59,13 @@ TEST(TFParserTests, DisableFlowControl) {
     ASSERT_STREQ(data.quadstate.c_str(), "ARMED ");
 }
 
-TEST(TFParserTests, ImuCalibrate) {
-    TFParser quad_simulator_instance;
+TEST(TFModelSimTests, ImuCalibrate) {
+    TFModelSim quad_simulator_instance;
     ASSERT_THROW(quad_simulator_instance.calibrateimubias(), std::runtime_error);
 }
 
-TEST(TFParserTests, TestBatteryPercent) {
-  TFParser quad_simulator_instance;
+TEST(TFModelSimTests, TestBatteryPercent) {
+  TFModelSim quad_simulator_instance;
   parsernode::common::quaddata data;
   quad_simulator_instance.getquaddata(data);
   ASSERT_EQ(data.batterypercent, 100);

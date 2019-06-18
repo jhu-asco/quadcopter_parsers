@@ -135,10 +135,11 @@ include_directories(
 add_library(tf_parser
   src/${PROJECT_NAME}/tf_parser.cpp
   src/${PROJECT_NAME}/tf_model.cpp
+  src/${PROJECT_NAME}/tf_model_sim.cpp
   src/${PROJECT_NAME}/state.cpp
 )
 
-target_link_libraries(tf_parser ${LIBS} tensorflow tensorflow_framework)
+target_link_libraries(tf_parser ${catkin_LIBRARIES} tensorflow tensorflow_framework)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -197,9 +198,9 @@ target_link_libraries(tf_parser ${LIBS} tensorflow tensorflow_framework)
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}-tf-parser-test tests/tf_parser_tests.cpp)
-if(TARGET ${PROJECT_NAME}-tf-parser-test)
-  target_link_libraries(${PROJECT_NAME}-tf-parser-test tf_parser ${catkin_LIBRARIES})
+catkin_add_gtest(${PROJECT_NAME}-tf-model-sim-test tests/tf_model_sim_tests.cpp)
+if(TARGET ${PROJECT_NAME}-tf-model-sim-test)
+  target_link_libraries(${PROJECT_NAME}-tf-model-sim-test tf_parser ${catkin_LIBRARIES})
 endif()
 
 catkin_add_gtest(${PROJECT_NAME}-tf-model-test tests/tf_model_tests.cpp)
