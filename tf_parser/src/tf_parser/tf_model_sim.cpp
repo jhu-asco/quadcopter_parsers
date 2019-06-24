@@ -1,12 +1,14 @@
 #include <tf_parser/tf_model_sim.h>
+#include <algorithm>
 
 namespace tf_parser {
 
 TFModelSim::TFModelSim()
-    : parsernode::Parser(), delay_send_time_(0.0), battery_percent_(100),
+    : parsernode::Parser(), delay_send_time_(0.02), battery_percent_(100),
       takeoff_altitude_(0.5),
       use_perfect_time_(false),
-      model_("/home/matt/spo/python/deep/model/logs/variable_log/2019-06-05_11-12-41/") {
+      //model_("/home/matt/spo/python/deep/model/logs/variable_log/2019-06-05_11-12-41/") {
+      model_("/home/matt/spo/python/deep/model/logs/variable_log/2019-06-20_09-37-52/") {
   this->initialize();
   this->initialized = true;
 }
@@ -156,19 +158,46 @@ bool TFModelSim::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, bool r
         if(dt > 0.03)
           dt = 0.03; //Cap the dt for simulation
 
+        double control_bounds[4][2] = {{8., 12.}, {-M_PI/10, M_PI/10}, {-M_PI/10, M_PI/10}, {-M_PI, M_PI}};
+        for(int j = 0; j < control.size(); j++)
+        {
+          control[j] = std::min(std::max(control[j], control_bounds[j][0]), control_bounds[j][1]);
+        }
+
+        std::cout << "control: " << control.transpose() << std::endl;
+        std::cout << "p: " << state_.p.transpose() << std::endl;
+        std::cout << "v: " << state_.v.transpose() << std::endl;
+        std::cout << "rpy: " << state_.rpy.transpose() << std::endl;
+        std::cout << "a_b: " << state_.a_b.transpose() << std::endl;
+
         State next_state;
         Eigen::Vector3f control_in(control(1), control(2), control(0));
         model_.predict(state_, control_in, next_state, dt);
-        state_ = next_state;
+
         if(rp_angle_yawrate_mode)
         {
-          state_.rpy(2) = state_.rpy(2) + control(3) * dt;
-          if(state_.rpy(2) > M_PI) state_.rpy(2) -= 2 * M_PI;
-          if(state_.rpy(2) < -M_PI) state_.rpy(2) += 2 * M_PI;
+          next_state.rpy(2) = state_.rpy(2) + control(3) * dt;
+          if(next_state.rpy(2) > M_PI) next_state.rpy(2) -= 2 * M_PI;
+          if(next_state.rpy(2) < -M_PI) next_state.rpy(2) += 2 * M_PI;
         }
         else
         {
-          state_.rpy(2) = control(3);
+          next_state.rpy(2) = control(3);
+        }
+
+        state_ = next_state;
+
+        double rpy_bounds[2][2] = {{-M_PI/9, M_PI/9}, {-M_PI/9, M_PI/9}};
+        for(int j = 0; j < 2; j++)
+        {
+          state_.rpy[j] = std::min(std::max(state_.rpy[j], rpy_bounds[j][0]), rpy_bounds[j][1]);
+        }
+
+        std::cout << "a_b after: " << state_.a_b.transpose() << std::endl;
+        double a_b_bounds[3][2] = {{-2.0, 2.0}, {-2.0, 2.0}, {-2.0, 2.0}};
+        for(int j = 0; j < state_.a_b.size(); j++)
+        {
+          state_.a_b[j] = std::min(std::max(state_.a_b[j], a_b_bounds[j][0]), a_b_bounds[j][1]);
         }
 
         rpyt_cmds.pop();//Delete the Last Element

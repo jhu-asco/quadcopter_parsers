@@ -1,12 +1,12 @@
 #include "tf_parser/tf_model.h"
-#include "tf_parser/eigen_mvn.h"
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-TFModel::TFModel(std::string checkpoint_path) {
+TFModel::TFModel(std::string checkpoint_path) : 
+    gaussian_(Eigen::Vector3f::Zero(), Eigen::Matrix3f::Zero(), false) {
   std::string graph_def_filename = checkpoint_path + "graph.pb";
   std::string checkpoint_filename = checkpoint_path + "checkpoint";
 
@@ -35,17 +35,18 @@ void TFModel::predict(const State& state, Eigen::Vector3f& control, State& next_
   modelPredict(&model_, state_eig.data(), control.data(), f.data(), g.data());
 
   Eigen::Matrix<float, 5, 5> cov = gToCovariance(g);
+  std::cout << cov << std::endl;
 
-  Eigen::EigenMultivariateNormal<float> gaussian(f, cov, true);
-  Eigen::VectorXf f_rand = gaussian.samples(1).col(0);
+  // TODO: Just sample 3 independent gaussians and use lower triangular form
+  gaussian_.setMean(f);
+  gaussian_.setCovar(cov);
+  Eigen::VectorXf f_rand = gaussian_.samples(1).col(0);
 
   next_state.rpy.head<2>() = state.rpy.head<2>() + dt * f_rand.head<2>().cast<double>();
   next_state.a_b = state.a_b + dt * f_rand.tail<3>().cast<double>();
 
   Eigen::Matrix3d R;
-  R = Eigen::AngleAxisd(next_state.rpy(2), Eigen::Vector3d::UnitZ()) *
-               Eigen::AngleAxisd(next_state.rpy(1), Eigen::Vector3d::UnitY()) *
-               Eigen::AngleAxisd(next_state.rpy(0), Eigen::Vector3d::UnitX());
+  R = Eigen::AngleAxisd(next_state.rpy(2), Eigen::Vector3d::UnitZ());
   
   next_state.v = state.v + dt * R * next_state.a_b;
   next_state.p = state.p + dt * next_state.v;
@@ -99,8 +100,30 @@ int TFModel::modelCreate(model_t* model, const char* graph_def_filename) {
   return 1;
 }
 
+Eigen::Matrix<float, 5, 5> TFModel::fillSpiral(const Vector15f& g) {
+  Eigen::Matrix<float, 5, 5> cov_tri;
+  cov_tri.setZero();
+  std::vector<int> rows = {4, 0, 3, 1, 2};
+  bool reverse = true;
+  int i = 0;
+  for(auto row : rows) {
+    for(int col = 0; col <= row; col++) {
+      if(reverse) {
+        float val = (row == (row-col) ? exp(g(i++)) + 1e-4 : g(i++));
+        cov_tri(row, row - col) = val;
+      } else {
+        float val = (row == col ? exp(g(i++)) + 1e-4 : g(i++));
+        cov_tri(row, col) = val;
+      }
+    }
+    reverse = !reverse;
+  }
+  return cov_tri;
+}
+
 Eigen::Matrix<float, 5, 5> TFModel::gToCovariance(const Vector15f& g) {
   // First convert g vec to lower triangular form
+  /*
   Eigen::Matrix<float, 5, 5> cov_tri;
   int row = 0, col = 0;
   for(int i = 0; i < 15; i++) {
@@ -115,6 +138,8 @@ Eigen::Matrix<float, 5, 5> TFModel::gToCovariance(const Vector15f& g) {
     }
     col++;
   }
+  */
+  auto cov_tri = fillSpiral(g);
   return cov_tri * cov_tri.transpose();
 } 
 

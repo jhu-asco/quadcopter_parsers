@@ -2,10 +2,34 @@
 #include <tf_parser/tf_model.h>
 
 typedef Eigen::Matrix<float, 5, 1> Vector5f;
+typedef Eigen::Matrix<float, 5, 5> Matrix5f;
 typedef Eigen::Matrix<float, 15, 1> Vector15f;
 
 TEST(TFModelTests, BaseCtor) {
   ASSERT_NO_THROW(TFModel("/home/matt/spo/python/deep/model/logs/variable_log/2019-06-05_11-12-41/"));
+}
+
+TEST(TFModelTests, FillSpiral) {
+  Vector15f g;
+  g << 8.888805, -5.8093586, 3.5014045, 6.127098,
+          4.2060714, -10.0014515, 3.609818, 0.29951337,
+          0.02023567, 2.1633046, -0.40069064, -14.232204,
+         -0.9017885, -6.413296, -4.9418397;
+  Matrix5f expected_spiral_g;
+  expected_spiral_g << 1.4533408e-04, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
+          0.0000000e+00, -4.0069064e-01, 1.0065922e-04, 0.0000000e+00, 0.0000000e+00,
+          0.0000000e+00, -4.9418397e+00, -6.4132962e+00, 4.0594316e-01, 0.0000000e+00,
+          0.0000000e+00, 2.1633046e+00, 2.0235673e-02, 2.9951337e-01, 3.6959423e+01,
+          0.0000000e+00, 4.2060714e+00, 6.1270981e+00, 3.5014045e+00, -5.8093586e+00,
+          7.2503525e+03;
+
+  auto spiral_g = TFModel::fillSpiral(g);
+
+  for(int i = 0; i < spiral_g.rows(); i++) {
+    for(int j = 0; j < spiral_g.cols(); j++) {
+      ASSERT_NEAR(spiral_g(i, j), expected_spiral_g(i, j), 1e-6);
+    }
+  }
 }
 
 TEST(TFModelTests, Dynamics) {

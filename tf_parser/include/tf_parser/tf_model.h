@@ -3,6 +3,7 @@
 #include <string>
 #include <Eigen/Dense>
 #include "tf_parser/state.h"
+#include "tf_parser/eigen_mvn.h"
 #include <tensorflow/c/c_api.h>
 #include <gtest/gtest.h>
 
@@ -14,6 +15,7 @@ public:
 
 private:
   FRIEND_TEST(TFModelTests, Dynamics);
+  FRIEND_TEST(TFModelTests, FillSpiral);
 
   typedef Eigen::Matrix<float, 5, 1> Vector5f;
   typedef Eigen::Matrix<float, 15, 1> Vector15f;
@@ -42,7 +44,9 @@ private:
   TF_Buffer* readFile(const char* filename);
   std::string checkpointPrefix(std::string checkpoint_fn);
   TF_Tensor* scalarStringTensor(const char* str, TF_Status* status);
-  Eigen::Matrix<float, 5, 5> gToCovariance(const Vector15f& g);
+  static Eigen::Matrix<float, 5, 5> gToCovariance(const Vector15f& g);
+  static Eigen::Matrix<float, 5, 5> fillSpiral(const Vector15f& g);
 
   model_t model_;
+  Eigen::EigenMultivariateNormal<float> gaussian_;
 };
