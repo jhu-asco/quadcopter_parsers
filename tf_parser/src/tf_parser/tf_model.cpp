@@ -35,7 +35,6 @@ void TFModel::predict(const State& state, Eigen::Vector3f& control, State& next_
   modelPredict(&model_, state_eig.data(), control.data(), f.data(), g.data());
 
   Eigen::Matrix<float, 5, 5> cov = gToCovariance(g);
-  std::cout << cov << std::endl;
 
   // TODO: Just sample 3 independent gaussians and use lower triangular form
   gaussian_.setMean(f);
@@ -46,7 +45,7 @@ void TFModel::predict(const State& state, Eigen::Vector3f& control, State& next_
   next_state.a_b = state.a_b + dt * f_rand.tail<3>().cast<double>();
 
   Eigen::Matrix3d R;
-  R = Eigen::AngleAxisd(next_state.rpy(2), Eigen::Vector3d::UnitZ());
+  R = Eigen::AngleAxisd(state.rpy(2), Eigen::Vector3d::UnitZ());
   
   next_state.v = state.v + dt * R * next_state.a_b;
   next_state.p = state.p + dt * next_state.v;

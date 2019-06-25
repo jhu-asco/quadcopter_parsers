@@ -164,12 +164,6 @@ bool TFModelSim::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, bool r
           control[j] = std::min(std::max(control[j], control_bounds[j][0]), control_bounds[j][1]);
         }
 
-        std::cout << "control: " << control.transpose() << std::endl;
-        std::cout << "p: " << state_.p.transpose() << std::endl;
-        std::cout << "v: " << state_.v.transpose() << std::endl;
-        std::cout << "rpy: " << state_.rpy.transpose() << std::endl;
-        std::cout << "a_b: " << state_.a_b.transpose() << std::endl;
-
         State next_state;
         Eigen::Vector3f control_in(control(1), control(2), control(0));
         model_.predict(state_, control_in, next_state, dt);
@@ -193,7 +187,6 @@ bool TFModelSim::cmdrpythrustInternal(geometry_msgs::Quaternion &rpytmsg, bool r
           state_.rpy[j] = std::min(std::max(state_.rpy[j], rpy_bounds[j][0]), rpy_bounds[j][1]);
         }
 
-        std::cout << "a_b after: " << state_.a_b.transpose() << std::endl;
         double a_b_bounds[3][2] = {{-2.0, 2.0}, {-2.0, 2.0}, {-2.0, 2.0}};
         for(int j = 0; j < state_.a_b.size(); j++)
         {
