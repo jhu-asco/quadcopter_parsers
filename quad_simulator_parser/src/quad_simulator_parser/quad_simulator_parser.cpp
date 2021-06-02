@@ -68,4 +68,4 @@ void QuadSimParser::gpsTimerCallback(const ros::TimerEvent& )
 }
 
 };
-PLUGINLIB_DECLARE_CLASS(quad_simulator_parser, QuadSimParser, quad_simulator_parser::QuadSimParser, parsernode::Parser)
+PLUGINLIB_EXPORT_CLASS(quad_simulator_parser::QuadSimParser, parsernode::Parser)
