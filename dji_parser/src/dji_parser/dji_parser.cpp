@@ -663,4 +663,4 @@ void DjiParser::receiveDJIData()
 }
 
 };
-PLUGINLIB_DECLARE_CLASS(dji_parser, DjiParser, dji_parser::DjiParser, parsernode::Parser)
+PLUGINLIB_EXPORT_CLASS(dji_parser::DjiParser, parsernode::Parser)

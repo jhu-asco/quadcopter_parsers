@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(quad_simulator_parser)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+add_compile_options(-std=c++11)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules /usr/local/lib/OGRE/cmake)

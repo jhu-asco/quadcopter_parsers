@@ -88,4 +88,4 @@ void DjiHILParser::receiveDJIData()
   spin_mutex.unlock();
 }
 };
-PLUGINLIB_DECLARE_CLASS(dji_parser, DjiHILParser, dji_parser::DjiHILParser, parsernode::Parser)
+PLUGINLIB_EXPORT_CLASS(dji_parser::DjiHILParser, parsernode::Parser)
