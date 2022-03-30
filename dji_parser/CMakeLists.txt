@@ -15,6 +15,18 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
 )
+find_package(djiosdk-core QUIET)
+if(NOT djiosdk-core_FOUND)
+	MESSAGE(STATUS "core not found")
+else()
+	MESSAGE(STATUS "core found")
+endif()
+find_package(DJIOSDK REQUIRED)
+if(NOT DJIOSDK_FOUND)
+	MESSAGE(STATUS "DJIOSDK not found")
+else()
+	MESSAGE(STATUS "osdk found")
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -121,17 +133,19 @@ catkin_package(
 # include_directories(include)
 include_directories(
   include
+  ${DJIOSDK_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
  add_library(dji_parser
-   src/${PROJECT_NAME}/dji_parser.cpp
-   src/${PROJECT_NAME}/dji_hil_parser.cpp
+   src/dji_parser/dji_parser.cpp
+   src/dji_parser/dji_hil_parser.cpp
  )
 
  target_link_libraries(dji_parser
    ${catkin_LIBRARIES}
+   ${DJIOSDK_LIBRARIES}
  )
 
 ## Add cmake target dependencies of the library
@@ -150,11 +164,15 @@ add_executable(dji_hil_parser_node src/dji_hil_parser_node.cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(dji_parser_node
+	 dji_parser
    ${catkin_LIBRARIES}
+   ${DJIOSDK_LIBRARIES}
  )
 
  target_link_libraries(dji_hil_parser_node
+	 dji_parser
    ${catkin_LIBRARIES}
+   ${DJIOSDK_LIBRARIES}
  )
 
 #############

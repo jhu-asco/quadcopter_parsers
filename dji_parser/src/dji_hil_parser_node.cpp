@@ -1,11 +1,12 @@
 #include <pluginlib/class_loader.h>
-#include <parsernode/parser.h>
+//#include <parsernode/parser.h>
+#include <dji_parser/dji_hil_parser.h>
 #include <boost/thread.hpp>
 
 //using namespace rqt_quadcopter_parsers;
 
 boost::mutex user_mutex_;
-boost::shared_ptr<parsernode::Parser> dji_parser;
+boost::shared_ptr<parsernode::Parser> parser;
 
 void userFunction()
 {
@@ -17,22 +18,30 @@ void userFunction()
     user_mutex_.lock();
     if(!strcmp("Arm", input.c_str()))
     {
-      dji_parser->takeoff();
+      parser->takeoff();
     }
     else if(!strcmp("Disarm", input.c_str()))
     {
-      dji_parser->land();
+      parser->land();
     }
     else if(!strcmp("Status",input.c_str()))
     {
       parsernode::common::quaddata data;
-      dji_parser->getquaddata(data);
+      data.localpos.z = 1;
+      parser->getquaddata(data);
       //Print Status of Quadcopter
-      std::cout<<"data.quadstate: "<<data.quadstate<<std::endl;
+      std::cout<<"data.quadstate: "<<data.quadstate<<std::endl
+	      <<" battery: "<<data.batterypercent<<std::endl
+	      <<" rpydata: "<<data.rpydata<<std::endl
+	      <<" linvel: "<<data.linvel<<std::endl
+	      <<" linacc: "<<data.linacc<<std::endl
+	      <<" localpos: "<<data.localpos<<std::endl
+	      <<" armed: "<<data.armed<<std::endl
+	      <<" rc_sdk: "<<data.rc_sdk_control_switch<<std::endl;
     }
     else if(!strcmp("Quit", input.c_str()))
     {
-      dji_parser.reset();
+      parser.reset();
       user_mutex_.unlock();
       break;
     }
@@ -44,12 +53,12 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "parser");
   pluginlib::ClassLoader<parsernode::Parser> parser_loader("parsernode", "parsernode::Parser");
-  ROS_INFO("I am fine");
   try
   {
-    dji_parser = parser_loader.createInstance("dji_parser/DjiHILParser");
-    dji_parser->initialize();
-    ROS_INFO("DJI ACtivation: %d",dji_parser->initialized);
+    parser = parser_loader.createInstance("dji_parser/DjiHILParser");
+//    parser.reset(new dji_parser::DjiHILParser());
+    parser->initialize();
+    ROS_INFO("DJI ACtivation: %d",parser->initialized);
 
     ROS_INFO("Created DJI Parser Successfully");
   }
@@ -58,7 +67,7 @@ int main(int argc, char** argv)
     ROS_ERROR("The plugin failed to load for some reason. Error: %s", ex.what());
   }
   //Create Boost Thread
-  while(!dji_parser->initialized && ros::ok());
+  while(!parser->initialized && ros::ok());
   boost::thread user_thread(userFunction);
   ros::Rate loop_rate(100);
   while(ros::ok())

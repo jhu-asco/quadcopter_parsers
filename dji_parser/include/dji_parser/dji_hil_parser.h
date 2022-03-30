@@ -16,8 +16,7 @@ namespace dji_parser{
 class DjiHILParser: public DjiParser
 {
 private:
-    void receiveDJIData();//receive dji data from its lib 
-    ros::NodeHandle nh_;///< Internal node handle
+//    ros::NodeHandle nh_;///< Internal node handle
 public:
     DjiHILParser();
     //Extend functions from Parser:
@@ -30,6 +29,10 @@ public:
     bool cmdvel_yaw_rate_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_rate);
     bool cmdvel_yaw_angle_guided(geometry_msgs::Vector3 &vel_cmd, double &yaw_angle);
     bool cmdwaypoint(geometry_msgs::Vector3 &desired_pos, double desired_yaw = 0);
+    //void getquaddata(parsernode::common::quaddata &d1);
+    virtual void get50HzData(Vehicle *vehicle, RecvContainer recvFrame);
+    virtual void get10HzData(Vehicle *vehicle, RecvContainer recvFrame);
+    virtual void get1HzData(Vehicle *vehicle, RecvContainer recvFrame);
 };
 }
 #endif // DJI_HIL_PARSHER_H

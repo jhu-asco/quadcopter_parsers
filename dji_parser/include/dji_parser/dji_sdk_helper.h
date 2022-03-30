@@ -3,8 +3,8 @@
 #include <iostream>
 
 //DJI Messages
-#include <dji_sdk/GlobalPosition.h>
-#include <dji_sdk/LocalPosition.h>
+//#include <dji_sdk/GlobalPosition.h>
+//#include <dji_sdk/LocalPosition.h>
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
@@ -29,11 +29,6 @@ namespace DJI_SDK {
     ned_x = DEG2RAD(d_lat) * C_EARTH;
     ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
   }
-
-
- 
-
-
 
 };
 #endif

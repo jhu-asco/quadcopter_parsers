@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
 <launch>
+<param name="~/uav/serial_name" type="string" value="/dev/ttym200"/>
+<param name="~/uav/baud_rate" type="int" value="230400"/>
+<param name="~/uav/app_id" type="int" value="1113137"/>
+<param name="~/uav/app_api_level" type="int" value="2"/>
+<param name="~/uav/app_version" type="int" value="1"/>
+<param name="~/uav/app_bundle_id" type="string" value="Welcome to use dji-sdk"/>
+<param name="~/uav/enc_key" type="string" value="58660c19755d9007702c9e94520ff072fba7978b3ea422375db21f1e7371790b"/>
 <node pkg="dji_parser" name="dji_hil_parser_node" type="dji_hil_parser_node" output="screen">
   <!-- node parameters -->
-  <param name="serial_name" type="string" value="/dev/ttydji"/>
+  <param name="serial_name" type="string" value="/dev/ttym200"/>
   <param name="baud_rate" type="int" value="230400"/>
-  <param name="app_id" type="int" value="1024052"/>
+  <param name="app_id" type="int" value="1113137"/>
   <param name="app_api_level" type="int" value="2"/>
   <param name="app_version" type="int" value="1"/>
   <param name="app_bundle_id" type="string" value="Welcome to use dji-sdk"/>
-  <param name="enc_key" type="string" value="8667ff1ec3a163d6ef14a7bf6a9fae66210855f309c1876788f61d2195dc58d7"/>
+  <!--param name="enc_key" type="string" value="8667ff1ec3a163d6ef14a7bf6a9fae66210855f309c1876788f61d2195dc58d7"/-->
+  <param name="enc_key" type="string" value="58660c19755d9007702c9e94520ff072fba7978b3ea422375db21f1e7371790b"/>
 </node>
 </launch>

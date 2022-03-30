@@ -24,9 +24,30 @@
 #include <sensor_msgs/NavSatFix.h>
 
 //SDK library
-#include <dji_sdk_lib/DJI_API.h>
-#include <dji_sdk_lib/DJI_Flight.h>
-#include <dji_sdk/DJI_HardDriver_Manifold.h>
+//#include <djiosdk/dji_control.hpp>
+//#include <djiosdk/dji_status.hpp>
+//#include <djiosdk/dji_version.hpp>
+//#include <dji_sdk/Activation.h>
+//#include <dji_sdk/CameraAction.h>
+//#include <dji_sdk/DroneArmControl.h>
+//#include <dji_sdk/DroneTaskControl.h>
+//#include <dji_sdk/MFIOConfig.h>
+//#include <dji_sdk/MFIOSetValue.h>
+//#include <dji_sdk/SDKControlAuthority.h>
+//#include <dji_sdk/SetLocalPosRef.h>
+//#include <dji_sdk/SendMobileData.h>
+//#include <dji_sdk/SendPayloadData.h>
+//#include <dji_sdk/QueryDroneVersion.h>
+#ifdef ADVANCED_SENSING
+//#include <dji_sdk/Stereo240pSubscription.h>
+//#include <dji_sdk/StereoDepthSubscription.h>
+//#include <dji_sdk/StereoVGASubscription.h>
+//#include <dji_sdk/SetupCameraStream.h>
+#endif
+
+//! SDK library
+#include <djiosdk/dji_vehicle.hpp>
+
 
 //DJI SDK Helper:
 #include "dji_sdk_helper.h"
@@ -38,11 +59,13 @@
 #define FILE_BUFFER_SIZE 1024
 #endif
 
+const int WAIT_TIMEOUT = 10;
+
 using namespace std;
 namespace dji_parser{
 class DjiParser: public parsernode::Parser
 {
-private:
+public:
     enum FlightStatus {
         STANDBY = 1,
         TAKEOFF = 2,
@@ -50,10 +73,7 @@ private:
         LANDING = 4,
         FINISH_LANDING=5
     };
-    enum HardwareType {
-        MATRICE,
-        A3
-    };
+
     ros::NodeHandle nh_;///< Internal node handle
 
     //File Streams
@@ -69,8 +89,6 @@ private:
     //Publishers ROS
     ros::Publisher global_ref_pub;
     ros::Publisher gps_pub;
-
-    ros::Subscriber guidance_sub_;
 
     ros::Timer tf_timer_;
     tf::TransformBroadcaster tf_broadcaster;
@@ -90,55 +108,42 @@ private:
     bool enable_log;
     int fd;
     //DJI SDK Member Variables:
-    DJI::onboardSDK::ActivateData user_act_data_;///< App activation data dji
-    DJI::onboardSDK::VersionData version_data;///< Provides the sdk version, hardware type used
     bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     double global_ref_x, global_ref_y, global_ref_z;
-    bool use_guidance_pos_;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
     uint8_t gps_health;///< Health of GPS
     uint8_t shift_bit;///< For hardware a3, N3, M600, the shift bit is 2 for extracting certain data
-    uint16_t rc_f_pwm; ///< RC switch signal given when in SDK mode
-    HardwareType hardware_type; ///< Flight controller hardware
+    int rc_f_pwm; ///< RC switch signal given when in SDK mode
 
+    //Additions:
+    Vehicle* vehicle;
+    ACK::ErrorCode activate(int l_app_id, std::string l_enc_key);
+    bool init(std::string device, unsigned int baudrate, int app_id, std::string enc_key);
+    bool initReceive();
+    void cleanUpSubscribe();
+    static void static50HzData(Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData);
+    static void static10HzData(Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData);
+    static void static1HzData(Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData);
+    static void staticParserBroadcastCallback(Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData);
+    virtual void get50HzData(Vehicle *vehicle, RecvContainer recvFrame);
+    virtual void get10HzData(Vehicle *vehicle, RecvContainer recvFrame);
+    virtual void get1HzData(Vehicle *vehicle, RecvContainer recvFrame);
+    virtual void ParserBroadcastCallback(Vehicle *vehicle, RecvContainer recvFrame);
 
-    void guidanceCallback(const geometry_msgs::Point&);
     void tfTimerCallback(const ros::TimerEvent&);
-    static void* APIRecvThread(void* param);
-    static void statReceiveDJIData(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header *, void *);//receive dji data from its lib 
-    int init_parameters_and_activate(ros::NodeHandle& nh_, DJI::onboardSDK::ActivateData* user_act_data);
-    void init(std::string device, unsigned int baudrate);
-    static void takeoffCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
-    static void landingCb(DJI::onboardSDK::CoreAPI *, DJI::onboardSDK::Header * header, void * userData);
-
-    DJI::onboardSDK::CoreAPI* coreAPI;
-    DJI::onboardSDK::Flight* flight;
-    pthread_t m_recvTid;
-
-    struct CbResponse
-    {
-      CbResponse() : received(false), succeeded(false) {}
-      volatile bool received;
-      volatile bool succeeded;
-    };
+    int init_parameters_and_activate(ros::NodeHandle& nh_);
+    void setUpDefaultFreq(uint8_t freq[16]);
 
 protected:
-    parsernode::common::quaddata data; ///< Collected data struct for the entire quadrotor state
-    boost::mutex spin_mutex; ///< Mutex to sync receiving data from DJI and getter functions
-    virtual void receiveDJIData();//receive dji data from its lib 
 
-    bool setFlightMovement(uint8_t flag, geometry_msgs::Quaternion &rpytmsg);
-
+    bool setFlightMovement(uint8_t flag, float x_in, float y_in, float z_in, float yaw_in);
 
 public:
     DjiParser();
-    virtual ~DjiParser()
-    {
-        disarm();//release sdk control
-    }
+    virtual ~DjiParser();
     //Extend functions from Parser:
     virtual bool takeoff();
     virtual bool land();
@@ -209,6 +214,16 @@ public:
     {
         enable_log = logswitch;
     }
+    enum
+    {
+      PACKAGE_ID_1HZ   = 0,
+      PACKAGE_ID_10HZ  = 1,
+      PACKAGE_ID_50HZ = 2
+    };
+    boost::mutex spin_mutex; ///< Mutex to sync receiving data from DJI and getter functions
+    parsernode::common::quaddata data; ///< Collected data struct for the entire quadrotor state
+    const tf::Matrix3x3 R_FLU2FRD;
+    const tf::Matrix3x3 R_ENU2NED;
 };
 }
-#endif // DJI_PARSHER_H
+#endif // DJI_PARSER_H
