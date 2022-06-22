@@ -24,6 +24,14 @@ void userFunction()
     {
       parser->land();
     }
+    else if(!strcmp("FlowOn", input.c_str()))
+    {
+      parser->flowControl(true);
+    }
+    else if(!strcmp("FlowOff", input.c_str()))
+    {
+      parser->flowControl(false);
+    }
     else if(!strcmp("Status",input.c_str()))
     {
       parsernode::common::quaddata data;

@@ -26,7 +26,7 @@ using namespace DJI::OSDK;
 
 namespace dji_parser{
 
-DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), global_ref_x(0), global_ref_y(0), global_ref_z(0), sdk_opened(false)
+DjiParser::DjiParser(): nh_("~uav"), global_ref_lat(0), global_ref_long(0), global_ref_x(0), global_ref_y(0), global_ref_z(0)//, sdk_opened(false)
                         ,quad_status(0) ,ctrl_mode(0), sdk_status(0), gps_health(0),rc_f_pwm(-8000),
     R_FLU2FRD(tf::Matrix3x3(1,  0,  0, 0, -1,  0, 0,  0, -1)),
     R_ENU2NED(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1))
@@ -85,6 +85,9 @@ void DjiParser::initialize()
   if(this->initialized)
   {
     ROS_INFO("Initialized dji");
+    if(!flowControl(false)) {
+      ROS_INFO("Error FlowControl False");
+    }
   }
 
   tf_timer_ = nh_.createTimer(ros::Duration(0.1), &DjiParser::tfTimerCallback, this);
@@ -134,6 +137,7 @@ bool DjiParser::land()
 
 bool DjiParser::disarm()
 {
+  ROS_ERROR("Disarm Start");
   ACK::ErrorCode ack = vehicle->control->disArmMotors(WAIT_TIMEOUT);
   if (ACK::getError(ack))
   {
@@ -141,6 +145,7 @@ bool DjiParser::disarm()
     ACK::getErrorCodeMessage(ack, __func__);
     return false;
   }
+  ROS_ERROR("FlowControl False");
   if(!flowControl(false)) {
     ROS_ERROR("Could not release flow control");
     return false;
@@ -150,45 +155,71 @@ bool DjiParser::disarm()
 
 bool DjiParser::flowControl(bool request)
 {
-ROS_INFO("FLOW CONTROL");
-if (request) {
-  ROS_INFO("REQUEST: TRUE");
-} else {
-  ROS_INFO("REQUEST: FALSE");
-}
-if (sdk_opened) {
-  ROS_INFO("SDK: TRUE");
-} else {
-  ROS_INFO("SDK: FALSE");
-}
+
+  bool result = false;
 
   if(!(this->initialized))
     return false;
   
-ROS_INFO("INIT");
-  if((request && sdk_opened)||(!request && !sdk_opened))
-  {
-    return true;
-  }
-
-  ACK::ErrorCode ack;
+  ROS_ERROR("Flow Control");
   if (request) {
-ROS_INFO("OBTAIN");
+    ROS_ERROR("Request: True");
+  } else {
+    ROS_ERROR("Request: False");
+  }
+  if (sdk_status == 1) {
+    ROS_ERROR("sdk: True");
+  } else {
+    ROS_ERROR("sdk: False");
+  }
+  ACK::ErrorCode ack;
+  bool called = false;
+  if (request && !(sdk_status == 1)) {
+    ROS_ERROR("OBTAIN");
     ack = vehicle->obtainCtrlAuthority(WAIT_TIMEOUT);
-  }else {
-ROS_INFO("RELEASE");
+    called = true;
+  }else if (!request && (sdk_status == 1)) {
+    ROS_ERROR("RELEASE");
     ack = vehicle->releaseCtrlAuthority(WAIT_TIMEOUT);
+    called = true;
   }
-  if (ACK::getError(ack))
+  if (called) 
   {
-    ROS_ERROR("Flow Control Failed");
-    ACK::getErrorCodeMessage(ack, __func__);
-    sdk_opened = !request;
-    return false;
+    if (ACK::getError(ack))
+    {
+      ROS_ERROR("Flow Control Failed");
+      ACK::getErrorCodeMessage(ack, __func__);
+      //sdk_opened = !request;
+      return false;
+    }
+
+    ROS_ERROR("WAITING");
+    ros::Time current_time = ros::Time::now();
+    while(ros::ok())
+    {
+      ROS_ERROR("TOP");
+      spin_mutex.lock();
+      //sdk_opened = (sdk_status==1);
+      if ((request == (sdk_status == 1))) {
+        ROS_ERROR("SUCCESS");
+        result = true;
+        spin_mutex.unlock();
+        break;
+      }
+      else if ((ros::Time::now() - current_time).toSec() > 5.0) {
+        ROS_ERROR("Timeout");
+        result = false;
+        spin_mutex.unlock();
+        break;
+      }
+      spin_mutex.unlock();
+      ros::Rate(10).sleep();
+    }
+  } else {
+    result = true;
   }
-  sdk_opened = request;
-  ROS_INFO("RETURN TRUE");
-  return true;
+  ROS_ERROR("DONE");
+  return result;
 }
 
 bool DjiParser::calibrateimubias()
@@ -229,7 +260,7 @@ bool DjiParser::cmdrpythrust(geometry_msgs::Quaternion &rpytmsg)
 
 bool DjiParser::setFlightMovement(uint8_t flag, float x_in, float y_in, float z_in, float yaw_in) {
   //TODO: Double check this works.
-  if(this->initialized && sdk_opened) {
+  if(this->initialized && (sdk_status == 1)) {
     uint8_t HORI  = (flag & 0xC0);
     uint8_t VERT  = (flag & 0x30);
     uint8_t YAW   = (flag & 0x08);
@@ -433,18 +464,21 @@ void DjiParser::getquaddata(parsernode::common::quaddata &d1)
       data.quadstate += " APP";
       break;
     case 2:
-      data.quadstate += " SER";
+      data.quadstate += " SER2";
+      break;
+    case 4:
+      data.quadstate += " SER4";
       break;
   }
   switch(sdk_status)
   {
     case 0:
       data.quadstate += " SCLOSE";
-      sdk_opened = false;
+      //sdk_opened = false;
       break;
     case 1:
       data.quadstate += " SOPEN";
-      sdk_opened = true;
+      //sdk_opened = true;
       break;
   }
   data.quadstate += (std::string(" G") + std::to_string(gps_health));
@@ -683,7 +717,7 @@ void DjiParser::ParserBroadcastCallback(Vehicle *vehicle, RecvContainer recvFram
     this->accfile<<this->data.timestamp<<"\t"<<this->data.linacc.x<<"\t"<<this->data.linacc.y<<"\t"<<this->data.linacc.z
 	    <<endl;
   //control
-  this->ctrl_mode = control.controlMode;
+  this->ctrl_mode = control.deviceStatus;
   this->sdk_status = control.flightStatus;
   if(this->enable_log)
   {
@@ -876,8 +910,10 @@ void DjiParser::get50HzData(Vehicle *vehicle, RecvContainer recvFrame)
     this->accfile<<this->data.timestamp<<"\t"<<this->data.linacc.x<<"\t"<<this->data.linacc.y<<"\t"<<this->data.linacc.z
 	    <<endl;
   //control
-  this->ctrl_mode = control.controlMode;
+  this->ctrl_mode = control.deviceStatus;
   this->sdk_status = control.flightStatus;
+  //cout << "CTRL MODE: " << (int) this->ctrl_mode << std::endl;
+  //cout << "SDK STATUS: " << (int) this->sdk_status << std::endl;
   if(this->enable_log)
   {
     this->statusfile<<this->data.timestamp<<"\t"<<int(this->quad_status)<<"\t"<<int(this->sdk_status)<<"\t"<<int(this->ctrl_mode)<<endl;
@@ -938,6 +974,9 @@ void DjiParser::get10HzData(Vehicle *vehicle, RecvContainer recvFrame)
   DJI_SDK::gps_convert_ned(this->data.localpos.x,this->data.localpos.y,gps_pos.longitude * 180.0 / M_PI,
 		           gps_pos.latitude * 180.0 / M_PI,this->global_ref_long,this->global_ref_lat);
   this->data.localpos.y = -(this->data.localpos.y);//NED to NWU format
+//  cout << "local_pos: long: " << gps_pos.longitude << " lat: " << gps_pos.latitude << std::endl 
+//       << " ref_long: " << this->global_ref_long << " ref_lat: " << this->global_ref_lat << std::endl
+//       << " x: " << this->data.localpos.x << " y: " << this->data.localpos.y << std::endl;
   this->data.localpos.z = height;
   this->gps_health = gpshealth;
   if(this->enable_log)

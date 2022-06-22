@@ -108,14 +108,14 @@ public:
     bool enable_log;
     int fd;
     //DJI SDK Member Variables:
-    bool sdk_opened;
+//    bool sdk_opened;
     double global_ref_lat, global_ref_long;///<Lat and Long of Home
     double global_ref_x, global_ref_y, global_ref_z;
     uint8_t quad_status;///< Quad status standby takeoff etc
     uint8_t ctrl_mode;///< Quadcopter Controlled by either RC or APP or SER
     uint8_t sdk_status;///< Whether sdk is open or close
     uint8_t gps_health;///< Health of GPS
-    uint8_t shift_bit;///< For hardware a3, N3, M600, the shift bit is 2 for extracting certain data
+//    uint8_t shift_bit;///< For hardware a3, N3, M600, the shift bit is 2 for extracting certain data
     int rc_f_pwm; ///< RC switch signal given when in SDK mode
 
     //Additions:
